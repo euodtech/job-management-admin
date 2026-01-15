@@ -1,0 +1,18 @@
+[12-May-2024 17:21:57 Asia/Jakarta] PHP Fatal error:  During inheritance of ArrayAccess: Uncaught ErrorException: Return type of Illuminate\Database\Eloquent\Model::offsetExists($offset) should either be compatible with ArrayAccess::offsetExists(mixed $offset): bool, or the #[\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice in /home/u5521427/public_html/apolloapi/vendor/illuminate/database/Eloquent/Model.php:1544
+Stack trace:
+#0 /home/u5521427/public_html/apolloapi/vendor/illuminate/database/Eloquent/Model.php(20): Laravel\Lumen\Application->Laravel\Lumen\Concerns\{closure}()
+#1 /home/u5521427/public_html/apolloapi/vendor/composer/ClassLoader.php(444): include('/home/u5521427/...')
+#2 /home/u5521427/public_html/apolloapi/vendor/composer/ClassLoader.php(322): Composer\Autoload\includeFile()
+#3 /home/u5521427/public_html/apolloapi/vendor/illuminate/database/DatabaseServiceProvider.php(35): Composer\Autoload\ClassLoader->loadClass()
+#4 /home/u5521427/public_html/apolloapi/vendor/laravel/lumen-framework/src/Application.php(200): Illuminate\Database\DatabaseServiceProvider->register()
+#5 /home/u5521427/public_html/apolloapi/vendor/laravel/lumen-framework/src/Application.php(615): Laravel\Lumen\Application->register()
+#6 /home/u5521427/public_html/apolloapi/vendor/laravel/lumen-framework/src/Application.php(371): Laravel\Lumen\Application->loadComponent()
+#7 /home/u5521427/public_html/apolloapi/vendor/illuminate/container/Container.php(785): Laravel\Lumen\Application->Laravel\Lumen\{closure}()
+#8 /home/u5521427/public_html/apolloapi/vendor/illuminate/container/Container.php(667): Illuminate\Container\Container->build()
+#9 /home/u5521427/public_html/apolloapi/vendor/illuminate/container/Container.php(615): Illuminate\Container\Container->resolve()
+#10 /home/u5521427/public_html/apolloapi/vendor/laravel/lumen-framework/src/Application.php(267): Illuminate\Container\Container->make()
+#11 /home/u5521427/public_html/apolloapi/vendor/laravel/lumen-framework/src/Application.php(728): Laravel\Lumen\Application->make()
+#12 /home/u5521427/public_html/apolloapi/bootstrap/app.php(26): Laravel\Lumen\Application->withEloquent()
+#13 /home/u5521427/public_html/apolloapi/public/index.php(14): require('/home/u5521427/...')
+#14 /home/u5521427/public_html/apolloapi/index.php(22): require_once('/home/u5521427/...')
+#15 {main} in /home/u5521427/public_html/apolloapi/vendor/illuminate/database/Eloquent/Model.php on line 20

@@ -1,0 +1,534 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class User extends MY_Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+        if ($this->session->userdata('status') != "kusam") {
+            redirect(base_url('auth'));
+        }
+
+        $this->load->library('form_validation');
+        $this->load->library('curl');
+        $this->load->model('M_Global');
+        $this->load->helper('idr_helper');
+        
+    }
+
+    private function getDataListDriverByCompany($from_get, $company_select = null)
+    {
+        // Jika super user
+        if ($from_get == 1) {
+
+            $where_data_list = "";
+            if (!empty($company_select) && $company_select != 'all') {
+                $where_data_list .= " AND ListUser.ListCompanyID = " . $company_select;
+            }
+
+            $query = "
+                SELECT * 
+                FROM ListUser 
+                LEFT JOIN ListCompany ON ListUser.ListCompanyID = ListCompany.ListCompanyID 
+                WHERE ListUser.StatusActive = 0 
+                $where_data_list
+            ";
+
+        } else {
+            $query = "
+                SELECT * 
+                FROM ListUser 
+                LEFT JOIN ListCompany ON ListUser.ListCompanyID = ListCompany.ListCompanyID 
+                WHERE ListUser.StatusActive = 0 
+                AND ListUser.ListCompanyID = '" . $from_get . "'
+            ";
+        }
+
+        $dataUser = $this->M_Global->globalquery($query)->result_array();
+
+        return $dataUser;
+    }
+
+
+
+    public function index()
+    {
+        $data['title'] = "Efms | User";
+
+        $dataRole = $this->session->userdata('Role') ;
+
+        // jika superuser
+        if($dataRole == 1 ) {
+            $company_select = $this->input->post('company_select');
+            $data_user = $this->getDataListDriverByCompany($dataRole, $company_select);
+        } else {
+            
+            $data_user = $this->getDataListDriverByCompany($this->session->userdata('CompanyID'));
+
+        }
+
+        $data['user'] = $data_user;
+
+        $data['list_company'] = $this->M_Global->globalquery("SELECT * FROM ListCompany")->result_array();
+
+        $this->render_page('main/user/page_user',$data);data: 
+    }
+
+    public function submit_new_password()
+    {
+        $password = $this->input->post('confirm_password');
+        $user_login_id = $this->input->post('user_login_id');
+
+        $data_update = [
+            "Password" => password_hash($password, PASSWORD_BCRYPT),
+            "key_resetpassword" => null
+        ];
+
+        $where = "UserLoginID = " . $user_login_id;
+
+        $this->M_Global->update_data($where, $data_update, "UserLogin");
+
+        redirect(base_url('forgot-password?token=success_update_password'));
+
+    }
+
+    public function import_excel()
+    {
+        $this->load->library('Excel');
+
+        try {
+            if (empty($_FILES['import_excel']['tmp_name'])) {
+                echo json_encode(['status' => 'error', 'message' => 'Tidak ada file yang diupload.']);
+                return;
+            }
+
+            $filePath = $_FILES['import_excel']['tmp_name'];
+            $objPHPExcel = PHPExcel_IOFactory::load($filePath);
+            $sheetData = $objPHPExcel->getActiveSheet()->toArray(null, true, true, true);
+
+            $totalInsertData = 1;
+            $totalData = 1;
+
+            $email_ready = [];
+            $email_invalid = [];
+
+            foreach ($sheetData as $key => $row) {
+                if ($key == 1) continue; // HEADER
+
+                if (empty($row['A']) && empty($row['B']) && empty($row['C']) && empty($row['D'])) {
+                    continue;
+                }
+
+                $companyID = $this->session->userdata('CompanyID');
+                $email = trim($row['B']);
+
+                // VALIDASI EMAIL FORMAT
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $email_invalid[] = $email;
+                    continue;
+                }
+
+                // CEK EMAIL SUDAH ADA DI DB
+                $queryCheck = "SELECT * FROM ListUser 
+                    WHERE ListCompanyID = '$companyID' AND Email = '$email'";
+                $dataCheck = $this->M_Global->globalquery($queryCheck)->result_array();
+
+                if (count($dataCheck) == 0) {
+
+                    // INSERT LOGIN DULU
+                    $insert_data_login = [
+                        'Fullname' => $row['A'],
+                        'Email'    => $email,
+                        "Password" => password_hash("12345", PASSWORD_BCRYPT),
+                        "Role"     => 2,
+                    ];
+
+                    $user_login_id = $this->M_Global->insertid($insert_data_login, "UserLogin");
+
+                    // INSERT LIST USER
+                    $insertData = [
+                        'Fullname'          => $row['A'],
+                        'ListCompanyID'     => $companyID,
+                        'Email'             => $email,
+                        'PhoneNumber'       => $row['C'],
+                        'StatusActive'      => 0,
+                        'Category'          => $row['D'],
+                        'Rank'              => $row['E'],
+                        'License'           => $row['F'],
+                        'LicenseValidUntil' => $row['G'],
+                        "UserLoginID"       => $user_login_id,
+                        'created_at'        => date('Y-m-d H:i:s')
+                    ];
+
+                    $this->M_Global->insert($insertData, "ListUser");
+                    $totalInsertData++;
+
+                } else {
+                    // EMAIL DUPLIKAT
+                    $email_ready[] = $email;
+                }
+
+                $totalData++;
+            }
+
+            // ===========================
+            //   HANDLE RESPONSE
+            // ===========================
+
+            if (empty($email_ready) && empty($email_invalid)) {
+                echo json_encode([
+                    'status' => true,
+                    'label' => 'success',
+                    'message' => 'Success Insert All Data'
+                ]);
+            } else {
+
+                $messages = [];
+
+                if (!empty($email_ready)) {
+                    $messages[] =
+                        "Already in use: <br><strong>" .
+                        implode("</strong>, <strong>", $email_ready) . "</strong>";
+                }
+
+                if (!empty($email_invalid)) {
+                    $messages[] =
+                        "Invalid format: <br><strong>" .
+                        implode("</strong>, <strong>", $email_invalid) . "</strong>";
+                }
+
+                echo json_encode([
+                    'status' => true,
+                    'label' => 'warning',
+                    'message' => implode("<br><br>", $messages)
+                ]);
+            }
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Gagal membaca file Excel: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+
+    public function create()
+    {
+
+        $email = strtolower(trim($this->input->post('email')));
+        $phoneRaw = $this->input->post('phone');
+
+        // Validate email
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            redirect('user-list');
+        }
+
+        // Sanitize phone (numbers only)
+        $phoneDigits = preg_replace('/[^0-9]/', '', $phoneRaw);
+
+        // Normalize PH format
+        if (strlen($phoneDigits) === 10) {
+            $phone = '+63' . $phoneDigits;
+        } elseif (strlen($phoneDigits) === 12 && str_starts_with($phoneDigits, '63')) {
+            $phone = '+' . $phoneDigits;
+        } else {
+            redirect('user-list');
+        }
+
+        $companyID = $this->session->userdata('CompanyID');
+
+
+        if ($this->session->userdata('Role') != 1) {
+            show_error('Unauthorized', 403);
+        }
+
+        $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
+
+        // enforce allowed user_role based on company's subscription
+        $companyInfo = $this->M_Global->globalquery("SELECT CompanySubscribe FROM ListCompany WHERE ListCompanyID = '$selected_company'")->row_array();
+        $companySubscribe = isset($companyInfo['CompanySubscribe']) ? $companyInfo['CompanySubscribe'] : null;
+        $user_role_post = $this->input->post('user_role');
+        if ($companySubscribe == 1) { // Basic
+            $user_role = 'monitor';
+        } else { // Pro or unknown defaults to allow both
+            $user_role = in_array($user_role_post, ['monitor','field']) ? $user_role_post : 'monitor';
+        }
+
+        $data_create = [
+            "Fullname" => $this->input->post('fullname'),
+            "ListCompanyID" => $selected_company,
+            "Email" => $email,
+            "PhoneNumber" => $phone,
+            "UserRole" => $user_role,
+            "StatusActive" => 0,
+            "created_at" => date('Y-m-d H:i:s')
+        ];
+
+        // $dataUserEmail = $this->M_Global->getUserByEmail("ListUser" , "Email = '$email' AND ListCompanyID = '$selected_company' AND deleted_at IS NULL  ");
+        $dataUserEmail = $this->M_Global->globalquery(
+            "SELECT 1 FROM ListUser WHERE Email = ? AND ListCompanyID = ? AND deleted_at IS NULL",
+            [$email, $selected_company]
+        )->row_array();
+
+
+        if(!$dataUserEmail) {
+            $user = $this->M_Global->insert($data_create, "ListUser");
+
+            if($user == "success") {
+
+                // create akses login nya 
+                $akses_login = [
+                    "Fullname" => $data_create['Fullname'],
+                    "Email" => $data_create['Email'],
+                    "Password" => password_hash("12345", PASSWORD_BCRYPT),
+                    "Role" => 2,
+                ];
+
+                $create_akses = $this->M_Global->insertid($akses_login, "UserLogin");
+
+                // $this->M_Global->update("ListUser", "UserLoginID = '$create_akses' WHERE Email = '$email' AND ListCompanyID = '$selected_company' ");
+                $this->M_Global->globalquery(
+                    "UPDATE ListUser SET UserLoginID = ? WHERE Email = ? AND ListCompanyID = ?",
+                    [$create_akses, $email, $selected_company]
+                );
+
+
+                if ($create_akses != '') {
+                    $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Driver & Access Login created successfully</div>');
+                } else {
+                    $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to create Driver & Access Login!</div>');
+                }
+
+            } else {
+                $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to create Driver & Access Login!</div>');
+            }
+        } else {
+            $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Email is already in use, please use another email.</div>');
+
+        }
+        // create user
+        redirect(base_url('user-list'));
+    }
+    // public function update()
+    // {
+    //     $userID = $this->input->post('user_id');
+
+    //     $phone = "+63" . $this->input->post('phone');
+
+    //     $email = $this->input->post('email');
+    //     $pass = $this->input->post('pass');
+    //     $hashedPass = password_hash($pass, PASSWORD_BCRYPT);
+
+    //     $companyID = $this->session->userdata('CompanyID');
+
+    //     $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
+
+    //     $userLoginID = $this->M_Global->globalquery("SELECT UserLoginID FROM ListUser WHERE UserID = '$userID' ")->row_array();
+
+    //     // enforce allowed user_role based on company's subscription
+    //     $companyInfo = $this->M_Global->globalquery("SELECT CompanySubscribe FROM ListCompany WHERE ListCompanyID = '$selected_company'")->row_array();
+    //     $companySubscribe = isset($companyInfo['CompanySubscribe']) ? $companyInfo['CompanySubscribe'] : null;
+    //     $user_role_post = $this->input->post('user_role');
+    //     if ($companySubscribe == 1) { // Basic
+    //         $user_role = 'monitor';
+    //     } else { // Pro or unknown defaults to allow both
+    //         $user_role = in_array($user_role_post, ['monitor','field']) ? $user_role_post : 'monitor';
+    //     }
+
+    //     $data_create = [
+    //         "Fullname" => $this->input->post('fullname'),
+    //         "Email" => $email,
+    //         "ListCompanyID" => $selected_company,
+    //         "PhoneNumber" => $phone,
+    //         "UserRole" => $user_role,
+    //         // "UserRole" => $user_role,
+    //         "created_at" => date('Y-m-d H:i:s')
+    //     ];
+
+    //     $where = " UserID =  '$userID' ";
+    //     // create user
+    //     $user = $this->M_Global->update_data($where, $data_create, "ListUser");
+
+    //     if($user == "success") {
+
+    //         // create akses login nya 
+    //         $akses_login = [
+    //             "Fullname" => $data_create['Fullname'],
+    //             "Email" => $data_create['Email'],
+    //             "Password" => $hashedPass,
+    //         ];
+
+    //         $where = "UserLoginID = '$userLoginID[UserLoginID]' ";
+
+    //         $create_akses = $this->M_Global->update_data($where, $akses_login, "UserLogin");
+
+    //         if ($create_akses == "success") {
+    //             $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> User & Access Login update successfully</div>');
+    //         } else {
+    //             $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to update User & Access Login!</div>');
+    //         }
+
+    //     } else {
+    //         $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to update User & Access Login!</div>');
+    //     }
+        
+
+    //     redirect(base_url('user-list'));
+    // }
+
+public function update()
+{
+    $userID = $this->input->post('user_id');
+    $phone = "+63" . $this->input->post('phone');
+    $email = $this->input->post('email');
+    $pass = $this->input->post('pass');
+    
+    $companyID = $this->session->userdata('CompanyID');
+    $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
+
+    // 1. SECURE QUERY: Using bindings to prevent SQL Injection
+    $sqlUser = "SELECT UserLoginID FROM ListUser WHERE UserID = ?";
+    $userRow = $this->db->query($sqlUser, [$userID])->row_array();
+    
+    if (!$userRow) {
+        $this->session->set_flashdata('message', '<div class="alert alert-danger">User not found.</div>');
+        redirect(base_url('user-list'));
+        return;
+    }
+
+    $userLoginID = $userRow['UserLoginID'];
+
+    // 2. SECURE QUERY: Get company subscription info
+    $sqlCompany = "SELECT CompanySubscribe FROM ListCompany WHERE ListCompanyID = ?";
+    // $companyInfo = $this->db->query($sqlCompany, [$selected_company])->row_array();
+    $companyInfo = $this->M_Global->globalquery(
+        "SELECT CompanySubscribe FROM ListCompany WHERE ListCompanyID = ?",
+        [$selected_company]
+    )->row_array();
+
+    
+    $companySubscribe = isset($companyInfo['CompanySubscribe']) ? $companyInfo['CompanySubscribe'] : null;
+    $user_role_post = $this->input->post('user_role');
+
+    if ($companySubscribe == 1) { 
+        $user_role = 'monitor';
+    } else {
+        $user_role = in_array($user_role_post, ['monitor','field']) ? $user_role_post : 'monitor';
+    }
+
+    // Prepare data for ListUser table
+    $data_update = [
+        "Fullname"      => $this->input->post('fullname'),
+        "Email"         => $email,
+        "ListCompanyID" => $selected_company,
+        "PhoneNumber"   => $phone,
+        "UserRole"      => $user_role,
+        "updated_at"    => date('Y-m-d H:i:s') // Updated column name
+    ];
+
+    $whereUser = ["UserID" => $userID];
+    $userStatus = $this->M_Global->update_data($whereUser, $data_update, "ListUser");
+
+    if($userStatus == "success") {
+
+        // Prepare data for UserLogin table
+        $akses_login = [
+            "Fullname" => $data_update['Fullname'],
+            "Email"    => $data_update['Email'],
+        ];
+
+        // 3. LOGIC FIX: Only hash if a new password was typed
+        if (!empty($pass)) {
+            $akses_login["Password"] = password_hash($pass, PASSWORD_BCRYPT);
+        }
+
+        $whereLogin = ["UserLoginID" => $userLoginID];
+        $create_akses = $this->M_Global->update_data($whereLogin, $akses_login, "UserLogin");
+
+        if ($create_akses == "success") {
+            $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> User updated successfully</div>');
+        } else {
+            $this->session->set_flashdata('message', '<div class="alert alert-danger">Failed to update Login Access!</div>');
+        }
+
+    } else {
+        $this->session->set_flashdata('message', '<div class="alert alert-danger">Failed to update User details!</div>');
+    }
+
+    redirect(base_url('user-list'));
+}
+
+    public function get_data_user_for_delete($userID) 
+    {
+        $data_detail_job = $this->M_Global->globalquery("SELECT * FROM ListJob WHERE UserID = '$userID' AND Status = 1 ")->row_array();
+
+        echo json_encode($data_detail_job);
+    }
+
+    public function delete()
+    {
+        $userID = $this->input->post('user_id');
+        $current_job = $this->input->post('current_job');
+
+        if($current_job != '') {
+
+            $data_update = [
+                "UserID" => null,
+                "Status" => null,
+                "AssignWhen" => null
+            ];
+
+            $where = " JobID = " . $current_job;
+
+            // update job nya ke status awaiting driver
+            $this->M_Global->update_data($where, $data_update, "ListJob");
+
+        } 
+
+        $emailUser = $this->M_Global->globalquery("SELECT Email FROM ListUser WHERE UserID = '$userID' ")->row_array();
+
+        $data_create = [
+            "StatusActive" => 1,
+            "deleted_at" => date('Y-m-d H:i:s'),
+        ];
+
+        $where = " UserID =  '$userID' ";
+        // create user
+        $user = $this->M_Global->update_data($where, $data_create, "ListUser");
+
+        if($user == "success") {
+
+
+            $where = "Email = '$emailUser[Email]' ";
+
+            $create_akses = $this->M_Global->delete("UserLogin", $where);
+
+            if ($create_akses == "success") {
+                $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> User & Access Login delete successfully</div>');
+            } else {
+                $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to delete User & Access Login!</div>');
+            }
+
+        } else {
+            $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to delete User & Access Login!</div>');
+        }
+
+        redirect(base_url('user-list'));
+    }
+
+    public function getUser()
+    {
+        $userID = $this->input->post('userID');
+
+        $dataReturn = $this->M_Global->globalquery("SELECT ListUser.*,
+            Password
+         FROM ListUser
+         LEFT JOIN UserLogin ON ListUser.UserLoginID = UserLogin.UserLoginID
+        WHERE UserID = '$userID' ")->row_array();
+
+        echo json_encode($dataReturn);
+    }
+
+}
