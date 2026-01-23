@@ -13,69 +13,48 @@
 <!-- /.control-sidebar -->
 </div>
 <!-- ./wrapper -->
-<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
-<!-- jQuery UI 1.11.4 -->
+<!-- jQuery (FIXED VERSION) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- jQuery UI -->
 <script src="<?php echo base_url('assets/plugins/jquery-ui/jquery-ui.min.js'); ?>"></script>
-<!-- Bootstrap 4 -->
+
+<script>
+    $.widget.bridge('uibutton', $.ui.button);
+</script>
+
+<!-- Bootstrap 4 (ONLY ONCE) -->
 <script src="<?php echo base_url('assets/plugins/bootstrap/js/bootstrap.bundle.min.js'); ?>"></script>
-<!-- ChartJS -->
-<script src="<?php echo base_url('assets/plugins/chart.js/Chart.min.js'); ?>"></script>
+
+<!-- AdminLTE -->
+<script src="<?php echo base_url('assets/dist/js/adminlte.js'); ?>"></script>
+
 <!-- Select2 -->
 <script src="<?php echo base_url('assets/plugins/select2/js/select2.full.min.js'); ?>"></script>
 
 <!-- Summernote -->
 <script src="<?php echo base_url('assets/plugins/summernote/summernote-bs4.min.js'); ?>"></script>
 
-<!-- AdminLTE App -->
-<script src="<?php echo base_url('assets/dist/js/adminlte.js'); ?>"></script>
-
-<!-- AdminLTE for demo purposes -->
-
-<script src="<?php echo base_url('assets/dist/js/demo.js'); ?>"></script>
-
-<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<!-- <script src="<?php echo base_url('assets/dist/js/pages/dashboard.js'); ?>"></script> -->
-
-<!-- DataTables -->
+<!-- DataTables (ONE VERSION ONLY) -->
 <script src="<?php echo base_url('assets/plugins/datatables/jquery.dataTables.min.js'); ?>"></script>
-<script src="//stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-<script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-<script src="//cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
-<script src="//cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js"></script>
-<script src="//cdn.datatables.net/buttons/1.5.6/js/buttons.bootstrap4.min.js"></script>
-<script src="//cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js"></script>
-<script src="//cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js"></script>
-<script src="//cdn.datatables.net/buttons/1.5.6/js/buttons.colVis.min.js"></script>
 <script src="<?php echo base_url('assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js'); ?>"></script>
 <script src="<?php echo base_url('assets/plugins/datatables-responsive/js/dataTables.responsive.min.js'); ?>"></script>
 <script src="<?php echo base_url('assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js'); ?>"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
-<!-- <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script> -->
-<!-- <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.pageLength.min.js"></script> -->
+<!-- DataTables Buttons -->
+<script src="<?php echo base_url('assets/plugins/datatables-buttons/js/dataTables.buttons.min.js'); ?>"></script>
+<script src="<?php echo base_url('assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js'); ?>"></script>
+<script src="<?php echo base_url('assets/plugins/datatables-buttons/js/buttons.html5.min.js'); ?>"></script>
+<script src="<?php echo base_url('assets/plugins/datatables-buttons/js/buttons.print.min.js'); ?>"></script>
+<script src="<?php echo base_url('assets/plugins/datatables-buttons/js/buttons.colVis.min.js'); ?>"></script>
 
-<!-- JSZip & pdfmake (dibutuhkan untuk Excel/PDF export) -->
+<!-- JSZip & PDFMake -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
-<!-- <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
-<script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.js"></script> -->
-
-<!-- SweetAlert2 -->
-<script src="https://cdn.rawgit.com/jeromeetienne/jquery-qrcode/master/jquery.qrcode.min.js"></script>
-<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
-
-
-<!-- Font Awesome -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/all.min.js" integrity="sha512-6BTOlkauINO65nLhXhthZMtepgJSghyimIalb+crKRPhvhmsCdnIuGcVbR5/aQY2A+260iC1OPy1oCdB6pSSwQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/fontawesome.min.js" integrity="sha512-obFNtQ1JKCrxPBPLmYDUevlriATl5EhvwU3CFtdW/HKOkeAe0bbsyZfHO44/f1QyndrZJ464TQvrRP9ZjyXSSA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/regular.min.js" integrity="sha512-Zq4D1wxoa4GRA5ejM+34rZkeuuKX8Xq9rIsfsX2yH3NKG4SyJT8BjLFIIQSgN7F8oe2IIHlGbVsDzdTgjB1lgA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- Moment -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
 <script>
     $.widget.bridge('uibutton', $.ui.button)

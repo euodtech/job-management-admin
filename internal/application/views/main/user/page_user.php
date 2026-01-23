@@ -11,6 +11,12 @@
                     </ol>
                 </div>
             </div>
+            <?php if ($this->session->flashdata('message')): ?>
+                <div class="container-fluid mt-2">
+                    <?= $this->session->flashdata('message'); ?>
+                </div>
+            <?php endif; ?>
+            
         </div><!-- /.container-fluid -->
     </section>
 
@@ -125,8 +131,10 @@
 
 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalAddLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
+        
         <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
         <div class="modal-content">
+            <div id="formAlert" class="alert alert-danger d-none" role="alert"></div>
 
             <!-- Header -->
             <div class="modal-header">
@@ -184,8 +192,9 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">+63</span>
                             </div>
-                            <input type="text" class="form-control" id="phone" name="phone"
-                                placeholder="Enter Phone Number">
+                                <input type="text" class="form-control" id="phone" name="phone"
+                                placeholder="9XXXXXXXXX" maxlength="13">
+
                         </div>
                     </div>
                 </form>
@@ -576,4 +585,93 @@ $(document).ready(function() {
 
 
 });
+</script>
+
+<script>
+$(document).ready(function () {
+
+    $('#formAddUser').on('submit', function (e) {
+        e.preventDefault();
+
+        let errors = [];
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // values
+        const company  = $('#company_selected').val();
+        const fullname = $('#fullname').val().trim();
+        const role     = $('#user_role').val();
+        const email    = $('#email').val().trim();
+        const password = $('#pass').val();
+        const phoneRaw = $('#phone').val().trim();
+
+        // reset alert
+        $('#formAlert').addClass('d-none').html('');
+
+        // company (admin only)
+        if ($('#company_selected').is(':visible') && !company) {
+            errors.push('Please select a company.');
+        }
+
+        // fullname
+        if (!fullname) {
+            errors.push('Full name is required.');
+        }
+
+        // role
+        if (!role) {
+            errors.push('Please select a user role.');
+        }
+
+        // email
+        if (!email || !emailRegex.test(email)) {
+            errors.push('Please enter a valid email address.');
+        }
+
+        // password
+        if (!password || password.length < 6) {
+            errors.push('Password must be at least 6 characters.');
+        }
+
+        // PH phone validation
+        $('#phone').on('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        let digits = phoneRaw.replace(/\D/g, '');
+
+        if (
+            !(
+                (digits.length === 11 && digits.startsWith('09')) ||
+                (digits.length === 10 && digits.startsWith('9')) ||
+                (digits.length === 12 && digits.startsWith('63'))
+            )
+        ) {
+            errors.push('Please enter a valid mobile number.');
+        }
+
+        // show errors
+        if (errors.length > 0) {
+            $('#formAlert')
+                .removeClass('d-none')
+                .html('<ul class="mb-0"><li>' + errors.join('</li><li>') + '</li></ul>');
+            return;
+        }
+
+        // submit if valid
+        this.submit();
+    });
+
+});
+</script>
+<script>
+$(document).ready(function () {
+    if ($('.alert-success').length) {
+        $('#modalAddUser').modal('hide');
+    }
+});
+</script>
+<script>
+setTimeout(function () {
+    $('.alert-success').fadeOut('slow');
+}, 3000);
 </script>

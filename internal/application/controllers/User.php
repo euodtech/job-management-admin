@@ -214,103 +214,127 @@ class User extends MY_Controller
     }
 
 
-    public function create()
-    {
+    public function create() {
 
-        $email = strtolower(trim($this->input->post('email')));
-        $phoneRaw = $this->input->post('phone');
-
-        // Validate email
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            redirect('user-list');
-        }
-
-        // Sanitize phone (numbers only)
-        $phoneDigits = preg_replace('/[^0-9]/', '', $phoneRaw);
-
-        // Normalize PH format
-        if (strlen($phoneDigits) === 10) {
-            $phone = '+63' . $phoneDigits;
-        } elseif (strlen($phoneDigits) === 12 && str_starts_with($phoneDigits, '63')) {
-            $phone = '+' . $phoneDigits;
-        } else {
-            redirect('user-list');
-        }
-
-        $companyID = $this->session->userdata('CompanyID');
-
-
-        if ($this->session->userdata('Role') != 1) {
-            show_error('Unauthorized', 403);
-        }
-
-        $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
-
-        // enforce allowed user_role based on company's subscription
-        $companyInfo = $this->M_Global->globalquery("SELECT CompanySubscribe FROM ListCompany WHERE ListCompanyID = '$selected_company'")->row_array();
-        $companySubscribe = isset($companyInfo['CompanySubscribe']) ? $companyInfo['CompanySubscribe'] : null;
-        $user_role_post = $this->input->post('user_role');
-        if ($companySubscribe == 1) { // Basic
-            $user_role = 'monitor';
-        } else { // Pro or unknown defaults to allow both
-            $user_role = in_array($user_role_post, ['monitor','field']) ? $user_role_post : 'monitor';
-        }
-
-        $data_create = [
-            "Fullname" => $this->input->post('fullname'),
-            "ListCompanyID" => $selected_company,
-            "Email" => $email,
-            "PhoneNumber" => $phone,
-            "UserRole" => $user_role,
-            "StatusActive" => 0,
-            "created_at" => date('Y-m-d H:i:s')
-        ];
-
-        // $dataUserEmail = $this->M_Global->getUserByEmail("ListUser" , "Email = '$email' AND ListCompanyID = '$selected_company' AND deleted_at IS NULL  ");
-        $dataUserEmail = $this->M_Global->globalquery(
-            "SELECT 1 FROM ListUser WHERE Email = ? AND ListCompanyID = ? AND deleted_at IS NULL",
-            [$email, $selected_company]
-        )->row_array();
-
-
-        if(!$dataUserEmail) {
-            $user = $this->M_Global->insert($data_create, "ListUser");
-
-            if($user == "success") {
-
-                // create akses login nya 
-                $akses_login = [
-                    "Fullname" => $data_create['Fullname'],
-                    "Email" => $data_create['Email'],
-                    "Password" => password_hash("12345", PASSWORD_BCRYPT),
-                    "Role" => 2,
-                ];
-
-                $create_akses = $this->M_Global->insertid($akses_login, "UserLogin");
-
-                // $this->M_Global->update("ListUser", "UserLoginID = '$create_akses' WHERE Email = '$email' AND ListCompanyID = '$selected_company' ");
-                $this->M_Global->globalquery(
-                    "UPDATE ListUser SET UserLoginID = ? WHERE Email = ? AND ListCompanyID = ?",
-                    [$create_akses, $email, $selected_company]
-                );
-
-
-                if ($create_akses != '') {
-                    $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Driver & Access Login created successfully</div>');
-                } else {
-                    $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to create Driver & Access Login!</div>');
-                }
-
-            } else {
-                $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to create Driver & Access Login!</div>');
-            }
-        } else {
-            $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Email is already in use, please use another email.</div>');
-
-        }
-        // create user
-        redirect(base_url('user-list'));
+    // --- Authorization ---
+    if ($this->session->userdata('Role') != 1) {
+        show_error('Unauthorized', 403);
     }
+
+    // --- Input ---
+    $email      = strtolower(trim($this->input->post('email', true)));
+    $phoneRaw   = $this->input->post('phone', true);
+    $password   = $this->input->post('pass', true);
+    $fullname   = trim($this->input->post('fullname', true));
+    $companyID  = $this->input->post('company_selected');
+
+    // --- Basic validation ---
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $this->session->set_flashdata('message', '<div class="alert alert-danger">Invalid email address</div>');
+        redirect('user-list');
+    }
+
+    if (empty($password)) {
+        $this->session->set_flashdata('message', '<div class="alert alert-danger">Password is required</div>');
+        redirect('user-list');
+    }
+
+    $phoneRaw = $this->input->post('phone', true);
+    $digits   = preg_replace('/\D/', '', $phoneRaw);
+
+    // PH mobile normalization
+    if (strlen($digits) === 11 && substr($digits, 0, 2) === '09') {
+        // 09123456789 → +639123456789
+        $phone = '+63' . substr($digits, 1);
+    } elseif (strlen($digits) === 10 && substr($digits, 0, 1) === '9') {
+        // 9123456789 → +639123456789
+        $phone = '+63' . $digits;
+    } elseif (strlen($digits) === 12 && substr($digits, 0, 2) === '63') {
+        // 639123456789 → +639123456789
+        $phone = '+' . $digits;
+    } else {
+        $this->session->set_flashdata(
+            'message',
+            '<div class="alert alert-danger">Invalid Philippine mobile number</div>'
+        );
+        redirect('user-list');
+    }
+
+    // --- Subscription-based role enforcement ---
+    $companyInfo = $this->M_Global->globalquery(
+        "SELECT CompanySubscribe FROM ListCompany WHERE ListCompanyID = ?",
+        [$companyID]
+    )->row_array();
+
+    $companySubscribe = $companyInfo['CompanySubscribe'] ?? 1;
+    $postedRole       = $this->input->post('user_role', true);
+
+    if ($companySubscribe == 1) { // Basic
+        $user_role = 'monitor';
+    } else {
+        $user_role = in_array($postedRole, ['monitor', 'field']) ? $postedRole : 'monitor';
+    }
+
+    // --- Check duplicate email ---
+    $exists = $this->M_Global->globalquery(
+        "SELECT 1 FROM ListUser WHERE Email = ? AND ListCompanyID = ? AND deleted_at IS NULL",
+        [$email, $companyID]
+    )->row_array();
+
+    if ($exists) {
+        $this->session->set_flashdata(
+            'message',
+            '<div class="alert alert-danger">Email is already in use</div>'
+        );
+        redirect('user-list');
+    }
+
+    // --- Transaction ---
+    $this->db->trans_start();
+
+    // Create user
+    $this->M_Global->insert([
+        'Fullname'      => $fullname,
+        'ListCompanyID' => $companyID,
+        'Email'         => $email,
+        'PhoneNumber'   => $phone,
+        'UserRole'      => $user_role,
+        'StatusActive'  => 0,
+        'created_at'    => date('Y-m-d H:i:s')
+    ], 'ListUser');
+
+    // Create login
+    $loginID = $this->M_Global->insertid([
+        'Fullname' => $fullname,
+        'Email'    => $email,
+        'Password' => password_hash($password, PASSWORD_BCRYPT),
+        'Role'     => 2
+    ], 'UserLogin');
+
+    // Link login to user
+    $this->M_Global->globalquery(
+        "UPDATE ListUser SET UserLoginID = ? WHERE Email = ? AND ListCompanyID = ?",
+        [$loginID, $email, $companyID]
+    );
+
+    $this->db->trans_complete();
+
+    // --- Result ---
+    if ($this->db->trans_status() === FALSE || empty($loginID)) {
+        $this->session->set_flashdata(
+            'message',
+            '<div class="alert alert-danger">Failed to create user</div>'
+        );
+    } else {
+        $this->session->set_flashdata(
+            'message',
+            '<div class="alert alert-success">User created successfully</div>'
+        );
+    }
+
+    redirect('user-list');
+}
+
     // public function update()
     // {
     //     $userID = $this->input->post('user_id');
