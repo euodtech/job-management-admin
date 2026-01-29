@@ -63,26 +63,6 @@ class Vehicle extends ApiToken
 
             $point = $statusMap[$trackerid] ?? [];
 
-            // $lat = $point["lat"] ?? 0;
-            // $lng = $point["lng"] ?? 0;
-
-            // $cek = $this->db->where('VehicleName', $obj['main']['name'])
-            //     ->where('TraxrootID', $trackerid)
-            //     ->where('CompanyCode', $compCode)
-            //     ->get('MasterVehicle')
-            //     ->row();
-
-            // if (!$cek) 
-            // {
-            //     $this->db->insert('MasterVehicle', [
-            //         'VehicleName'        => $obj['main']['name'],
-            //         'TraxrootID'              => $trackerid,
-            //         'CompanyCode'        => $compCode
-            //     ]);
-            // } else {
-            //     continue;
-            // }
-
             $dataTableArray[] = [
                 'name'      => $obj['main']['name'] ?? '',
                 'model'     => $obj['main']['model'] ?? '',

@@ -23,9 +23,7 @@
                             <th>Comment</th>
                             <th>Speed</th>
                             <th>Satellite</th>
-                            <!-- <th>Address</th> -->
                             <th>Latitude - Longitude</th>
-                            <!-- <th>Longitude</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -90,7 +88,7 @@ $(document).ready(function() {
       // { data: 'longitude', title: 'Longitude' },
       {
         data: null,
-        title: "Coordinate",
+        title: "Coordinates",
         render: function (data, type, row) {
           let lat = row.latitude;
           let lng = row.longitude;
@@ -109,7 +107,7 @@ $(document).ready(function() {
       }
     ],
     responsive: true,
-    pageLength: 5,
+    pageLength: 6,
     rowReorder: {
         selector: 'td:nth-child(2)'
     },
@@ -134,100 +132,5 @@ $(document).ready(function() {
 
   $('#vehicleTable').closest('.card-body').hide();
 });
-// $(document).ready(function() {
-//   $('#vehicleTable').DataTable({
-//     scrollX: true,
-//     processing: true,
-//     serverSide: true,
-//     deferRender: true,
-//     ajax: {
-//       url: "<?= base_url('Vehicle/traxrootVehicle') ?>",
-//       type: "GET",
-//       dataSrc: function(json) {
-//         console.log("Full JSON:", json);
-//         console.log("Vehicle Data:", json.data);
-//         $('#vehicleTable').closest('.card-body').show();
-//         return json.data;
-//       }
-//     },
-
-//     columns: [
-//       { 
-//         data: null,
-//         title: "No",
-//         render: function (data, type, row, meta) {
-//           return meta.row + 1;
-//         }
-//       },
-//       { data: 'name', title: 'Name' },
-//       { data: 'comment', title: 'Comment' },
-//       { data: 'speed', title: 'Speed' },
-//       { data: 'sat', title: 'Satellite' },
-
-//       // === Coordinate (Latitude + Longitude + Google Maps Link) ===
-//       {
-//         data: null,
-//         title: "Coordinate",
-//         render: function (data, type, row) {
-//           let lat = row.latitude;
-//           let lng = row.longitude;
-//           let url = `https://www.google.com/maps?q=${lat},${lng}`;
-
-//           // Saat display -> tampilkan HTML link
-//           if (type === "display") {
-//               return `<a href="${url}" class="btn btn-sm btn-primary" target="_blank" style="color:blue;text-decoration:underline;">
-//                         ${lat}, ${lng}
-//                       </a>`;
-//           }
-
-//           // Saat sort/search -> gunakan text biasa
-//           return `${lat}, ${lng}`;
-//         }
-//       }
-//     ],
-
-//     responsive: true,
-//     pageLength: 5,
-//     rowReorder: {
-//       selector: 'td:nth-child(2)'
-//     },
-//     lengthMenu: [5, 10, 25, 50, 100],
-//     dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-//     buttons: [
-//       {
-//         extend: 'pageLength',
-//         className: 'btn btn-secondary me-2'
-//       }
-//     ],
-//     ordering: true,
-//     searching: true,
-//     language: {
-//       search: "🔍 Search:",
-//     },
-//     order: [[1, "ASC"]],
-//   });
-
-//   $('#vehicleTable').closest('.card-body').hide();
-// });
 
 </script>
-
-<!-- <script>
-  function getAddressOSM(lat, lng, callback) {
-      if (!lat || !lng) return callback("");
-
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-
-      fetch(url, {
-          headers: { 'User-Agent': 'TraxrootApp/1.0' } // wajib ada User-Agent
-      })
-      .then(res => res.json())
-      .then(data => {
-          callback(data.display_name || "");
-      })
-      .catch(err => {
-          console.error(err);
-          callback("");
-      });
-  }
-</script> -->
