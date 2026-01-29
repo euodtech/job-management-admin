@@ -234,7 +234,7 @@
             <!-- Body -->
             <div class="modal-body">
                 <form id="formDelete" method="post">
-                    <!-- <input type="hidden" id="user_id" name="user_id"> -->
+                    <input type="hidden" id="user_id" name="user_id">
                     <input type="hidden" id="current_job" name="current_job">
                     <p id="detail_reason_delete" class="mb-0"></p>
                     <span>Do you want to delete the rider : <strong id="email_users"></strong></span>
@@ -304,43 +304,7 @@ $(document).ready(function() {
                 userID: userID
             },
             dataType: 'json',
-            // success: function(response) {
 
-            //     // console.log(response)
-
-            //     let phoneNumber = response.PhoneNumber.replace(/^\+63/, '');
-            //     phoneNumber = parseInt(phoneNumber);
-
-            //     // Kian - fixing user roles not appearing in edit form
-            //     modal.find('#email').val(response.Email);
-            //     modal.find('#phone').val(phoneNumber);
-
-            //     modal.find('#user_id').val(response.UserID);
-            //     modal.find('#fullname').val(response.Fullname);
-
-            //     // Set company and update role options based on company subscription
-            //     modal.find('#company_selected').val(response.ListCompanyID);
-            //     applyRoleRestrictionBasedOnCompany();
-
-            //     // Set role value if available, otherwise fallback to 'monitor'
-            //     var roleVal = response.UserRole || 'monitor';
-            //     var $role = modal.find('#user_role');
-            //     if ($role.find('option[value="'+roleVal+'"]').length) {
-            //         $role.val(roleVal);
-            //     } else {
-            //         $role.val('monitor');
-            //     }
-            //     // Trigger Select2 change if initialized
-            //     if ($role.data('select2')) {
-            //         $role.trigger('change.select2');
-            //     } else {
-            //         $role.trigger('change');
-            //     }
-
-            //     modal.find('#pass').attr('placeholder', 'Leave blank to keep current password').val('');
-            //     modal.find('#email').val(response.Email);
-            //     modal.find('#phone').val(phoneNumber);
-            // },
             success: function(response) {
                 let phoneNumber = response.PhoneNumber.replace(/^\+63/, '');
                 phoneNumber = parseInt(phoneNumber);
@@ -370,38 +334,46 @@ $(document).ready(function() {
 
 
     // handle button delete
-    buttonDeleteUser.on('click', function(e) {
+    buttonDeleteUser.on('click', function (e) {
         e.preventDefault();
+
+        const userID = $(this).data('userid');
+        const email  = $(this).data('email');
+
+        if (!userID) {
+            alert('Invalid user');
+            return;
+        }
+
+        // Reset modal state
+        modalDelete.find('#detail_reason_delete').text('');
+        modalDelete.find('#current_job').val('');
+        modalDelete.find('#user_id').val(userID);
+        modalDelete.find('#email_users').text(email);
+
+        textHeaderModalDelete.text('Delete Rider');
+        formUserDelete.attr('action', '<?= base_url("User/delete") ?>');
+
         modalDelete.modal('show');
-        textHeaderModalDelete.text('Delete Rider')
-        formUserDelete.attr("action", '<?= base_url('delete-user') ?>');
 
-        let userID = $(this).data('userid');
-        let email = $(this).data('email');
-
+        // Load job info (AJAX GET)
         $.ajax({
             url: '<?= base_url("User/get_data_user_for_delete/") ?>' + userID,
-            dataType: "json", 
-            success: function(resp) {
-                modalDelete.find('#user_id').val(userID);
-                modalDelete.find('#email_users').text(email);
-                
-                if(resp != null) {
-                    var text = `This rider currently has an ongoing job. : ${resp.JobName}`
-                    modalDelete.find('#detail_reason_delete').text(text);
-
-                    $("#current_job").val(resp.JobID);
-                } else {
-                    var text = ``
-                    modalDelete.find('#detail_reason_delete').text(text);
-
-                    $("#current_job").val('');
+            type: 'GET',
+            dataType: 'json',
+            success: function (resp) {
+                if (resp && resp.JobID) {
+                    modalDelete.find('#detail_reason_delete')
+                        .text(`This rider currently has an ongoing job: ${resp.JobName}`);
+                    modalDelete.find('#current_job').val(resp.JobID);
                 }
-            } ,
-        })
-
-       
+            },
+            error: function () {
+                console.error('Failed to fetch job data');
+            }
+        });
     });
+
 
     function setRoleOptions(optionsHtml, value) {
         let $role = modal.find('#user_role');
@@ -628,9 +600,9 @@ $(document).ready(function () {
         }
 
         // password
-        if (!password || password.length < 6) {
-            errors.push('Password must be at least 6 characters.');
-        }
+        // if (!password || password.length < 6) {
+        //     errors.push('Password must be at least 6 characters.');
+        // }
 
         // PH phone validation
         $('#phone').on('input', function () {

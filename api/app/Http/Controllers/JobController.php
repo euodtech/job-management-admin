@@ -251,46 +251,97 @@ class JobController extends Controller {
         }
     }
 
+    // Kian: Bug fix: Not submitting when trying to finish the job.
     public function finished_job(Request $request)
     {
-        $jobId = $request->input('job_id');
-        $images = $request->input('images');
-        $notes = $request->input('notes');
+        // Read JSON input (Flutter sends application/json)
+        $inputJSON = file_get_contents('php://input');
+        $input = json_decode($inputJSON, true);
 
-        if (!$jobId || !$images) {
-            return response()->json(['error' => 'job_id and images are required'], 400);
+        $jobId  = isset($input['job_id']) ? (int) $input['job_id'] : 0;
+        $images = isset($input['images']) ? $input['images'] : [];
+        $notes  = isset($input['notes']) ? $input['notes'] : '';
+
+        // Ensure images is an array
+        if (!is_array($images)) {
+            $images = [$images];
+        }
+
+        // Validate required data
+        if ($jobId <= 0 || empty($images)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'job_id and images are required'
+            ], 400);
         }
 
         $savedFiles = [];
 
         foreach ($images as $index => $base64Image) {
-        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-            $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
-            $ext = strtolower($type[1]); // jpg, png, jpeg
-        } else {
-            $ext = "png";
-        }
+            try {
+                // Remove data URI prefix if present
+                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                    $ext = strtolower($type[1]);
+                } else {
+                    $ext = "png";
+                }
 
-        $base64Image = str_replace(' ', '+', $base64Image);
-        $imageData = base64_decode($base64Image);
+                // Clean the base64 string
+                $base64Image = str_replace(' ', '+', $base64Image);
+                $base64Image = preg_replace('/[^A-Za-z0-9\+\/=]/', '', $base64Image);
+                
+                // Decode
+                $imageData = base64_decode($base64Image, true);
 
-        if ($imageData === false) {
-            return response()->json(['error' => 'Invalid base64 image'], 400);
-        }
+                if ($imageData === false || empty($imageData)) {
+                    \Log::error("Invalid base64 image at index $index");
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Invalid base64 image at position " . ($index + 1)
+                    ], 400);
+                }
 
-        $fileName = 'job_'.$jobId.'_'.time().'_'.$index.'.'.$ext;
-        $filePath = storage_path('app/finished_jobs/'.$fileName);
+                // Validate it's actually an image
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mimeType = $finfo->buffer($imageData);
+                
+                if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/jpg'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "File at position " . ($index + 1) . " is not a valid image"
+                    ], 400);
+                }
 
-        // if (!file_exists(dirname($filePath))) {
-        //     mkdir(dirname($filePath), 0777, true);
-        // }
+                $fileName = 'job_'.$jobId.'_'.time().'_'.$index.'.'.$ext;
+                $filePath = storage_path('app/finished_jobs/'.$fileName);
 
-        file_put_contents($filePath, $imageData);
+                // Ensure directory exists
+                $directory = dirname($filePath);
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0755, true);
+                }
 
-            $savedFiles[] = $fileName;
+                file_put_contents($filePath, $imageData);
+                $savedFiles[] = $fileName;
+                
+            } catch (\Exception $e) {
+                \Log::error("Error processing image $index: " . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => "Error processing image at position " . ($index + 1) . ": " . $e->getMessage()
+                ], 400);
+            }
         }
 
         $dataJob = JobModel::where("JobID", $jobId)->first();
+
+        if (!$dataJob) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Job not found'
+            ], 404);
+        }
 
         $dataJob->update([
             "Status" => 2,
@@ -299,8 +350,8 @@ class JobController extends Controller {
         ]);
 
         foreach ($savedFiles as $val) {
-
-            $fullUrl = url('storage/app/finished_jobs/' . $val);
+            // $fullUrl = url('storage/app/finished_jobs/' . $val); // old
+            $fullUrl = 'storage/app/finished_jobs/' . $fileName;
             
             $data_insert_job_detail = [
                 "ListJobID" => $jobId,
@@ -311,12 +362,9 @@ class JobController extends Controller {
             JobDetailModel::create($data_insert_job_detail);
         }
 
-
-
         return response()->json([
             'success' => true,
             'message' => 'This Job is finished',
-            // 'files'   => $savedFiles
         ]);
     }
 

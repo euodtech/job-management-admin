@@ -103,12 +103,12 @@
 <hr>
 <div class="content">
     <h6 style="font-weight: bold;">Assets Job :</h6>
-    <div class="row">
-        <?php foreach($detail[0]['AssetsJob'] as $val): ?>
-        <div class="col-md-6">
-            <img src="<?= $val['Photo'] ?>" style="width: 100%;" alt="">
-        </div>
-        <?php endforeach; ?>
+<div class="row">
+    <?php foreach($detail[0]['AssetsJob'] as $val): ?>
+    <div class="col-md-6">
+        <img src="<?= 'http://localhost:8080/be-fms/api/' . $val['Photo'] ?>" style="width: 100%;" alt="">
     </div>
+    <?php endforeach; ?>
+</div>
 </div>
 

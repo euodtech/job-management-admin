@@ -7,8 +7,9 @@ class Job extends MY_Controller
     {
         parent::__construct();
         if ($this->session->userdata('status') != "kusam") {
-            redirect(base_url('auth'));
-        }
+        redirect(base_url('auth'));
+        return; // <-- safe tweak
+    }
 
         $this->load->library('form_validation');
         $this->load->library('curl');
@@ -19,31 +20,51 @@ class Job extends MY_Controller
 
     public function historyCancelJob()
     {
-        $jobID = $this->input->get('jobID');
+        // Get jobID from GET and ensure it's an integer
+        $jobID = (int) $this->input->get('jobID');
 
-        $data['history'] = $this->M_Global->globalquery("SELECT HistoryCancelJob.*, ListUser.Fullname  FROM HistoryCancelJob LEFT JOIN ListUser ON HistoryCancelJob.UserBefore = ListUser.UserID WHERE JobID = '$jobID' ORDER BY HistoryCancelJob.created_at ASC ")->result_array();
+        // Use Active Record for safe query
+        $this->db->select('HistoryCancelJob.*, ListUser.Fullname');
+        $this->db->from('HistoryCancelJob');
+        $this->db->join('ListUser', 'HistoryCancelJob.UserBefore = ListUser.UserID', 'left');
+        $this->db->where('HistoryCancelJob.JobID', $jobID);
+        $this->db->order_by('HistoryCancelJob.created_at', 'ASC');
+        
+        $data['history'] = $this->db->get()->result_array();
 
-        $this->load->view('main/job/page_history_cancel_job',$data);
-
+        // Load the view with the result
+        $this->load->view('main/job/page_history_cancel_job', $data);
     }
+
 
     public function historyReschedule()
     {
-        $jobID = $this->input->get('jobID');
+        // Get jobID from GET and cast to integer
+        $jobID = (int) $this->input->get('jobID');
 
-        $data['history'] = $this->M_Global->globalquery("SELECT RescheduledJob.* FROM RescheduledJob  WHERE JobID = '$jobID' ORDER BY RescheduledJob.created_at ASC ")->result_array();
+        // Safe query using Active Record
+        $this->db->from('RescheduledJob');
+        $this->db->where('JobID', $jobID);
+        $this->db->order_by('created_at', 'ASC');
+        
+        $data['history'] = $this->db->get()->result_array();
 
-        $this->load->view('main/job/page_history_reschedule_job',$data);
-
+        // Load the view
+        $this->load->view('main/job/page_history_reschedule_job', $data);
     }
+
 
     public function index($type_job = 1)
     {
         $data['title'] = "Efms | Job";
 
-        $companyID = $companyID = $this->session->userdata('CompanyID');
+        $companyID = $this->session->userdata('CompanyID');
 
-        $data['customer'] = $this->M_Global->globalquery("SELECT * FROM  Customer WHERE ListCompanyID = '$companyID' ORDER BY created_at DESC ")->result_array();
+        $this->db->from('Customer');
+        $this->db->where('ListCompanyID', $companyID);
+        $this->db->order_by('created_at', 'DESC');
+        $data['customer'] = $this->db->get()->result_array();
+
 
         $data['type_job'] = $type_job;
 
@@ -76,19 +97,22 @@ class Job extends MY_Controller
         $role = $this->session->userdata('Role');
         $companyID = $this->session->userdata('CompanyID');
 
-        $additional_where_job = " WHERE TypeJob =  " . $type_job . " AND (Status IS NULL OR Status = 1 OR Status = 3)";
+        $type_job = (int) $type_job; // cast to int to prevent injection
 
-        if($role != 1) {
-            $additional_where_job .= " AND ListJob.CompanyID = " . $companyID;
+        $this->db->from('ListJob');
+        $this->db->where('TypeJob', $type_job);
+        $this->db->group_start(); // (Status IS NULL OR Status = 1 OR Status = 3)
+        $this->db->where('Status', null);
+        $this->db->or_where('Status', 1);
+        $this->db->or_where('Status', 3);
+        $this->db->group_end();
+
+        if ($role != 1) {
+            $this->db->where('CompanyID', $companyID);
         }
 
-        $listJob = $this->M_Global->globalquery("
-            SELECT 
-                ListJob.*
-            FROM ListJob 
-             $additional_where_job
-            ORDER BY ListJob.created_at DESC
-        ")->result_array();
+        $this->db->order_by('created_at', 'DESC');
+        $listJob = $this->db->get()->result_array();
 
         $todayJob = 0;
         $ongoingJob = 0;
@@ -98,30 +122,25 @@ class Job extends MY_Controller
         $dNow = date('Y-m-d');
 
         foreach ($listJob as $val) {
-            // Ambil hanya tanggal dari JobDate (datetime)
             $jobDate = date('Y-m-d', strtotime($val['JobDate']));
 
-            // === PEKERJAAN HARI INI ===
             if ($jobDate == $dNow) {
-
                 $todayJob++;
-            }
-            // === PEKERJAAN YANG AKAN DATANG ===
-            else if ($jobDate > $dNow && $val['Status'] == null) {
+            } elseif ($jobDate > $dNow && $val['Status'] === null) {
                 $upComingJob++;
             }
 
-            if($val['Status'] == 1) {
+            if ($val['Status'] == 1) {
                 $ongoingJob++;
-            } elseif($val['Status'] == 2) {
+            } elseif ($val['Status'] == 2) {
                 $completedJob++;
-            } elseif($val['Status'] == 3) {
+            } elseif ($val['Status'] == 3) {
                 $rescheduleJob++;
             } 
         }
 
         $return = [
-            "todalJob" => $todayJob,
+            "todayJob" => $todayJob, //corrected. todalJob -> todayJob
             "ongoingJob" => $ongoingJob,
             "completedJob" => $completedJob,
             "onComingJob" => $upComingJob,
@@ -133,22 +152,23 @@ class Job extends MY_Controller
 
     public function getDataAllJob($type_job = 1)
     {
-        $role = $this->session->userdata('Role');
-        $companyID = $this->session->userdata('CompanyID');
+        $role      = (int) $this->session->userdata('Role');
+        $companyID = (int) $this->session->userdata('CompanyID');
+        $type_job  = (int) $type_job;
 
         $request = $_REQUEST;
-        $draw   = intval($request['draw']);
-        $start  = intval($request['start']);
-        $length = intval($request['length']);
+        $draw    = intval($request['draw'] ?? 0);
+        $start   = intval($request['start'] ?? 0);
+        $length  = intval($request['length'] ?? 10);
         $searchValue = $request['search']['value'] ?? '';
 
         $columns = [
-            0 => 'JobID',
-            1 => 'JobDate',
-            2 => 'JobName',
-            3 => 'CustomerName',
-            4 => 'Address',
-            5 => 'Fullname',
+            0 => 'ListJob.JobID',
+            1 => 'ListJob.JobDate',
+            2 => 'ListJob.JobName',
+            3 => 'Customer.CustomerName',
+            4 => 'Customer.Address',
+            5 => 'ListUser.Fullname',
         ];
 
         $orderColIndex = isset($request['order'][0]['column']) ? (int)$request['order'][0]['column'] : 1;
@@ -158,65 +178,59 @@ class Job extends MY_Controller
 
         $orderBy = $columns[$orderColIndex] ?? 'ListJob.JobDate';
 
+        /* ===================== BASE QUERY ===================== */
+        $this->db->select('ListJob.*, Customer.*, ListUser.Fullname');
+        $this->db->from('ListJob');
+        $this->db->join('Customer', 'ListJob.CustomerID = Customer.CustomerID', 'left');
+        $this->db->join('ListUser', 'ListJob.UserID = ListUser.UserID', 'left');
 
+        // Status condition
+        $this->db->group_start();
+        $this->db->where('ListJob.Status', null);
+        $this->db->or_where('ListJob.Status', 1);
+        $this->db->or_where('ListJob.Status', 3);
+        $this->db->group_end();
 
-        $sql = "
-            SELECT 
-                ListJob.*, 
-                Customer.*, 
-                ListUser.Fullname 
-            FROM ListJob 
-            LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID 
-            LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID 
-        ";
-
-        // WHERE $additional_where_job
-        //  ORDER BY ListJob.JobDate ASC
-
-        $where = [];
-
-        $where[] = " (ListJob.Status IS NULL OR ListJob.Status = 1 OR ListJob.Status = 3) ";
-
-        // if (empty($fromDate)) {
-        //     $where[] = " DATE(ListJob.JobDate) >= CURRENT_DATE()  ";
-        // }
-
-        if($role != 1) {
-            $where[] = "ListJob.CompanyID = " . $companyID;
+        if ($role !== 1) {
+            $this->db->where('ListJob.CompanyID', $companyID);
         }
 
-        if($type_job != null) {
-            $where[] = "ListJob.TypeJob = " . $type_job;
+        if ($type_job !== 0) {
+            $this->db->where('ListJob.TypeJob', $type_job);
         }
-        
+
         if (!empty($searchValue)) {
-            $searchValueEscaped = $this->db->escape_like_str($searchValue);
-            $where[] = "(
-                ListUser.Fullname LIKE '%{$searchValueEscaped}%' OR
-                Customer.Address LIKE '%{$searchValueEscaped}%' OR
-                Customer.CustomerName LIKE '%{$searchValueEscaped}%' OR
-                ListJob.JobDate LIKE '%{$searchValueEscaped}%' OR
-                ListJob.JobName LIKE '%{$searchValueEscaped}%'
-            )";
+            $searchValue = $this->db->escape_like_str($searchValue);
+            $this->db->group_start();
+            $this->db->like('ListUser.Fullname', $searchValue);
+            $this->db->or_like('Customer.Address', $searchValue);
+            $this->db->or_like('Customer.CustomerName', $searchValue);
+            $this->db->or_like('ListJob.JobDate', $searchValue);
+            $this->db->or_like('ListJob.JobName', $searchValue);
+            $this->db->group_end();
         }
 
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(' AND ', $where);
-        }
+        /* ===================== COUNT ===================== */
+        $recordsFiltered = $this->db->count_all_results('', false);
 
-        $totalQuery = $this->M_Global->globalquery($sql)->result_array();
-        $recordsFiltered = count($totalQuery);
-
-        $sql .= " ORDER BY $orderBy $orderDir LIMIT $start, $length";
-        $query = $this->M_Global->globalquery($sql)->result_array();
+        /* ===================== DATA ===================== */
+        $this->db->order_by($orderBy, $orderDir);
+        $this->db->limit($length, $start);
+        $query = $this->db->get()->result_array();
 
         $data = [];
         $no = $start + 1;
+
         foreach ($query as $row) {
+            $jobID = (int) $row['JobID'];
 
-            $jobID = $row['JobID'];
-
-            $cancelJob = $this->M_Global->globalquery("SELECT HistoryCancelJobID FROM HistoryCancelJob WHERE JobID = '$jobID' ORDER BY HistoryCancelJob.created_at ASC ")->result_array();
+            $cancelJob = $this->db
+                ->select('HistoryCancelJobID')
+                ->from('HistoryCancelJob')
+                ->where('JobID', $jobID)
+                ->order_by('created_at', 'ASC')
+                ->get()
+                ->result_array();
 
             $data[] = [
                 "no" => $no++,
@@ -240,146 +254,206 @@ class Job extends MY_Controller
         ]);
     }
 
+
     public function getDetailPhoto()
     {
-        $jobID = $this->input->post('jobID');
+        // Sanitize input
+        $jobID = (int) $this->input->post('jobID');
 
-        $data = $this->M_Global->globalquery("SELECT * FROM ListJobDetail WHERE ListJobID = '$jobID' ")->result_array();
+        // Validate input
+        if ($jobID <= 0) {
+            echo json_encode([]);
+            return;
+        }
 
-        echo json_encode($data);
+        // Fetch job photos safely
+        $this->db->from('ListJobDetail');
+        $this->db->where('ListJobID', $jobID);
+        $data = $this->db->get()->result_array();
+
+        // Return JSON
+        echo json_encode($data ?: []);
     }
+
 
     public function create()
     {
+        $companyID = (int) $this->session->userdata('CompanyID');
+        $role      = (int) $this->session->userdata('Role');
 
-        $companyID = $this->session->userdata('CompanyID');
-        $formatPhoneNumber = "+63" . $this->input->post('phone_number');
+        // Sanitize & normalize inputs
+        $phoneRaw = preg_replace('/[^0-9]/', '', $this->input->post('phone_number'));
+        $formatPhoneNumber = '+63' . $phoneRaw;
 
-        $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
+        $selected_company = ($role !== 1)
+            ? $companyID
+            : (int) $this->input->post('company_selected');
 
         $data_create_customer = [
-            "CustomerName" => $this->input->post('customer_name'),
-            "CustomerEmail" => $this->input->post('customer_email'),
-            "Latitude" => $this->input->post('latitude'),
-            "ListCompanyID" => $selected_company,
-            "Longitude" => $this->input->post('longitude'),
-            "PhoneNumber" => $formatPhoneNumber,
-            "Address" => $this->input->post('address'),
-            "created_at" => date('Y-m-d H:i:s')
+            "CustomerName"   => trim($this->input->post('customer_name')),
+            "CustomerEmail"  => trim($this->input->post('customer_email')),
+            "Latitude"       => $this->input->post('latitude'),
+            "Longitude"      => $this->input->post('longitude'),
+            "ListCompanyID"  => $selected_company,
+            "PhoneNumber"    => $formatPhoneNumber,
+            "Address"        => trim($this->input->post('address')),
+            "created_at"     => date('Y-m-d H:i:s')
         ];
 
-        $create_customer = $this->M_Global->insertid($data_create_customer, "Customer");
+        // Insert customer (uses CI query builder internally)
+        $create_customer = (int) $this->M_Global->insertid($data_create_customer, "Customer");
 
         $data_create = [
-            "JobName" => $this->input->post('job_name'),
-            "CustomerID" => $create_customer,
-            "CompanyID" => $this->session->userdata('CompanyID'),
-            "TypeJob" => $this->input->post('type_job_input'),
-            "JobDate" => $this->input->post('job_date'),
-            "CreatedBy" => $this->session->userdata('AdminID'),
-            "created_at" => date('Y-m-d H:i:s')
+            "JobName"    => trim($this->input->post('job_name')),
+            "CustomerID"=> $create_customer,
+            "CompanyID" => $companyID,
+            "TypeJob"   => (int) $this->input->post('type_job_input'),
+            "JobDate"   => $this->input->post('job_date'),
+            "CreatedBy"=> (int) $this->session->userdata('AdminID'),
+            "created_at"=> date('Y-m-d H:i:s')
         ];
 
-        // create user
         $job = $this->M_Global->insert($data_create, "ListJob");
 
-        if ($job == "success") {
-            $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Job created successfully</div>');
+        if ($job === "success") {
+            $this->session->set_flashdata(
+                'message',
+                '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Job created successfully</div>'
+            );
         } else {
-            $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to create Job!</div>');
+            $this->session->set_flashdata(
+                'message',
+                '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to create Job!</div>'
+            );
         }
 
-        switch ($data_create['TypeJob']) {
-            case '1':
-                $redirect = "line-interruption-job";
-                break;
-            case '2':
-                $redirect = "reconnection-job";
-                break;
-            case '3':
-                $redirect = "short-circuit-job";
-                break;
-            case '4':
-                $redirect = "disconnection-job";
-                break;
-            
-            default:
-                $redirect = "job-list";
-                break;
+        switch ((string) $data_create['TypeJob']) {
+            case '1': $redirect = "line-interruption-job"; break;
+            case '2': $redirect = "reconnection-job"; break;
+            case '3': $redirect = "short-circuit-job"; break;
+            case '4': $redirect = "disconnection-job"; break;
+            default:  $redirect = "job-list"; break;
         }
 
         redirect(base_url($redirect));
     }
+
     public function update()
     {
-        $jobID = $this->input->post('job_id');
+        $jobID      = (int) $this->input->post('job_id');
+        $customerID = (int) $this->input->post('customer_id');
 
-        $customerID = $this->input->post('customer_id');
+        $companyID = (int) $this->session->userdata('CompanyID');
+        $role      = (int) $this->session->userdata('Role');
 
-        $companyID = $this->session->userdata('CompanyID');
-        $formatPhoneNumber = "+63" . $this->input->post('phone_number');
+        // Sanitize phone number
+        $phoneRaw = preg_replace('/[^0-9]/', '', $this->input->post('phone_number'));
+        $formatPhoneNumber = '+63' . $phoneRaw;
 
-        $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
+        $selected_company = ($role !== 1)
+            ? $companyID
+            : (int) $this->input->post('company_selected');
 
+        /* ================= CUSTOMER UPDATE ================= */
         $data_update_customer = [
-            "CustomerName" => $this->input->post('customer_name'),
-            "CustomerEmail" => $this->input->post('customer_email'),
-            "Latitude" => $this->input->post('latitude'),
+            "CustomerName"  => trim($this->input->post('customer_name')),
+            "CustomerEmail" => trim($this->input->post('customer_email')),
+            "Latitude"      => $this->input->post('latitude'),
+            "Longitude"     => $this->input->post('longitude'),
             "ListCompanyID" => $selected_company,
-            "Longitude" => $this->input->post('longitude'),
-            "PhoneNumber" => $formatPhoneNumber,
-            "Address" => $this->input->post('address'),
-            "created_at" => date('Y-m-d H:i:s')
+            "PhoneNumber"   => $formatPhoneNumber,
+            "Address"       => trim($this->input->post('address')),
+            "created_at"    => date('Y-m-d H:i:s')
         ];
 
-        $where_customer = " CustomerID =  '$customerID' ";
-        // create user
+        // SAFE where clause (no raw input)
+        $where_customer = "CustomerID = {$customerID}";
         $customer = $this->M_Global->update_data($where_customer, $data_update_customer, "Customer");
 
-        
-        $dara_update = [
-            "JobName" => $this->input->post('job_name'),
-            "CustomerID" => $this->input->post('customer_id'),
-            "CreatedBy" => $this->session->userdata('AdminID'),
-            "TypeJob" => $this->input->post('type_job_input'),
-            "JobDate" => $this->input->post('job_date'),
+        /* ================= JOB UPDATE ================= */
+        $data_update = [
+            "JobName"    => trim($this->input->post('job_name')),
+            "CustomerID"=> $customerID,
+            "CreatedBy"=> (int) $this->session->userdata('AdminID'),
+            "TypeJob"   => (int) $this->input->post('type_job_input'),
+            "JobDate"   => $this->input->post('job_date'),
         ];
 
+        $where_job = "JobID = {$jobID}";
+        $job = $this->M_Global->update_data($where_job, $data_update, "ListJob");
 
-
-        $where = " JobID =  '$jobID' ";
-        // create user
-        $job = $this->M_Global->update_data($where, $dara_update, "ListJob");
-
-        if ($job == "success") {
-            $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Job updated successfully</div>');
+        if ($job === "success") {
+            $this->session->set_flashdata(
+                'message',
+                '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Job updated successfully</div>'
+            );
         } else {
-            $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to updated Job!</div>');
+            $this->session->set_flashdata(
+                'message',
+                '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to updated Job!</div>'
+            );
         }
 
         redirect(base_url('job-list'));
     }
+
 
     public function delete()
     {
-        $jobID = $this->input->post('job_id');
+        // Sanitize input
+        $jobID = (int) $this->input->post('job_id');
 
-        $delete = $this->M_Global->delete('ListJob' , "JobID = '$jobID' ");
+        // Validate input
+        if ($jobID <= 0) {
+            $this->session->set_flashdata(
+                'message',
+                '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Invalid job ID!</div>'
+            );
+            redirect(base_url('job-list'));
+            return;
+        }
 
-        if ($delete == "success") {
-            $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Job delete successfully</div>');
+        // Delete job safely
+        $delete = $this->M_Global->delete('ListJob', "JobID = {$jobID}");
+
+        if ($delete === "success") {
+            $this->session->set_flashdata(
+                'message',
+                '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Job deleted successfully</div>'
+            );
         } else {
-            $this->session->set_flashdata('message', '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to delete Job!</div>');
+            // Log error for debugging
+            log_message('error', "Failed to delete job with ID {$jobID}");
+
+            $this->session->set_flashdata(
+                'message',
+                '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Failed to delete job!</div>'
+            );
         }
 
         redirect(base_url('job-list'));
     }
 
+
     public function getJobDetail()
     {
-        $jobID = $this->input->post('jobID');
+        $jobID = (int) $this->input->post('jobID');
 
-        $dataReturn = $this->M_Global->globalquery("SELECT ListJob.*, Customer.*, Customer.PhoneNumber as CustPhoneNumber, ListUser.*, RescheduledJob.* FROM ListJob LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID LEFT JOIN RescheduledJob ON ListJob.JobID = RescheduledJob.JobID WHERE ListJob.JobID  = '$jobID' AND RescheduledJob.StatusApproved = 2 ")->row_array();
+        $this->db->select('
+            ListJob.*,
+            Customer.*,
+            Customer.PhoneNumber AS CustPhoneNumber,
+            ListUser.*,
+            RescheduledJob.*
+        ');
+        $this->db->from('ListJob');
+        $this->db->join('Customer', 'ListJob.CustomerID = Customer.CustomerID', 'left');
+        $this->db->join('ListUser', 'ListJob.UserID = ListUser.UserID', 'left');
+        $this->db->join('RescheduledJob', 'ListJob.JobID = RescheduledJob.JobID', 'left');
+        $this->db->where('ListJob.JobID', $jobID);
+        $this->db->where('RescheduledJob.StatusApproved', 2);
+
+        $dataReturn = $this->db->get()->row_array();
 
         echo json_encode($dataReturn);
     }
@@ -388,45 +462,52 @@ class Job extends MY_Controller
     {
         $data['title'] = "Efms | Job";
 
-        $companyID = $companyID = $this->session->userdata('CompanyID');
+        $companyID = $this->session->userdata('CompanyID');
 
-        $this->render_page('main/job/page_reschedule_job',$data);
-
+        $this->render_page('main/job/page_reschedule_job', $data);
     }
 
     public function summary($type_job = 1)
     {
         $data['title'] = "Efms | Job";
 
-        $companyID = $companyID = $this->session->userdata('CompanyID');
+        $companyID = (int) $this->session->userdata('CompanyID');
+        $type_job  = (int) $type_job;
 
-        $data['customer'] = $this->M_Global->globalquery("SELECT * FROM  Customer WHERE ListCompanyID = '$companyID' ")->result_array();
+        $this->db->from('Customer');
+        $this->db->where('ListCompanyID', $companyID);
+        $data['customer'] = $this->db->get()->result_array();
 
         $data['type_job'] = $type_job;
-        $this->render_page('main/job/page_job_summary',$data); 
+
+        $this->render_page('main/job/page_job_summary', $data);
     }
+
 
     public function getDataAllJobCustomer()
     {
-        $role = $this->session->userdata('Role');
-        $companyID = $this->session->userdata('CompanyID');
+        $role      = (int) $this->session->userdata('Role');
+        $companyID = (int) $this->session->userdata('CompanyID');
 
         $request = $_REQUEST;
-        $draw   = intval($request['draw']);
-        $start  = intval($request['start']);
-        $length = intval($request['length']);
+        $draw    = intval($request['draw'] ?? 0);
+        $start   = intval($request['start'] ?? 0);
+        $length  = intval($request['length'] ?? 10);
         $searchValue = $request['search']['value'] ?? '';
+
         $customerID = $this->input->get('customerID');
-        $dateFrom = $this->input->get('dateFrom');
-        $dateUntil = $this->input->get('dateUntil');
+        $dateFrom   = $this->input->get('dateFrom');
+        $dateUntil  = $this->input->get('dateUntil');
+
+        $customerID = ($customerID !== 'all') ? (int) $customerID : 'all';
 
         $columns = [
-            0 => 'JobID',
-            1 => 'JobDate',
-            2 => 'JobName',
-            3 => 'CustomerName',
-            4 => 'Address',
-            5 => 'Fullname',
+            0 => 'ListJob.JobID',
+            1 => 'ListJob.JobDate',
+            2 => 'ListJob.JobName',
+            3 => 'Customer.CustomerName',
+            4 => 'Customer.Address',
+            5 => 'ListUser.Fullname',
         ];
 
         $orderColIndex = isset($request['order'][0]['column']) ? (int)$request['order'][0]['column'] : 1;
@@ -436,70 +517,65 @@ class Job extends MY_Controller
 
         $orderBy = $columns[$orderColIndex] ?? 'ListJob.JobDate';
 
+        /* ===================== BASE QUERY ===================== */
+        $this->db->select('ListJob.*, Customer.*, ListUser.Fullname');
+        $this->db->from('ListJob');
+        $this->db->join('Customer', 'ListJob.CustomerID = Customer.CustomerID', 'left');
+        $this->db->join('ListUser', 'ListJob.UserID = ListUser.UserID', 'left');
 
+        // Completed jobs only
+        $this->db->where('ListJob.Status', 2);
 
-        $sql = "
-            SELECT 
-                ListJob.*, 
-                Customer.*, 
-                ListUser.Fullname 
-            FROM ListJob 
-            LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID 
-            LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID 
-           
-        ";
-
-        $where = [];
-
-        $where[] = " ListJob.Status = 2 ";
-
-        if (!empty($dateFrom)) {
-            $where[] = " DATE(ListJob.JobDate) >= '$dateFrom' AND DATE(ListJob.JobDate) <= '$dateUntil' ";
+        if (!empty($dateFrom) && !empty($dateUntil)) {
+            $this->db->where('DATE(ListJob.JobDate) >=', $dateFrom);
+            $this->db->where('DATE(ListJob.JobDate) <=', $dateUntil);
         }
 
-        if($role != 1) {
-            $where[] = "ListJob.CompanyID = " . $companyID;
+        if ($role !== 1) {
+            $this->db->where('ListJob.CompanyID', $companyID);
         }
 
-        if($customerID != 'all') {
-            $where[] = "ListJob.CustomerID =  " . $customerID;
+        if ($customerID !== 'all') {
+            $this->db->where('ListJob.CustomerID', $customerID);
         }
-        
+
         if (!empty($searchValue)) {
-            $searchValueEscaped = $this->db->escape_like_str($searchValue);
-            $where[] = "(
-                ListUser.Fullname LIKE '%$searchValueEscaped%' OR
-                Customer.CustomerName LIKE '%$searchValueEscaped%' OR
-                ListJob.JobName LIKE '%$searchValueEscaped%'
-            )";
+            $searchValue = $this->db->escape_like_str($searchValue);
+            $this->db->group_start();
+            $this->db->like('ListUser.Fullname', $searchValue);
+            $this->db->or_like('Customer.CustomerName', $searchValue);
+            $this->db->or_like('ListJob.JobName', $searchValue);
+            $this->db->group_end();
         }
 
-        // if (!empty($fromDate)) {
-        //     $sql .= " AND sub.LastLogin >= '$fromDate 00:00:00'";  // Memastikan waktu mulai
-        // }
-        // if (!empty($untilDate)) {
-        //     $sql .= " AND sub.LastLogin <= '$untilDate 23:59:59'";  // Memastikan waktu akhir
-        // }
+        /* ===================== COUNT ===================== */
+        $recordsFiltered = $this->db->count_all_results('', false);
 
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(' AND ', $where);
-        }
-
-        $totalQuery = $this->M_Global->globalquery($sql)->result_array();
-        $recordsFiltered = count($totalQuery);
-
-        $sql .= " ORDER BY $orderBy $orderDir LIMIT $start, $length";
-        $query = $this->M_Global->globalquery($sql)->result_array();
+        /* ===================== DATA ===================== */
+        $this->db->order_by($orderBy, $orderDir);
+        $this->db->limit($length, $start);
+        $query = $this->db->get()->result_array();
 
         $data = [];
         $no = $start + 1;
+
         foreach ($query as $row) {
+            $jobID = (int) $row['JobID'];
 
-            $jobID = $row['JobID'];
+            $cancelJob = $this->db
+                ->select('HistoryCancelJobID')
+                ->from('HistoryCancelJob')
+                ->where('JobID', $jobID)
+                ->order_by('created_at', 'ASC')
+                ->get()
+                ->result_array();
 
-            $cancelJob = $this->M_Global->globalquery("SELECT HistoryCancelJobID FROM HistoryCancelJob WHERE JobID = '$jobID' ORDER BY HistoryCancelJob.created_at ASC ")->result_array();
-
-            $rescheduleJob = $this->M_Global->globalquery("SELECT RescheduledID FROM RescheduledJob WHERE JobID = '$jobID' ")->result_array();
+            $rescheduleJob = $this->db
+                ->select('RescheduledID')
+                ->from('RescheduledJob')
+                ->where('JobID', $jobID)
+                ->get()
+                ->result_array();
 
             $data[] = [
                 "no" => $no++,
@@ -529,24 +605,25 @@ class Job extends MY_Controller
 
     public function getJobReschedule()
     {
-        $role = $this->session->userdata('Role');
-        $companyID = $this->session->userdata('CompanyID');
+        $role      = (int) $this->session->userdata('Role');
+        $companyID = (int) $this->session->userdata('CompanyID');
 
         $request = $_REQUEST;
-        $draw   = intval($request['draw']);
-        $start  = intval($request['start']);
-        $length = intval($request['length']);
+        $draw    = intval($request['draw'] ?? 0);
+        $start   = intval($request['start'] ?? 0);
+        $length  = intval($request['length'] ?? 10);
         $searchValue = $request['search']['value'] ?? '';
-        $dateFrom = $this->input->get('dateFrom');
+
+        $dateFrom  = $this->input->get('dateFrom');
         $dateUntil = $this->input->get('dateUntil');
 
         $columns = [
             0 => 'ListJob.JobID',
-            1 => 'JobDate',
-            2 => 'JobName',
-            3 => 'CustomerName',
-            4 => 'Address',
-            5 => 'Fullname',
+            1 => 'ListJob.JobDate',
+            2 => 'ListJob.JobName',
+            3 => 'Customer.CustomerName',
+            4 => 'Customer.Address',
+            5 => 'ListUser.Fullname',
         ];
 
         $orderColIndex = isset($request['order'][0]['column']) ? (int)$request['order'][0]['column'] : 1;
@@ -556,66 +633,53 @@ class Job extends MY_Controller
 
         $orderBy = $columns[$orderColIndex] ?? 'ListJob.JobDate';
 
+        /* ===================== BASE QUERY ===================== */
+        $this->db->select('ListJob.*, RescheduledJob.*, Customer.*, ListUser.Fullname');
+        $this->db->from('RescheduledJob');
+        $this->db->join('ListJob', 'RescheduledJob.JobID = ListJob.JobID', 'left');
+        $this->db->join('Customer', 'ListJob.CustomerID = Customer.CustomerID', 'left');
+        $this->db->join('ListUser', 'ListJob.UserID = ListUser.UserID', 'left');
 
-
-        $sql = "
-            SELECT 
-                ListJob.*, 
-                RescheduledJob.*, 
-                Customer.*, 
-                ListUser.Fullname 
-            FROM RescheduledJob 
-            LEFT JOIN ListJob ON RescheduledJob.JobID = ListJob.JobID 
-            LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID 
-            LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID 
-           
-        ";
-
-        $where = [];
-
-        // $where[] = " ListJob.Status = 2 ";
-
-        if (!empty($dateFrom)) {
-            $where[] = " DATE(ListJob.JobDate) >= '$dateFrom' AND DATE(ListJob.JobDate) <= '$dateUntil' ";
+        if (!empty($dateFrom) && !empty($dateUntil)) {
+            $this->db->where('DATE(ListJob.JobDate) >=', $dateFrom);
+            $this->db->where('DATE(ListJob.JobDate) <=', $dateUntil);
         }
 
-        if($role != 1) {
-            $where[] = "ListJob.CompanyID = " . $companyID;
+        if ($role !== 1) {
+            $this->db->where('ListJob.CompanyID', $companyID);
         }
-        
+
         if (!empty($searchValue)) {
-            $searchValueEscaped = $this->db->escape_like_str($searchValue);
-            $where[] = "(
-                ListUser.Fullname LIKE '%$searchValueEscaped%' OR
-                RescheduledJob.Reason LIKE '%$searchValueEscaped%' OR
-                ListJob.JobName LIKE '%$searchValueEscaped%'
-            )";
+            $searchValue = $this->db->escape_like_str($searchValue);
+            $this->db->group_start();
+            $this->db->like('ListUser.Fullname', $searchValue);
+            $this->db->or_like('RescheduledJob.Reason', $searchValue);
+            $this->db->or_like('ListJob.JobName', $searchValue);
+            $this->db->group_end();
         }
 
-        // if (!empty($fromDate)) {
-        //     $sql .= " AND sub.LastLogin >= '$fromDate 00:00:00'";  // Memastikan waktu mulai
-        // }
-        // if (!empty($untilDate)) {
-        //     $sql .= " AND sub.LastLogin <= '$untilDate 23:59:59'";  // Memastikan waktu akhir
-        // }
+        /* ===================== COUNT ===================== */
+        $recordsFiltered = $this->db->count_all_results('', false);
 
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(' AND ', $where);
-        }
-
-        $totalQuery = $this->M_Global->globalquery($sql)->result_array();
-        $recordsFiltered = count($totalQuery);
-
-        $sql .= " ORDER BY $orderBy $orderDir LIMIT $start, $length";
-        $query = $this->M_Global->globalquery($sql)->result_array();
+        /* ===================== DATA ===================== */
+        $this->db->order_by($orderBy, $orderDir);
+        $this->db->limit($length, $start);
+        $query = $this->db->get()->result_array();
 
         $data = [];
         $no = $start + 1;
+
         foreach ($query as $row) {
+            $jobID = (int) $row['JobID'];
 
-            $jobID = $row['JobID'];
-
-            $cancelJob = $this->M_Global->globalquery("SELECT HistoryCancelJobID FROM HistoryCancelJob WHERE JobID = '$jobID' ORDER BY HistoryCancelJob.created_at ASC ")->result_array();
+            // kept to avoid logic break (even if unused in response)
+            $cancelJob = $this->db
+                ->select('HistoryCancelJobID')
+                ->from('HistoryCancelJob')
+                ->where('JobID', $jobID)
+                ->order_by('created_at', 'ASC')
+                ->get()
+                ->result_array();
 
             $data[] = [
                 "no" => $no++,
@@ -637,78 +701,112 @@ class Job extends MY_Controller
         ]);
     }
 
+
     public function actionRescheduleJob($type, $reschedule_id = null)
     {
+        if ($type === "approve") {
 
-        if($type == "approve")
-        {
+            $reschedule_id = (int) $reschedule_id;
 
-            $data_reschedule = $this->M_Global->globalquery("SELECT JobID FROM RescheduledJob WHERE RescheduledID = '$reschedule_id' ")->row_array();
+            $data_reschedule = $this->db
+                ->select('JobID')
+                ->from('RescheduledJob')
+                ->where('RescheduledID', $reschedule_id)
+                ->get()
+                ->row_array();
 
-            $jobID = $data_reschedule['JobID'];
+            if (empty($data_reschedule)) {
+                redirect(base_url('reschedule-job'));
+                return;
+            }
 
-            $updateStatusApprove = $this->M_Global->update('RescheduledJob', "StatusApproved = 2 WHERE RescheduledID = '$reschedule_id' ");
+            $jobID = (int) $data_reschedule['JobID'];
 
-            $updateStatusJob = $this->M_Global->update('ListJob', "Status = 3 WHERE JobID = '$jobID' ");
+            $this->db->where('RescheduledID', $reschedule_id)
+                    ->update('RescheduledJob', ['StatusApproved' => 2]);
+
+            $this->db->where('JobID', $jobID)
+                    ->update('ListJob', ['Status' => 3]);
 
             redirect(base_url('reschedule-job'));
 
-        } elseif($type == "reject") {
+        } elseif ($type === "reject") {
 
-            $reasonReject = $this->input->post("reason");
-            $reschedule_id = $this->input->post("reschedule_id");
+            $reschedule_id = (int) $this->input->post('reschedule_id');
+            $reasonReject  = trim($this->input->post('reason', true));
 
-            $data_reschedule = $this->M_Global->globalquery("SELECT JobID FROM RescheduledJob WHERE RescheduledID = '$reschedule_id' ")->row_array();
+            $data_reschedule = $this->db
+                ->select('JobID')
+                ->from('RescheduledJob')
+                ->where('RescheduledID', $reschedule_id)
+                ->get()
+                ->row_array();
 
-            $jobID = $data_reschedule['JobID'];
-            
-            
-            $updateStatusApprove = $this->M_Global->update('RescheduledJob', "StatusApproved = 3, ReasonReject = '$reasonReject' WHERE RescheduledID = '$reschedule_id' ");
+            if (empty($data_reschedule)) {
+                redirect(base_url('reschedule-job'));
+                return;
+            }
 
-            $dataUpdate = [
-                "UserID" => null,
-                "Status" => null,
-                "AssignWhen" => null
-            ];
+            $jobID = (int) $data_reschedule['JobID'];
 
-            $whereJob = "JobID = " . $jobID;
+            $this->db->where('RescheduledID', $reschedule_id)
+                    ->update('RescheduledJob', [
+                        'StatusApproved' => 3,
+                        'ReasonReject'   => $reasonReject
+                    ]);
 
-            $updateStatusJob = $this->M_Global->update_data($whereJob, $dataUpdate, "ListJob");
+            $this->db->where('JobID', $jobID)
+                    ->update('ListJob', [
+                        'UserID'     => null,
+                        'Status'     => null,
+                        'AssignWhen' => null
+                    ]);
 
             redirect(base_url('reschedule-job'));
         }
-
     }
+
 
     public function getDataJobForCardJobSummary()
     {
-        $role = $this->session->userdata('Role');
-        $companyID = $this->session->userdata('CompanyID');
-        $dateFrom = $this->input->post('dateFrom');
-        $dateUntil = $this->input->post('dateUntil');
+        $role      = (int) $this->session->userdata('Role');
+        $companyID = (int) $this->session->userdata('CompanyID');
+        $dateFrom  = $this->input->post('dateFrom', true);
+        $dateUntil = $this->input->post('dateUntil', true);
 
-        $additional_where_job = " AND 
-                DATE(ListJob.JobDate) >= '$dateFrom' AND DATE(ListJob.JobDate) <= '$dateUntil' ";
-
-        if($role != 1) {
-            $additional_where_job .= " AND ListJob.CompanyID = " . $companyID;
-            $additional_where_customer = " WHERE ListCompanyID =  " . $companyID;
+        $additional_where_job = [];
+        if (!empty($dateFrom) && !empty($dateUntil)) {
+            $additional_where_job[] = "DATE(ListJob.JobDate) >= " . $this->db->escape($dateFrom);
+            $additional_where_job[] = "DATE(ListJob.JobDate) <= " . $this->db->escape($dateUntil);
         }
 
-        $listCustomer = $this->M_Global->globalquery("SELECT CustomerID FROM Customer $additional_where_customer ")->result_array();
+        $additional_where_customer = " WHERE 1=1 ";
+        if ($role !== 1) {
+            $additional_where_job[] = "ListJob.CompanyID = " . $companyID;
+            $additional_where_customer .= " AND ListCompanyID = " . $companyID;
+        }
+
+        // Fetch customers
+        $listCustomer = $this->M_Global->globalquery("SELECT CustomerID FROM Customer $additional_where_customer")->result_array();
 
         $hasil = array_map(function($d) use ($additional_where_job) {
 
-            $customerID = $d['CustomerID'];
+            $customerID = (int) $d['CustomerID'];
 
-            $d['TotalJob'] = $this->M_Global->globalquery("
-                SELECT COUNT(ListJob.JobID) AS TotalJob FROM ListJob WHERE CustomerID = $customerID $additional_where_job ORDER BY TotalJob DESC
-            ")->row_array()['TotalJob'];
+            $whereJob = "CustomerID = $customerID";
+            if (!empty($additional_where_job)) {
+                $whereJob .= " AND " . implode(' AND ', $additional_where_job);
+            }
+
+            $totalJobRow = $this->M_Global->globalquery("
+                SELECT COUNT(JobID) AS TotalJob FROM ListJob WHERE $whereJob
+            ")->row_array();
+
+            $d['TotalJob'] = (int) ($totalJobRow['TotalJob'] ?? 0);
 
             return $d;
         }, $listCustomer);
 
         echo json_encode($hasil);
     }
-
 }

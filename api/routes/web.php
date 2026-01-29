@@ -12,20 +12,17 @@
 |
 */
 
-// $router->get('/', function () use ($router) {
-//     return $router->app->version();
-// });
-
 $router->get('/', function () use ($router) {
     return 'Made with pride by Unad.2024';
 });
+
+// Add this route for serving images
 
 $router->group([
     'prefix' => 'myapi/',
 ], function ($app) {
     $app->post('login', 'AuthController@login');
     $app->post('forgot-password', 'AuthController@forgot_password');
-
     $app->get('check-type-company/{companyID}', 'AuthController@check_company_driver');
 });
 
@@ -57,7 +54,4 @@ $router->group([
     $app->post('insert-job', 'DapaController@InsertJob');
     $app->get('delete-job/{id}', 'DapaController@DeleteJob');
     $app->post('update-job/{id}', 'DapaController@UpdateJob');
-
-
-
 });

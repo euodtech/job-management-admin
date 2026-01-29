@@ -66,31 +66,44 @@ class M_Global extends CI_Model
 
 	function update_data($where, $data, $table)
 	{
-		$update = $this->db->where($where);
-		$update = $this->db->update($table, $data);
-		if (!$update) {
-			$error = $this->db->error();
-		} else {
-			$error = "success";
+		// Force array-based WHERE to prevent SQL injection
+		if (!is_array($where) || empty($where)) {
+			log_message('error', 'Invalid WHERE condition in update_data');
+			return false;
 		}
-		return $error;
+
+		$this->db->where($where);
+		$update = $this->db->update($table, $data);
+
+		if (!$update) {
+			log_message('error', 'DB Update Error: ' . json_encode($this->db->error()));
+			return false;
+		}
+
+		return true;
 	}
+
 
 	function update($table, $param)
 	{
 		$this->db->query("UPDATE $table set $param");
 	}
 
-	function delete($table, $param)
+	public function delete($table, $where)
 	{
-		$insert = $this->db->query("DELETE FROM $table where $param");
-		if (!$insert) {
-			$error = $this->db->error();
+		if (is_array($where)) {
+			$this->db->where($where);
 		} else {
-			$error = "success";
+			$this->db->where($where, null, false); // keep legacy raw where
 		}
-		return $error;
+
+		if ($this->db->delete($table)) {
+			return 'success';
+		}
+
+		return 'failed';
 	}
+
 
 	
 

@@ -138,8 +138,8 @@
             <!-- Body -->
             <div class="modal-body">
                 <form id="formAddUser" method="post" enctype="multipart/form-data">
-                    <input type="hidden" id="company_id" name="company_id" class="form-control">
-                    <input type="hidden" id="user_login_id" name="user_login_id" class="form-control">
+                    <input type="hidden" id="company_id_add" name="company_id" class="form-control">
+                    <input type="hidden" id="user_login_id_add" name="user_login_id" class="form-control">
                     
                     <div class="form-group">
                         <label for="fullname">Company Name</label>
@@ -171,6 +171,8 @@
                         <label for="type_job">Password</label>
                         <input type="password" class="form-control" id="pass" name="pass"
                             placeholder="Enter Password">
+                            <!-- <input type="password" name="pass" id="pass" class="form-control"> -->
+
                     </div>
 
                     <div class="form-group">
@@ -197,13 +199,9 @@
                             <input type="file" class="custom-file-input" id="company_logo" name="company_logo" accept="image/*">
                             <label class="custom-file-label" for="company_logo">Choose image</label>
                         </div>
-                        
                     </div>
-
-                    
-
-
                 </form>
+                
             </div>
 
             <!-- Footer -->
@@ -231,9 +229,9 @@
 
             <!-- Body -->
             <div class="modal-body">
-                <form id="formDelete" method="post">
-                    <input type="hidden" id="company_id" name="company_id">
-                    <input type="hidden" id="user_login_id" name="user_login_id">
+                <form id="formDelete" method="post" action="<?= base_url('company/delete') ?>">>
+                    <input type="hidden" id="company_id_delete" name="company_id">
+                    <input type="hidden" id="user_login_id_delete" name="user_login_id">
                     <span>Do You Sure To delete Company Name : <strong id="company_name"></strong></span>
                 </form>
             </div>
@@ -242,6 +240,8 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
                 <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Save</button>
+                
+
             </div>
         </div>
     </div>
@@ -410,7 +410,7 @@ $(document).ready(function() {
         modal.modal('show');
 
         textHeaderModal.text('Add Company');
-        modal.find('#company_id').val('');
+        modal.find('#company_id_add').val('');
         modal.find('#user_login_id').val('');
         modal.find('#company_name').val('');
         modal.find('#company_phone').val('');
@@ -424,8 +424,6 @@ $(document).ready(function() {
     });
 
 
-
-    // handle button edit
     buttonEdit.on('click', function(e) {
         e.preventDefault();
         modal.modal('show');
@@ -437,53 +435,119 @@ $(document).ready(function() {
         $.ajax({
             url: '<?= base_url('Company/getCompanyDetail') ?>',
             method: 'post',
-            data: {
-                companyID: companyID
-            },
+            data: { companyID: companyID },
             dataType: 'json',
             success: function(response) {
                 let phoneNumber = response.CompanyPhone.replace(/^\+63/, '');
-                phoneNumber = parseInt(phoneNumber);
-
-                // console.log(response)
-
-                // name="package"
-                modal.find('#company_id').val(response.ListCompanyID);
-                modal.find('#user_login_id').val(response.UserLoginID);
+                
+                modal.find('#company_id_add').val(response.ListCompanyID);
+                modal.find('#user_login_id_add').val(response.UserLoginID);
                 modal.find('#company_name').val(response.CompanyName);
                 modal.find('#company_phone').val(phoneNumber);
                 modal.find('#company_email').val(response.CompanyEmail);
-                modal.find('#pass').val(response.Password);
-                modal.find('input[name="package"]').prop('checked', false); // reset dulu semua
 
-                if (response.CompanySubscribe == 1) {
-                    modal.find('#basic').prop('checked', true);
-                } else if (response.CompanySubscribe == 2) {
-                    modal.find('#pro').prop('checked', true);
-                }
-               // Misal ini di dalam modal
-                modal.find('#preview_logo').attr('src', response.CompanyLogo);
+                // Password input stays EMPTY
+                modal.find('#pass').val('');
 
-                // modal.find('#phone').val(response.PhoneNumber);
-            },
-        })
+                // Set placeholder dynamically for edit
+                modal.find('#pass').attr('placeholder', 'Leave blank to keep current password');
 
-    })
+                modal.find('input[name="package"]').prop('checked', false);
+                if (response.CompanySubscribe == 1) modal.find('#basic').prop('checked', true);
+                else if (response.CompanySubscribe == 2) modal.find('#pro').prop('checked', true);
+
+                modal.find('#preview_logo').attr('src', response.CompanyLogo || 'assets/dist/img/default-logo.png');
+            }
+        });
+    });
 
 
-    // handle button delete
+    formUser.on('submit', function(e) {
+        // Get form values
+        let companyName = $('#company_name').val().trim();
+        let companyPhone = $('#company_phone').val().trim();
+        let companyEmail = $('#company_email').val().trim();
+        let packageSelected = $('input[name="package"]:checked').val();
+        
+        // Validate Company Name
+        if (companyName === '') {
+            alert('Please enter Company Name!');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Validate Phone Number (should be 10 digits)
+        if (companyPhone === '') {
+            alert('Please enter Phone Number!');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!/^\d{10}$/.test(companyPhone)) {
+            alert('Please enter a valid 10-digit phone number!');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Validate Email
+        if (companyEmail === '') {
+            alert('Please enter Company Email!');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Basic email format validation
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail)) {
+            alert('Please enter a valid email address!');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Validate Package Selection
+        if (!packageSelected) {
+            alert('Please select a package (Basic or Pro)!');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Optional: Validate file type if logo is selected
+        let logoFile = $('#company_logo')[0].files[0];
+        if (logoFile) {
+            let allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp'];
+            if (!allowedTypes.includes(logoFile.type)) {
+                alert('Please upload a valid image file (JPEG, JPG, PNG, GIF, BMP)!');
+                e.preventDefault();
+                return false;
+            }
+            
+            // Check file size (2MB = 2 * 1024 * 1024 bytes)
+            if (logoFile.size > 2 * 1024 * 1024) {
+                alert('Logo file size must be less than 2MB!');
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        // All validations passed - form will submit
+        return true;
+    });
+
+
+// handle button delete
     buttonDelete.on('click', function(e) {
         e.preventDefault();
+
         modalDelete.modal('show');
-        textHeaderModalDelete.text('Delete Company')
+        textHeaderModalDelete.text('Delete Company');
         formUserDelete.attr("action", '<?= base_url('delete-company') ?>');
 
-        let companyID = $(this).data('company-id');
+        let companyID   = $(this).data('company-id');
         let companyName = $(this).data('company-name');
-        let userLogin = $(this).data('user-login-id');
-        modalDelete.find('#company_id').val(companyID);
+        let userLogin   = $(this).data('user-login-id');
+
+        modalDelete.find('#company_id_delete').val(companyID);
         modalDelete.find('#company_name').text(companyName);
-        modalDelete.find('#user_login_id').val(userLogin);
+        modalDelete.find('#user_login_id_delete').val(userLogin);
     });
 
 

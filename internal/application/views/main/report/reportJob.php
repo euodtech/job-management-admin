@@ -1487,6 +1487,8 @@ div div.dt-buttons {
         const fromInput = document.querySelector('input[name="fromAssignAtJobAssignmentEfficiencyReport"]');
         const untilInput = document.querySelector('input[name="toAssignAtJobAssignmentEfficiencyReport"]');
 
+         if (!fromInput || !untilInput) return;
+
         function addOneDay(dateStr) {
             const date = new Date(dateStr);
             date.setDate(date.getDate() + 1);
@@ -1514,6 +1516,8 @@ div div.dt-buttons {
     document.addEventListener("DOMContentLoaded", function () {
         const fromInput = document.querySelector('input[name="fromJobAssignmentEfficiencyReport"]');
         const untilInput = document.querySelector('input[name="untilJobAssignmentEfficiencyReport"]');
+
+         if (!fromInput || !untilInput) return;
 
         function addOneDay(dateStr) {
             const date = new Date(dateStr);
@@ -1544,6 +1548,8 @@ div div.dt-buttons {
         const fromInput = document.querySelector('input[name="jobDateFromJobCompletionStatusReport"]');
         const untilInput = document.querySelector('input[name="jobDateUntilJobCompletionStatusReport"]');
 
+         if (!fromInput || !untilInput) return;
+
         function addOneDay(dateStr) {
             const date = new Date(dateStr);
             date.setDate(date.getDate() + 1);
@@ -1571,6 +1577,8 @@ div div.dt-buttons {
     document.addEventListener("DOMContentLoaded", function () {
         const fromInput = document.querySelector('input[name="filterFromDate"]');
         const untilInput = document.querySelector('input[name="filterUntilDate"]');
+        
+         if (!fromInput || !untilInput) return;
 
         function addOneDay(dateStr) {
             const date = new Date(dateStr);

@@ -662,29 +662,33 @@
 
     // From .... Until .... User Performance Report
     document.addEventListener("DOMContentLoaded", function () {
-        const fromInput = document.querySelector('input[name="fromCustomerRetentionReport"]');
-        const untilInput = document.querySelector('input[name="untilCustomerRetentionReport"]');
+    const fromInput = document.querySelector('input[name="fromCustomerRetentionReport"]');
+    const untilInput = document.querySelector('input[name="untilCustomerRetentionReport"]');
 
-        function addOneDay(dateStr) {
-            const date = new Date(dateStr);
-            date.setDate(date.getDate() + 1);
-            return date.toISOString().split('T')[0]; 
-        }
+    // STOP if inputs don't exist on this page
+    if (!fromInput || !untilInput) return;
 
-        function updateUntilMin() {
-            if (fromInput.value) {
-                const minUntil = addOneDay(fromInput.value);
-                untilInput.setAttribute("min", minUntil);
-                if (untilInput.value && untilInput.value < minUntil) {
-                    untilInput.value = minUntil; 
-                }
-            } else {
-                untilInput.removeAttribute("min");
+    function addOneDay(dateStr) {
+        const date = new Date(dateStr);
+        date.setDate(date.getDate() + 1);
+        return date.toISOString().split('T')[0];
+    }
+
+    function updateUntilMin() {
+        if (fromInput.value) {
+            const minUntil = addOneDay(fromInput.value);
+            untilInput.setAttribute("min", minUntil);
+
+            if (untilInput.value && untilInput.value < minUntil) {
+                untilInput.value = minUntil;
             }
+        } else {
+            untilInput.removeAttribute("min");
         }
+    }
 
-        updateUntilMin(); 
+    updateUntilMin();
+    fromInput.addEventListener("change", updateUntilMin);
+});
 
-        fromInput.addEventListener("change", updateUntilMin); // Update on change
-    });
 </script>
