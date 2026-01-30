@@ -7,9 +7,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserLogin;
-use App\Models\RegistrationModel;
-use App\Models\AdminModel;
-use App\Models\LevelModel;
 use App\Models\ListCompanyModel;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
@@ -301,7 +298,7 @@ class AuthController extends Controller {
             }
 
             // Find user by reset token
-            $user = RegistrationModel::where('key_resetpassword', $token)->first();
+            $user = UserLogin::where('key_resetpassword', $token)->first();
 
             if ($user !== null) {
 
@@ -373,7 +370,7 @@ class AuthController extends Controller {
             }
 
             // Check if token exists
-            $cek_token = RegistrationModel::where("key_resetpassword", $token)->first();
+            $cek_token = UserLogin::where("key_resetpassword", $token)->first();
 
             if ($cek_token !== null) {
                 return response()->json([
@@ -596,8 +593,6 @@ class AuthController extends Controller {
                     ], 200);
 
                 } catch (\Exception $e) {
-                    DB::rollBack();
-                    
                     Log::error('forgot_password Email Error: ' . $e->getMessage(), [
                         'email' => $email,
                         'trace' => $e->getTraceAsString()
