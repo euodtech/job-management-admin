@@ -59,7 +59,7 @@ class User extends MY_Controller
 
         // Superuser view
         if ($dataRole === 1) {
-            $company_select = (int) $this->input->post('company_select'); // sanitize input
+            $company_select = $this->input->post('company_select');
             $data_user = $this->getDataListDriverByCompany($dataRole, $company_select);
         } else {
             $data_user = $this->getDataListDriverByCompany($companyID);
@@ -245,7 +245,7 @@ class User extends MY_Controller
     {
 
         // --- Authorization ---
-        if ($this->session->userdata('Role') != 1) {
+        if (!in_array((int) $this->session->userdata('Role'), [1, 3], true)) {
             show_error('Unauthorized', 403);
         }
 
@@ -254,7 +254,9 @@ class User extends MY_Controller
         $phoneRaw   = $this->input->post('phone', true);
         $password   = $this->input->post('pass', true);
         $fullname   = trim($this->input->post('fullname', true));
-        $companyID  = $this->input->post('company_selected');
+        $companyID  = ((int) $this->session->userdata('Role') === 1)
+            ? $this->input->post('company_selected')
+            : $this->session->userdata('CompanyID');
 
         // --- Basic validation ---
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {

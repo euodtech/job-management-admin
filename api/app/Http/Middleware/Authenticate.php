@@ -36,31 +36,25 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        // if ($this->auth->guard($guard)->guest()) {
-        //     return response('Unauthorized.', 401);
-        // }
+        // Prefer header-based key, fall back to query/body parameter
+        $apiKey = $request->header('X-API-Key') ?? $request->input('x-key');
 
-        if(!$request->has('x-key')){
-
+        if (empty($apiKey)) {
             return response([
                 'Status' => 401,
-                'Message'=>'Unauthorized'
-                ], 401);
-
+                'Message' => 'Unauthorized'
+            ], 401);
         }
-        if($request->has('x-key')){
 
-            $data = UserLogin::where('ApiKey', $request->input('x-key'))->first();
+        $data = UserLogin::where('ApiKey', $apiKey)->first();
 
-            if(!$data){
-                return response([
-                    'Status' => 401,
-                    'Message'=>'Unauthorized Token'
-                    ], 401);
-            }
-
-
+        if (!$data) {
+            return response([
+                'Status' => 401,
+                'Message' => 'Unauthorized Token'
+            ], 401);
         }
+
         return $next($request);
     }
 }

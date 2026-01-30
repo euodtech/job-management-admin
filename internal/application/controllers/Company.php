@@ -149,47 +149,57 @@ class Company extends MY_Controller
 
 
     public function create()
-    {
-        $this->db->trans_begin();
+{
+    $this->db->trans_begin();
 
-        try {
-            // Ambil dan validasi input
-            $company_name  = trim($this->input->post('company_name', true));
-            $company_phone = trim($this->input->post('company_phone', true));
-            $company_email = trim($this->input->post('company_email', true));
-            $company_pass  = $this->input->post('pass'); // Don't use XSS clean for passwords
-            $package       = $this->input->post('package', true);
+    try {
+        // Ambil dan validasi input
+        $company_name  = trim($this->input->post('company_name', true));
+        $company_phone = trim($this->input->post('company_phone', true));
+        $company_email = trim($this->input->post('company_email', true));
+        $company_pass  = $this->input->post('pass'); // Don't use XSS clean for passwords
+        $package       = $this->input->post('package', true);
 
-            // Validasi input tidak kosong
-            if (empty($company_name) || empty($company_phone) || empty($company_email) || empty($company_pass) || empty($package)) {
-                throw new Exception('All fields are required!');
-            }
+        // Validasi input tidak kosong
+        if (empty($company_name) || empty($company_phone) || empty($company_email) || empty($company_pass) || empty($package)) {
+            throw new Exception('All fields are required!');
+        }
 
-            // Validasi email format
-            if (!filter_var($company_email, FILTER_VALIDATE_EMAIL)) {
-                throw new Exception('Invalid email format!');
-            }
+        // Validasi email format
+        if (!filter_var($company_email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception('Invalid email format!');
+        }
 
-            // Validasi panjang password minimum
-            if (strlen($company_pass) < 8) {
-                throw new Exception('Password must be at least 8 characters long!');
-            }
+        // Validasi panjang password minimum
+        if (strlen($company_pass) < 8) {
+            throw new Exception('Password must be at least 8 characters long!');
+        }
 
-            // Format Phone
-            $formatPhoneNumber = "+63" . preg_replace('/[^0-9]/', '', $company_phone);
+        // Format Phone
+        $formatPhoneNumber = "+63" . preg_replace('/[^0-9]/', '', $company_phone);
 
-            // Generate Company Code
-            $email_prefix = explode('@', $company_email)[0];
-            $three_letters = strtoupper(substr($email_prefix, 0, 3));
-            $random_number = rand(10000, 99999);
-            $output_code = $three_letters . $random_number;
+        // Generate Company Code
+        $email_prefix = explode('@', $company_email)[0];
+        $three_letters = strtoupper(substr($email_prefix, 0, 3));
+        $random_number = rand(10000, 99999);
+        $output_code = $three_letters . $random_number;
 
-            // Cek email sudah terdaftar atau belum (menggunakan parameterized query)
-            $this->db->where('CompanyEmail', $company_email);
-            $cek_available_email = $this->db->get('ListCompany')->result_array();
+        // Cek email sudah terdaftar atau belum (menggunakan parameterized query)
+        $this->db->where('CompanyEmail', $company_email);
+        $cek_available_email = $this->db->get('ListCompany')->result_array();
 
-            if (count($cek_available_email) > 0) {
-                throw new Exception('Failed to create Company, Email is already used!');
+        if (count($cek_available_email) > 0) {
+            throw new Exception('Failed to create Company, Email is already used!');
+        }
+
+        // Set default image
+        $img = 'default-company-logo.png';
+
+        // Check if a file was actually uploaded
+        if (isset($_FILES['company_logo']) && $_FILES['company_logo']['error'] != UPLOAD_ERR_NO_FILE) {
+            // File was uploaded, now validate and process it
+            if ($_FILES['company_logo']['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception('Upload logo failed: File upload error!');
             }
 
             // Konfigurasi upload
@@ -214,77 +224,78 @@ class Company extends MY_Controller
 
             $data = $this->upload->data();
             $img = $data['file_name'];
-
-            // Hash password menggunakan bcrypt
-            $hashed_password = password_hash($company_pass, PASSWORD_BCRYPT);
-
-            // Data untuk insert ke ListCompany
-            $data_create = [
-                "CompanyName"       => $company_name,
-                "CompanyCode"       => $output_code,
-                "CompanyPhone"      => $formatPhoneNumber,
-                "CompanyEmail"      => $company_email,
-                "CompanySubscribe"  => $package,
-                "CompanyLogo"       => base_url('assets/dist/img/company_logo/') . $img,
-                "created_at"        => date('Y-m-d H:i:s')
-            ];
-
-            // Insert company
-            $company_id = $this->M_Global->insertid($data_create, "ListCompany");
-
-            if (!$company_id) {
-                throw new Exception('Failed to create Company!');
-            }
-
-            // Data untuk insert ke UserLogin dengan password yang sudah di-hash
-            $data_create_akses_login = [
-                "Fullname" => $company_name,
-                "Email"    => $company_email,
-                "Password" => $hashed_password, // Gunakan password yang sudah di-hash
-                "Role"     => 3
-            ];
-
-            $user_login_id = $this->M_Global->insertid($data_create_akses_login, "UserLogin");
-
-            if (!$user_login_id) {
-                throw new Exception('Failed to create user login!');
-            }
-
-            // Update ListCompany dengan UserLoginID
-            $update_data = ['UserLoginID' => $user_login_id];
-            $this->db->where('ListCompanyID', $company_id);
-            $update_result = $this->db->update('ListCompany', $update_data);
-
-            if (!$update_result) {
-                throw new Exception('Failed to link user login to company!');
-            }
-
-            // Commit transaction
-            $this->db->trans_commit();
-            $this->session->set_flashdata('message', 
-                '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Company created successfully</div>'
-            );
-
-        } catch (Exception $e) {
-            // Rollback transaction
-            $this->db->trans_rollback();
-
-            // Hapus file yang sudah diupload jika ada error
-            if (isset($img)) {
-                $file_path = FCPATH . "assets/dist/img/company_logo/" . $img;
-                if (file_exists($file_path)) {
-                    @unlink($file_path);
-                }
-            }
-
-            // Set error message
-            $this->session->set_flashdata('message', 
-                '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> ' . $e->getMessage() . '</div>'
-            );
         }
 
-        redirect(base_url('company-list'));
+        // Hash password menggunakan bcrypt
+        $hashed_password = password_hash($company_pass, PASSWORD_BCRYPT);
+
+        // Data untuk insert ke ListCompany
+        $data_create = [
+            "CompanyName"       => $company_name,
+            "CompanyCode"       => $output_code,
+            "CompanyPhone"      => $formatPhoneNumber,
+            "CompanyEmail"      => $company_email,
+            "CompanySubscribe"  => $package,
+            "CompanyLogo"       => base_url('assets/dist/img/company_logo/') . $img,
+            "created_at"        => date('Y-m-d H:i:s')
+        ];
+
+        // Insert company
+        $company_id = $this->M_Global->insertid($data_create, "ListCompany");
+
+        if (!$company_id) {
+            throw new Exception('Failed to create Company!');
+        }
+
+        // Data untuk insert ke UserLogin dengan password yang sudah di-hash
+        $data_create_akses_login = [
+            "Fullname" => $company_name,
+            "Email"    => $company_email,
+            "Password" => $hashed_password, // Gunakan password yang sudah di-hash
+            "Role"     => 3
+        ];
+
+        $user_login_id = $this->M_Global->insertid($data_create_akses_login, "UserLogin");
+
+        if (!$user_login_id) {
+            throw new Exception('Failed to create user login!');
+        }
+
+        // Update ListCompany dengan UserLoginID
+        $update_data = ['UserLoginID' => $user_login_id];
+        $this->db->where('ListCompanyID', $company_id);
+        $update_result = $this->db->update('ListCompany', $update_data);
+
+        if (!$update_result) {
+            throw new Exception('Failed to link user login to company!');
+        }
+
+        // Commit transaction
+        $this->db->trans_commit();
+        $this->session->set_flashdata('message', 
+            '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Company created successfully</div>'
+        );
+
+    } catch (Exception $e) {
+        // Rollback transaction
+        $this->db->trans_rollback();
+
+        // Hapus file yang sudah diupload jika ada error (jangan hapus default image)
+        if (isset($img) && $img !== 'default-company-logo.png') {
+            $file_path = FCPATH . "assets/dist/img/company_logo/" . $img;
+            if (file_exists($file_path)) {
+                @unlink($file_path);
+            }
+        }
+
+        // Set error message
+        $this->session->set_flashdata('message', 
+            '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> ' . $e->getMessage() . '</div>'
+        );
     }
+
+    redirect(base_url('company-list'));
+}
 
 public function update()
 {

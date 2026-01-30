@@ -71,7 +71,7 @@
 
                             <!-- Button Add -->
                             <button class="btn btn-sm btn-primary" style="padding: .31rem .5rem;" id="add_user" type="button">
-                                Add Rider
+                                Add User
                             </button>
                         </div>
 
@@ -83,7 +83,7 @@
                                 <tr class="text-center">
                                     <th style="width: 10%;">No</th>
                                     <th>Company</th>
-                                    <th>Rider Name</th>
+                                    <th>User Name</th>
                                     <th>User Role</th>
                                     <th>Email</th>
                                     <th>Phone Number</th>
@@ -275,7 +275,7 @@ $(document).ready(function() {
         modal.modal('show');
         modal.find('.container_notes').show();
 
-        textHeaderModal.text('Add Rider');
+        textHeaderModal.text('Add User');
         modal.find('#user_id').val('');
         modal.find('#user_role').val(''); // gets user_role input -Kian
         modal.find('#fullname').val('');
@@ -294,7 +294,7 @@ $(document).ready(function() {
 
         let userID = $(this).data('userid');
 
-        textHeaderModal.text('Edit Rider');
+        textHeaderModal.text('Edit User');
         formUser.attr("action", '<?= base_url('edit-user') ?>');
 
         $.ajax({

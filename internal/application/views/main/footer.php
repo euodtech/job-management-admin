@@ -1,8 +1,8 @@
 <footer class="main-footer text-sm no-print">
-    <strong>Copyright &copy; 2025</strong>
+    <strong>Copyright &copy; 2026</strong>
     All rights reserved.
     <div class="float-right d-none d-sm-inline-block">
-        <b>Made With Pride</b>
+        <!-- <b>Made With Pride</b> -->
     </div>
 </footer>
 

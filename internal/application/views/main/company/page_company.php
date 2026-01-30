@@ -239,7 +239,7 @@
             <!-- Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Save</button>
+                <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Delete</button>
                 
 
             </div>
@@ -288,7 +288,7 @@
                 <button type="submit" form="formUpdateProfile" class="btn btn-primary btn-sm">Save</button>
             </div>
 
-        </div>
+            </div>
     </div>
 </div>
 
