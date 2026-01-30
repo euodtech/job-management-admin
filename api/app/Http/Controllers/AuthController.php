@@ -369,7 +369,7 @@ class AuthController extends Controller {
 
         <!-- Footer -->
         <div class="email-footer">
-            <strong>Copyright &copy; 2025</strong>
+            <strong>Copyright &copy; 2026</strong>
                 All rights reserved.
         </div>
     </div>

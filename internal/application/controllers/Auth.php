@@ -15,30 +15,36 @@ class Auth extends MY_Controller
     }
 
     public function index()
-    {
-        $data['title'] = "Efms | Login"; // define $data
-
-        // Check if form submitted
-        if ($this->input->server('REQUEST_METHOD') === 'POST') {
-
-            // Set validation rules if not already set
-            $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
-            $this->form_validation->set_rules('password', 'Password', 'required');
-
-            if ($this->form_validation->run() === FALSE) {
-                // Validation failed, show login page
-                $this->render_page_login('auth/login/page_login', $data);
-                return;
-            }
-
-            // Validation success
-            $this->login(); // call your login method
-
-        } else {
-            // GET request → just show login page
-            $this->render_page_login('auth/login/page_login', $data);
-        }
+{
+    // Redirect if already logged in
+    if ($this->session->userdata('status') === 'kusam') {
+        redirect(base_url('home'));
+        return;
     }
+
+    $data['title'] = "Efms | Login"; // define $data
+
+    // Check if form submitted
+    if ($this->input->server('REQUEST_METHOD') === 'POST') {
+
+        // Set validation rules if not already set
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+        $this->form_validation->set_rules('password', 'Password', 'required');
+
+        if ($this->form_validation->run() === FALSE) {
+            // Validation failed, show login page
+            $this->render_page_login('auth/login/page_login', $data);
+            return;
+        }
+
+        // Validation success
+        $this->login(); // call your login method
+
+    } else {
+        // GET request → just show login page
+        $this->render_page_login('auth/login/page_login', $data);
+    }
+}
 
 
     public function login()

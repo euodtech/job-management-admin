@@ -101,7 +101,7 @@
                 </li>
                 <?php endif; ?> -->
 
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a href="<?= base_url('customer-list') ?>"
                         class="nav-link <?= $this->uri->segment('1') == "customer-list" ? "active" : "" ?>">
                         <i class="fa-solid fa-users"></i>
@@ -110,7 +110,7 @@
                         </p>
 
                     </a>
-                </li>
+                </li> -->
             </ul>
 
             <?php if($this->session->userdata('Role') != 1): ?>

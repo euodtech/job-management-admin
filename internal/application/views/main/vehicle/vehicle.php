@@ -60,7 +60,7 @@ $(document).ready(function() {
       { 
         data: null,      
         render: function (data, type, row, meta) {
-            return meta.row + 1; 
+            return meta.row + meta.settings._iDisplayStart + 1; 
         },
         title: "No"
       },
@@ -68,27 +68,9 @@ $(document).ready(function() {
       { data: 'comment', title: 'Comment' },
       { data: 'speed', title: 'Speed' },
       { data: 'sat', title: 'Satellite' },
-      // { data: 'address', title: 'Address' },
-      // { data: 'address', render: function(data, type, row) {
-      //     if (!row.address || row.address === "") {
-      //         getAddressOSM(row.latitude, row.longitude, (addr) => {
-      //             row.address = addr;
-      //             // update cell di DataTables
-      //             const table = $('#vehicleTable').DataTable();
-      //             const rowIndex = table.row(row).index();
-      //             table.cell(rowIndex, 5).data(addr).draw(false);
-      //         });
-      //         return "Loading...";
-      //     } else {
-      //         return row.address;
-      //     }
-      //   }
-      // },
-      // { data: 'latitude', title: 'Latitude' },
-      // { data: 'longitude', title: 'Longitude' },
       {
         data: null,
-        title: "Coordinates",
+        title: "Coordinate",
         render: function (data, type, row) {
           let lat = row.latitude;
           let lng = row.longitude;
@@ -96,7 +78,7 @@ $(document).ready(function() {
 
           // Saat display -> tampilkan HTML link
           if (type === "display") {
-              return `<a href="${url}" target="_blank" class="btn btn-sm btn-primary" style="color:blue;text-decoration:underline;">
+              return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary" style="color:white;text-decoration:none;">
                         ${lat}, ${lng}
                       </a>`;
           }
@@ -107,27 +89,16 @@ $(document).ready(function() {
       }
     ],
     responsive: true,
-    pageLength: 6,
-    rowReorder: {
-        selector: 'td:nth-child(2)'
-    },
+    pageLength: 5,
     lengthMenu: [5, 10, 25, 50, 100],
-    dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-    buttons: [
-      {
-        extend: 'pageLength',
-        className: 'btn btn-secondary me-2'
-      }
-    ],
+    lengthChange: true,
+    dom: '<"d-flex justify-content-between align-items-center mb-3"lf>rtip',
     ordering: true,
     searching: true,
     language: {
       search: "🔍 Search:",
     },
-    order: [[1, "ASC"]],
-    // initComplete: function(settings, json) {
-    //   $('#vehicleTable').closest('.card-body').show();
-    // }
+    order: [[1, "ASC"]]
   });
 
   $('#vehicleTable').closest('.card-body').hide();
