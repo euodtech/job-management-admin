@@ -89,6 +89,13 @@ class AuthController extends Controller {
 
                     DB::commit();
 
+                    $logoUrl = null;
+                    if ($customer->CompanyLogo) {
+                        $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'http';
+                        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+                        $logoUrl = $scheme . '://' . $host . $request->getBaseUrl() . '/myapi/company-logo/' . $customer->CompanyLogo;
+                    }
+
                     $return = [
                         "UserID" => $customer->UserID,
                         "ApiKey" => $customer->ApiKey,
@@ -99,6 +106,7 @@ class AuthController extends Controller {
                         "UsernameTraxrooot" => $customer->username_traxroot,
                         "PasswordTraxrooot" => $customer->password_traxroot,
                         "UserRole" => $customer->UserRole,
+                        "CompanyLogo" => $logoUrl,
                     ];
 
                     return response()->json([

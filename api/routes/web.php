@@ -16,14 +16,13 @@ $router->get('/', function () use ($router) {
     return 'Euodoo Technologies Inc.';
 });
 
-// Add this route for serving images
-
 $router->group([
     'prefix' => 'myapi/',
 ], function ($app) {
     $app->post('login', 'AuthController@login');
     $app->post('forgot-password', 'AuthController@forgot_password');
     $app->get('check-type-company/{companyID:[0-9]+}', 'AuthController@check_company_driver');
+    $app->get('company-logo/{filename}', 'CompanyLogoController@show');
 });
 
 $router->group([

@@ -67,7 +67,7 @@
                                         <tr>
                                             <td style="text-align: center !important;"><?= $no++ ?></td>
                                             <td style="text-align: center !important;">
-                                                <img src="<?= $val['CompanyLogo'] ?>" width="50" alt="">
+                                                <img src="<?= base_url('assets/dist/img/company_logo/' . $val['CompanyLogo']) ?>" width="50" alt="">
                                             </td>
                                             <td style="text-align: center !important;"><?= $val['CompanyCode'] ?></td>
                                             <td style="text-align: center !important;"><?= $val['CompanyName'] ?></td>
@@ -456,7 +456,7 @@ $(document).ready(function() {
                 if (response.CompanySubscribe == 1) modal.find('#basic').prop('checked', true);
                 else if (response.CompanySubscribe == 2) modal.find('#pro').prop('checked', true);
 
-                modal.find('#preview_logo').attr('src', response.CompanyLogo || 'assets/dist/img/default-logo.png');
+                modal.find('#preview_logo').attr('src', response.CompanyLogo ? '<?= base_url('assets/dist/img/company_logo/') ?>' + response.CompanyLogo : 'assets/dist/img/default-logo.png');
             }
         });
     });

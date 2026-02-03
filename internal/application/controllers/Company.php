@@ -236,7 +236,7 @@ class Company extends MY_Controller
             "CompanyPhone"      => $formatPhoneNumber,
             "CompanyEmail"      => $company_email,
             "CompanySubscribe"  => $package,
-            "CompanyLogo"       => base_url('assets/dist/img/company_logo/') . $img,
+            "CompanyLogo"       => $img,
             "created_at"        => date('Y-m-d H:i:s')
         ];
 
@@ -412,7 +412,7 @@ public function update()
         ];
 
         if (!empty($img)) {
-            $data_company["CompanyLogo"] = base_url('assets/dist/img/company_logo/') . $img;
+            $data_company["CompanyLogo"] = $img;
         }
 
         // -----------------------------

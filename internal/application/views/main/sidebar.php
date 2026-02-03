@@ -1,9 +1,15 @@
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-light-navy elevation-1">
     <!-- Brand Logo -->
+    <?php
+        $companyLogo = $this->session->userdata('CompanyLogo');
+        $brandLogo = ($companyLogo && $this->session->userdata('Role') != 1)
+            ? base_url('assets/dist/img/company_logo/' . $companyLogo)
+            : base_url('assets/dist/logo_efms.jpg');
+    ?>
     <a href="" class="brand-link d-flex justify-content-center align-items-center"
         style="background-color: white; gap: 10px;">
-        <img src="<?= base_url('assets/dist/logo_efms.jpg') ?>" class="brand-text img-logo-text" style="width: 15%;">
+        <img src="<?= $brandLogo ?>" class="brand-text img-logo-text" style="width: 15%;">
 
         <span style="font-size: 15px; font-weight: 800;">fms | Administrator</span>
     </a>

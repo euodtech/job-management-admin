@@ -100,6 +100,7 @@ class Auth extends MY_Controller
                     'CompanyID'         => $user['ListCompanyID'],
                     'CompanySubscribe'  => $user['CompanySubscribe'],
                     'CompanyCode'       => $user['CompanyCode'],
+                    'CompanyLogo'       => $user['CompanyLogo'],
                     'Fullname'          => $user['Fullname'],
                     'Role'              => $user['Role'],
                     'status'            => 'kusam'
