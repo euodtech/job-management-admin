@@ -13,7 +13,7 @@
 */
 
 $router->get('/', function () use ($router) {
-    return 'Made with pride by Unad.2024';
+    return 'Euodoo Technologies Inc.';
 });
 
 // Add this route for serving images
