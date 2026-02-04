@@ -317,7 +317,7 @@ class UsersLib
             ];
 
             if (empty($existing['CompanyLogo'])) {
-                $apiData['CompanyLogo'] = 'default.png';
+                $apiData['CompanyLogo'] = 'default-company-logo.png';
             }
 
             if ($existing) {
@@ -338,7 +338,7 @@ class UsersLib
                 $apiData['created_at']  = date('Y-m-d H:i:s');
                 $emailPrefix = explode('@', $email)[0] ?? 'CMP';
                 $apiData['CompanyCode'] = strtoupper(substr($emailPrefix, 0, 3)) . rand(10000, 99999);
-                $apiData['CompanyLogo']      = $apiData['CompanyLogo'] ?? 'default.png';
+                $apiData['CompanyLogo']      = $apiData['CompanyLogo'] ?? 'default-company-logo.png';
                 $apiData['CompanySubscribe'] = 0;
 
                 $res = $this->CI->db->insert('ListCompany', $apiData);
@@ -442,7 +442,7 @@ class UsersLib
                 $companyData['created_at'] = date('Y-m-d H:i:s');
                 $companyData['CompanyCode'] = strtoupper(substr($fullName, 0, 3)) . rand(10000,99999);
                 $companyData['CompanySubscribe'] = 0;
-                $companyData['CompanyLogo'] = 'default.png';
+                $companyData['CompanyLogo'] = 'default-company-logo.png';
 
                 $this->CI->db->insert('ListCompany', $companyData);
                 $logs[] = "🟢 Inserted Company: {$email}";
