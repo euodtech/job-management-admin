@@ -4,8 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" type="image/x-icon"
-        href="http://quetraverse.pro/primafit/assets/img/icon_primafit_Red.svg" />
+    <?php
+        $companyLogo = $this->session->userdata('CompanyLogo');
+        $faviconUrl = ($companyLogo && $this->session->userdata('Role') != 1)
+            ? base_url('assets/dist/img/company_logo/' . $companyLogo)
+            : base_url('assets/dist/logo_efms.jpg');
+    ?>
+    <link rel="icon" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
+    <link rel="shortcut icon" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
 
     <title><?php echo $title; ?></title>
     <!-- Google Font: Source Sans Pro -->
@@ -242,6 +248,19 @@
         }
     }
     </style>
+
+    <script>
+    (function() {
+        var faviconUrl = "<?= $faviconUrl ?>";
+        var link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = faviconUrl + '?v=' + Date.now();
+    })();
+    </script>
 
 </head>
 

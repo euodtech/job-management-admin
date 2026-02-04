@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Efms | Administrator</title>
 
-    <link rel="shortcut icon" type="image/x-icon"
-        href="http://quetraverse.pro/primafit/assets/img/icon_primafit_Red.svg" />
+    <link rel="icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />
+    <link rel="shortcut icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"

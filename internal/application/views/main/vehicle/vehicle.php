@@ -15,7 +15,13 @@
                     <h5 class="card-title">Vehicle</h5>
                 </div>
                 <div class="card-body">
-                  <table id="vehicleTable" class="table table-striped table-striped table-bordered dt-responsive display responsive wrap" cellspacing="0" width="100%">
+                  <div id="vehicleLoading" class="text-center py-5">
+                    <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading vehicles...</p>
+                  </div>
+                  <table id="vehicleTable" class="table table-striped table-striped table-bordered dt-responsive display responsive wrap" cellspacing="0" width="100%" style="display:none;">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -50,10 +56,17 @@ $(document).ready(function() {
       url: "<?= base_url('Vehicle/traxrootVehicle') ?>",
       type: "GET",
       dataSrc: function(json) {
-        console.log("Full JSON:", json);
-        console.log("Vehicle Data:", json.data);
-        $('#vehicleTable').closest('.card-body').show();
+        $('#vehicleLoading').hide();
+        $('#vehicleTable').show();
         return json.data;
+      },
+      error: function(xhr, error, thrown) {
+        $('#vehicleLoading').html(
+          '<div class="text-center py-5">' +
+            '<i class="fas fa-exclamation-triangle text-warning" style="font-size: 2.5rem;"></i>' +
+            '<p class="mt-3 text-muted">Failed to load vehicle data. Please try again later.</p>' +
+          '</div>'
+        );
       }
     },
     columns: [
@@ -101,7 +114,8 @@ $(document).ready(function() {
     order: [[1, "ASC"]]
   });
 
-  $('#vehicleTable').closest('.card-body').hide();
+  $('#vehicleLoading').show();
+  $('#vehicleTable').hide();
 });
 
 </script>
