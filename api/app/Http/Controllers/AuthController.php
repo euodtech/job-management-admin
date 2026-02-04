@@ -93,7 +93,8 @@ class AuthController extends Controller {
                     if ($customer->CompanyLogo) {
                         $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'http';
                         $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
-                        $logoUrl = $scheme . '://' . $host . $request->getBaseUrl() . '/myapi/company-logo/' . $customer->CompanyLogo;
+                        // $logoUrl = $scheme . '://' . $host . $request->getBaseUrl() . '/myapi/company-logo/' . $customer->CompanyLogo;
+                        $logoUrl = $scheme . '://' . $host . $request->getBaseUrl() . '/be-fms/internal/assets/dist/img/company_logo/' . $customer->CompanyLogo;
                     }
 
                     $return = [
@@ -106,7 +107,10 @@ class AuthController extends Controller {
                         "UsernameTraxrooot" => $customer->username_traxroot,
                         "PasswordTraxrooot" => $customer->password_traxroot,
                         "UserRole" => $customer->UserRole,
-                        "CompanyLogo" => $logoUrl,
+                        // "CompanyLogo" => $logoUrl,
+                        "CompanyLogo" => $customer->CompanyLogo 
+                            ? env('COMPANY_LOGO_BASE_URL', 'http://localhost/be-fms/internal/assets/dist/img/company_logo/') . $customer->CompanyLogo                 
+                            : null,  
                     ];
 
                     return response()->json([
