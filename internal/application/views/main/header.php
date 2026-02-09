@@ -191,6 +191,35 @@
         background-color: #070f26 !important;
     }
 
+    /* Brand logo - flex layout with AdminLTE-native transitions */
+    .main-sidebar .brand-link {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        overflow: hidden;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .main-sidebar .brand-link .brand-image {
+        float: none !important;
+        margin: 0 !important;
+        flex-shrink: 0;
+    }
+    .main-sidebar .brand-link .brand-text {
+        white-space: nowrap;
+        min-width: 0;
+    }
+    .sidebar-collapse .main-sidebar .brand-link .brand-text {
+        width: 0;
+        overflow: hidden;
+    }
+    .sidebar-collapse .main-sidebar:hover .brand-link .brand-text,
+    .sidebar-collapse .main-sidebar.sidebar-focused .brand-link .brand-text {
+        width: auto;
+        overflow: visible;
+    }
+
    .bg-gradient-blue-purple {
     background: linear-gradient(135deg, #4e54c8, #8f94fb);
     /* background: linear-gradient(135deg, #11998e, #38ef7d); */

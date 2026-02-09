@@ -8,10 +8,9 @@
             : base_url('assets/dist/logo_efms.jpg');
     ?>
     <a href="" class="brand-link d-flex justify-content-center align-items-center"
-        style="background-color: white; gap: 10px;">
-        <img src="<?= $brandLogo ?>" class="brand-text img-logo-text" style="width: 15%;">
-
-        <span style="font-size: 15px; font-weight: 800;">fms | Administrator</span>
+        style="background-color: white; margin-left: -1px">
+        <img src="<?= $brandLogo ?>" class="brand-image img-logo-text" style="max-height: 33px; object-fit: contain;">
+        <span class="brand-text" style="font-size: 15px; font-weight: 800;">fms | Administrator</span>
     </a>
 
     <!-- Sidebar -->
