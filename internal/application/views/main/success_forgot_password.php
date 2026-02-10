@@ -5,92 +5,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Updated</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-
-        .email-container {
-            max-width: 600px;
-            margin: 20px auto;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            text-align: center;
-        }
-
-        .email-header {
-            background: #070f26 !important;
-            color: white;
-            padding: 25px;
-        }
-
-        .email-header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .email-body {
-            padding: 30px;
-        }
-
-        .email-body p {
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        .success-icon {
-            font-size: 50px;
-            color: green;
-            margin-bottom: 15px;
-        }
-
-        .reset-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 25px;
-            font-size: 16px;
-            background: #070f26 !important;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
-
-        .reset-button:hover {
-            background: #5548c8;
-            cursor: pointer;
-        }
-
-        .email-footer {
-            background: #f4f4f9;
-            text-align: center;
-            padding: 15px;
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: { DEFAULT: '#070f26', dark: '#0a1431' },
+                    accent: { DEFAULT: '#4e54c8', light: '#8f94fb' },
+                },
+            },
+        },
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 </head>
 
-<body>
-    <div class="email-container">
+<body class="bg-gray-100 text-gray-800 font-['Inter',sans-serif] m-0 p-0">
+    <div class="max-w-xl mx-auto my-5 bg-white rounded-lg shadow-lg overflow-hidden text-center">
         <!-- Header -->
-        <div class="email-header">
-            <h1>Password Updated</h1>
+        <div class="bg-primary text-white p-6">
+            <h1 class="text-2xl font-bold m-0">Password Updated</h1>
         </div>
 
         <!-- Body -->
-        <div class="email-body">
-            <div class="success-icon">✅</div>
-            <p><strong>Your password has been successfully updated.</strong></p>
-            <p>You can now login using your new password.</p>
+        <div class="p-8">
+            <div class="text-5xl mb-4">&#x2705;</div>
+            <p class="text-base leading-relaxed"><strong>Your password has been successfully updated.</strong></p>
+            <p class="text-base leading-relaxed">You can now login using your new password.</p>
         </div>
 
         <!-- Footer -->
-        <div class="email-footer">
+        <div class="bg-gray-100 text-center p-4 text-sm text-gray-500">
             <strong>Copyright &copy; 2025</strong>  —  All rights reserved.
         </div>
     </div>

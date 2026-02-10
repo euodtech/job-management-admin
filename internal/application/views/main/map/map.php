@@ -1,13 +1,11 @@
-<div class="content-wrapper">
-  <section class="content-header">
-    <div class="container-fluid">
-        <h4><?= $title ?></h4>
-    </div>
-  </section>
+<!-- Content Header -->
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <h4 class="text-xl font-bold text-gray-800"><?= $title ?></h4>
+</div>
 
-  <section class="content">
-    <div class="container-fluid">
-      <div id="map" style="width: 100%; height: 82%; position: relative;">
+<!-- Content -->
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+    <div id="map" style="width: 100%; height: 82%; position: relative;">
         <div id="map-loader" class="map-loader">
           <div class="spinner"></div>
           <span id="loader-text">Loading map data...</span>
@@ -26,32 +24,30 @@
         </div>
 
         <div id="hover-tooltip" class="hover-tooltip"></div>
-      </div>
     </div>
-  </section>
 </div>
 
 <script>
   window.objectsMergeUrl = "<?= base_url('v1/api/traxroot/objectsMerge') ?>";
-  
+
   // Timeout fallback
   setTimeout(function() {
     var loader = document.getElementById('map-loader');
     if (loader && loader.style.display !== 'none') {
-      document.getElementById('loader-text').innerHTML = 
+      document.getElementById('loader-text').innerHTML =
         'Map loading timeout. <button onclick="location.reload()" style="padding:4px 12px;margin-left:8px;cursor:pointer;border-radius:4px;">Retry</button>';
     }
-  }, 15000); // 15 second timeout
+  }, 15000);
 </script>
 
 <!-- Preconnect to CDN -->
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
 <!-- Load OpenLayers with error handling -->
-<script 
-  src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/10.6.1/dist/ol.min.js" 
-  integrity="sha512-NEUbbO7KI1OYn+IHcF70vm3ON0obczJz9PJFwxHkfPCsT14UqDD4roG7rF5WpwkXRTPvysFb6Wvw/Tjh5tfv8g==" 
-  crossorigin="anonymous" 
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/10.6.1/dist/ol.min.js"
+  integrity="sha512-NEUbbO7KI1OYn+IHcF70vm3ON0obczJz9PJFwxHkfPCsT14UqDD4roG7rF5WpwkXRTPvysFb6Wvw/Tjh5tfv8g=="
+  crossorigin="anonymous"
   referrerpolicy="no-referrer"
   onerror="document.getElementById('loader-text').innerHTML='Failed to load map library. <button onclick=location.reload()>Retry</button>'">
 </script>

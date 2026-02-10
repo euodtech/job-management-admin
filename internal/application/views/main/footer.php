@@ -1,18 +1,14 @@
-<footer class="main-footer text-sm no-print">
+<footer class="lg:ml-64 border-t border-gray-200 bg-white px-6 py-3 text-sm text-gray-500 no-print">
     <strong>Copyright &copy; 2026</strong>
     All rights reserved.
-    <div class="float-right d-none d-sm-inline-block">
+    <div class="hidden sm:inline-block float-right">
         <!-- <b>Made With Pride</b> -->
     </div>
 </footer>
 
-<!-- Control Sidebar -->
-<aside class="control-sidebar control-sidebar-dark">
-    <!-- Control sidebar content goes here -->
-</aside>
-<!-- /.control-sidebar -->
 </div>
-<!-- ./wrapper -->
+<!-- /.min-h-screen -->
+
 <!-- jQuery (FIXED VERSION) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -22,12 +18,6 @@
 <script>
     $.widget.bridge('uibutton', $.ui.button);
 </script>
-
-<!-- Bootstrap 4 (ONLY ONCE) -->
-<script src="<?php echo base_url('assets/plugins/bootstrap/js/bootstrap.bundle.min.js'); ?>"></script>
-
-<!-- AdminLTE -->
-<script src="<?php echo base_url('assets/dist/js/adminlte.js'); ?>"></script>
 
 <!-- Select2 -->
 <script src="<?php echo base_url('assets/plugins/select2/js/select2.full.min.js'); ?>"></script>
@@ -55,12 +45,6 @@
 
 <!-- Moment -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-
-<script>
-    $.widget.bridge('uibutton', $.ui.button)
-</script>
-
-
 
 
 <script type="text/javascript">
@@ -111,7 +95,7 @@ $('#category').change(function() {
                 var id = response[i]['SubCategoryID'];
                 var name = response[i]['SubCategoryName'];
 
-                
+
                 $("#subcategory").append("<option value='" + id + "'>" + name +
                     "</option>");
 
@@ -125,7 +109,7 @@ $('#category').change(function() {
 $("#example1").DataTable({
     "responsive": false,
     "length" : true,
-    "scrollX": true 
+    "scrollX": true
 
 });
 
@@ -141,23 +125,8 @@ $(".table_dashboard1").DataTable({
     "responsive": false,
     "length" : true,
     "info" : false,
-    "scrollX": true 
+    "scrollX": true
 });
-
-$(document).on('click', '.has-treeview > a', function (e) {
-    e.preventDefault();
-
-    // ambil icon di dalam link yang diklik
-    let icon = $(this).find('.right');
-    
-    // toggle icon (kiri ↔ bawah)
-    if (icon.hasClass('fa-angle-left')) {
-        icon.removeClass('fa-angle-left').addClass('fa-angle-down');
-    } else {
-        icon.removeClass('fa-angle-down').addClass('fa-angle-left');
-    }
-});
-
 
 $('#example2').DataTable({
     "paging": true,
@@ -275,7 +244,7 @@ $('.custom-file-input').on('change', function() {
         beep(0.2);
     }
 
-    
+
     function countJobInSidebar()
     {
         $.ajax({
@@ -291,11 +260,11 @@ $('.custom-file-input').on('change', function() {
                 $(".count_reconnect").text(response.CountReconnect);
 
                 let count_reschedule = response.CountReschedule;
-                
+
                 if(count_reschedule > 0 ) {
 
                     playNotificationSound();
-                    $(".count_reschedule").html('<i class="fa-solid fa-bell bell-shake text-danger" style="font-size: 13px !important;"></i>');
+                    $(".count_reschedule").html('<i class="fa-solid fa-bell bell-shake text-red-600" style="font-size: 13px !important;"></i>');
                 }
             }
         });
@@ -331,7 +300,7 @@ $('.custom-file-input').on('change', function() {
             theme: 'bootstrap4'
         })
 
-        
+
 
         setInterval(function () {
             countJobInSidebar();
@@ -340,24 +309,25 @@ $('.custom-file-input').on('change', function() {
         $('.select2For_modal').each(function() {
             $(this).select2({
                 theme: 'bootstrap4',
-                dropdownParent: $(this).closest('.modal')
+                dropdownParent: $(this).closest('[role="dialog"]')
+            });
+        });
+
+        // Re-initialize Select2 inside Preline overlays when opened
+        document.querySelectorAll('[role="dialog"]').forEach(function(overlay) {
+            overlay.addEventListener('open.hs.overlay', function() {
+                $(this).find('.select2For_modal').each(function() {
+                    if (!$(this).data('select2')) {
+                        $(this).select2({
+                            theme: 'bootstrap4',
+                            dropdownParent: $(this).closest('[role="dialog"]')
+                        });
+                    }
+                });
             });
         });
 
         $('#memTable').DataTable({
-            // dom: 'Bfrtip',
-            // buttons: [{
-            //     extend: 'excelHtml5',
-            //     title: 'Export Data Member',
-            //     text: 'Export Data',
-            //     exportOptions: {
-            //         columns: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-            //     },
-
-
-            //     className: 'btn-primary'
-
-            // }],
             "stateSave": true,
             'processing': true,
             'serverSide': true,
@@ -582,30 +552,30 @@ $('.custom-file-input').on('change', function() {
           'columns': [
 
            {
-            
+
             data : 'VoucherName'
-                
+
            },
            {
-            
+
             data : 'CustomerName'
-                
+
            },
            {
-            
+
             data : 'QtyVo',render: $.fn.dataTable.render.number( ',' )
-                
+
            },
            {
-            
+
             data : 'ValidFrom'
-                
+
            },
-           { 
+           {
                 data: "ValidUntil",
                 render: function(data, type, row) {
                     if (data === null) {
-                        return '<span style="color:green;">Lifetime</span>';
+                        return '<span class="text-green-600">Lifetime</span>';
                     }
                     return data;
                 }
@@ -785,6 +755,19 @@ $(function() {
             ]
         });
 </script>
+
+<!-- Preline UI v2 -->
+<script src="https://cdn.jsdelivr.net/npm/preline@2/dist/preline.min.js"></script>
+
+<!-- Re-init Preline after AJAX/dynamic content -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.HSStaticMethods) {
+        window.HSStaticMethods.autoInit();
+    }
+});
+</script>
+
 </body>
 
 </html>

@@ -1,186 +1,173 @@
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <h4><?= $title ?></h4>
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <h4 class="text-xl font-bold text-gray-800"><?= $title ?></h4>
+</div>
+
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+
+    <!-- Customer Retention Report -->
+    <div class="bg-white rounded-xl shadow-sm border border-cyan-200">
+        <div class="px-5 py-4 border-b border-cyan-200">
+            <h5 class="text-base font-semibold text-gray-800">📌 Customer Retention Report</h5>
         </div>
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-
-            <!-- Customer Retention Report -->
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                        <div class="card-header">
-                            <h5 class="card-title">📌 Customer Retention Report</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="filterFormCustomerRetentionReport" method="get" action="" class="mb-3">
-                                <div class="row">
-                                    <!-- Customer Name -->
-                                    <div class="col-md-3 my-3">
-                                        <label for="customerSelectCustomerRetentionReport">Customer</label>
-                                        <select id="customerSelectCustomerRetentionReport" class="form-control">
-                                            <option value="">-- All Customers --</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Total job -->
-                                    <div class="col-md-3 my-3">
-                                        <label for="totalJobInputCustomerRetentionReport">Total Job (Min)</label>
-                                        <input type="number" id="totalJobInputCustomerRetentionReport" class="form-control" placeholder="e.g. 60" min="0" >
-                                    </div>
-
-                                    <!-- First Job -->
-                                    <div class="col-md-3 my-3">
-                                        <label>First Job</label>
-                                        <input type="date" name="fromCustomerRetentionReport" id="fromCustomerRetentionReport" value="<?= $this->input->get('fromCustomerRetentionReport') ?>" class="form-control">
-                                    </div>
-
-                                    <!-- Last Job -->
-                                    <div class="col-md-3 my-3">
-                                        <label>Last Job</label>
-                                        <input type="date" name="untilCustomerRetentionReport" id="untilCustomerRetentionReport" value="<?= $this->input->get('untilCustomerRetentionReport') ?>" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-3 my-3">
-                                        <label for="retentionDaysInputCustomerRetentionReport">Retention Days (Min)</label>
-                                        <input type="number" id="retentionDaysInputCustomerRetentionReport" class="form-control" placeholder="e.g. 60" min="0">
-                                    </div>
-
-                                    <!-- Status Customer -->
-                                    <div class="col-md-3 my-3">
-                                        <label>Status Customer</label>
-                                        <select name="statusCustomerRetentionReport" id="statusCustomerRetentionReport" class="form-control">
-                                            <option value="">-- All Status Customers --</option>
-                                            <option value="Active" <?= $this->input->get('statusCustomerRetentionReport')=='Active'?'selected':'' ?>>Active</option>
-                                            <option value="Inactive" <?= $this->input->get('statusCustomerRetentionReport')=='Inactive'?'selected':'' ?>>Inactive</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Button -->
-                                    <div class="col-md-3 my-3 d-flex align-items-end">
-                                        <button type="submit" class="btn btn-info mr-2">Filter</button>
-                                        <button type="button" id="resetFilterCustomerRetentionReport" class="btn btn-secondary">Reset</button>
-                                    </div>
-                                </div>
-                            </form>
-
-                            <table class="table table-striped table-bordered" cellspacing="0" width="100%" id="tableCustomerRetentionReport">
-                                <thead>
-                                    <tr>
-                                        <th style="width:5%; text-align:center;">No</th>
-                                        <th>Customer</th>
-                                        <th>Company</th>
-                                        <th style="white-space: nowrap !important; ">Total Job</th>
-                                        <th>First Job</th>
-                                        <th>Last Job</th>
-                                        <th style="white-space: nowrap !important; ">Retention Days</th>
-                                        <th style="white-space: nowrap !important; ">Status Customer</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
+        <div class="px-5 py-4">
+            <form id="filterFormCustomerRetentionReport" method="get" action="" class="mb-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Customer Name -->
+                    <div class="my-3">
+                        <label for="customerSelectCustomerRetentionReport" class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                        <select id="customerSelectCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                            <option value="">-- All Customers --</option>
+                        </select>
                     </div>
+
+                    <!-- Total job -->
+                    <div class="my-3">
+                        <label for="totalJobInputCustomerRetentionReport" class="block text-sm font-medium text-gray-700 mb-1">Total Job (Min)</label>
+                        <input type="number" id="totalJobInputCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" placeholder="e.g. 60" min="0" >
+                    </div>
+
+                    <!-- First Job -->
+                    <div class="my-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">First Job</label>
+                        <input type="date" name="fromCustomerRetentionReport" id="fromCustomerRetentionReport" value="<?= $this->input->get('fromCustomerRetentionReport') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                    </div>
+
+                    <!-- Last Job -->
+                    <div class="my-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Last Job</label>
+                        <input type="date" name="untilCustomerRetentionReport" id="untilCustomerRetentionReport" value="<?= $this->input->get('untilCustomerRetentionReport') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                    </div>
+
+                    <div class="my-3">
+                        <label for="retentionDaysInputCustomerRetentionReport" class="block text-sm font-medium text-gray-700 mb-1">Retention Days (Min)</label>
+                        <input type="number" id="retentionDaysInputCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" placeholder="e.g. 60" min="0">
+                    </div>
+
+                    <!-- Status Customer -->
+                    <div class="my-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status Customer</label>
+                        <select name="statusCustomerRetentionReport" id="statusCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                            <option value="">-- All Status Customers --</option>
+                            <option value="Active" <?= $this->input->get('statusCustomerRetentionReport')=='Active'?'selected':'' ?>>Active</option>
+                            <option value="Inactive" <?= $this->input->get('statusCustomerRetentionReport')=='Inactive'?'selected':'' ?>>Inactive</option>
+                        </select>
+                    </div>
+
+                    <!-- Button -->
+                    <div class="my-3 flex items-end">
+                        <button type="submit" class="rounded-lg bg-cyan-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-cyan-700 transition-colors mr-2">Filter</button>
+                        <button type="button" id="resetFilterCustomerRetentionReport" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Reset</button>
+                    </div>
+                </div>
+            </form>
+
+            <table class="table table-striped table-bordered" cellspacing="0" width="100%" id="tableCustomerRetentionReport">
+                <thead>
+                    <tr>
+                        <th style="width:5%; text-align:center;">No</th>
+                        <th>Customer</th>
+                        <th>Company</th>
+                        <th style="white-space: nowrap !important; ">Total Job</th>
+                        <th>First Job</th>
+                        <th>Last Job</th>
+                        <th style="white-space: nowrap !important; ">Retention Days</th>
+                        <th style="white-space: nowrap !important; ">Status Customer</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Detail -->
+    <div id="customerDetailModal" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="customerNameHeader">
+        <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-4xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+            <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+                <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                    <h3 id="customerNameHeader" class="font-semibold text-gray-800">Customer Detail</h3>
+                    <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#customerDetailModal">
+                        <span class="sr-only">Close</span>
+                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-4 overflow-y-auto">
+                    <table id="customerDetailTable" class="table table-striped table-striped table-bordered dt-responsive display responsive wrap" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                        <th>No</th>
+                        <th>Job Name</th>
+                        <th>Job Date</th>
+                        <th>Type Job</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Handled By</th>
+                        <th>Company Name</th>
+                        <th>Cancel Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    </table>
                 </div>
             </div>
-
-            <!-- Modal Detail -->
-            <div class="modal fade" id="customerDetailModal" tabindex="-1" role="dialog" aria-labelledby="customerDetailModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 id="customerNameHeader" class="modal-title">Customer Detail</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span>&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <table id="customerDetailTable" class="table table-striped table-striped table-bordered dt-responsive display responsive wrap" cellspacing="0" width="100%">
-                            <thead>
-                                <tr>
-                                <th>No</th>
-                                <th>Job Name</th>
-                                <th>Job Date</th>
-                                <th>Type Job</th>
-                                <th>Status</th>
-                                <th>Notes</th>
-                                <th>Handled By</th>
-                                <th>Company Name</th>
-                                <th>Cancel Reason</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Customer Engagement Report -->
-            <!-- <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                    <div class="card-header">
-                        <h5 class="card-title">📌 Customer Engagement Report</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="filterFormCustomerEngagementReport" method="GET" action="" class="mb-3">
-                            <div class="row"> -->
-                                <!-- Customer Name -->
-                                <!-- <div class="col-md-3">
-                                    <label for="customerSelect">Customer</label>
-                                    <select id="customerSelect" class="form-control">
-                                        <option value="">-- All Customers --</option>
-                                    </select>
-                                </div> -->
-
-                                <!-- Total job -->
-                                <!-- <div class="col-md-3">
-                                    <label for="totalJobInput">Total Job (Min)</label>
-                                    <input type="number" id="totalJobInput" class="form-control" placeholder="e.g. 60" min="0" >
-                                </div> -->
-
-                                <!-- Button -->
-                                <!-- <div class="col-md-3 d-flex align-items-end">
-                                    <button type="submit" class="btn btn-info mr-2">🔍 Filter</button>
-                                    <button type="button" id="resetFilterCustomerEngagementReport" class="btn btn-secondary">🔄 Reset</button>
-                                </div>
-                            </div>
-                        </form>
-                        <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableCustomerEngagement">
-                            <thead>
-                                <tr>
-                                <th>No</th>
-                                <th>Customer</th>
-                                <th>Total Job</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-            </div> -->
-
         </div>
-    </section>
+    </div>
+
+
+
+    <!-- Customer Engagement Report -->
+    <!-- <div class="row">
+        <div class="col-md-12">
+            <div class="card card-info card-outline">
+            <div class="card-header">
+                <h5 class="card-title">📌 Customer Engagement Report</h5>
+            </div>
+            <div class="card-body">
+                <form id="filterFormCustomerEngagementReport" method="GET" action="" class="mb-3">
+                    <div class="row"> -->
+                        <!-- Customer Name -->
+                        <!-- <div class="col-md-3">
+                            <label for="customerSelect">Customer</label>
+                            <select id="customerSelect" class="form-control">
+                                <option value="">-- All Customers --</option>
+                            </select>
+                        </div> -->
+
+                        <!-- Total job -->
+                        <!-- <div class="col-md-3">
+                            <label for="totalJobInput">Total Job (Min)</label>
+                            <input type="number" id="totalJobInput" class="form-control" placeholder="e.g. 60" min="0" >
+                        </div> -->
+
+                        <!-- Button -->
+                        <!-- <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-info mr-2">🔍 Filter</button>
+                            <button type="button" id="resetFilterCustomerEngagementReport" class="btn btn-secondary">🔄 Reset</button>
+                        </div>
+                    </div>
+                </form>
+                <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableCustomerEngagement">
+                    <thead>
+                        <tr>
+                        <th>No</th>
+                        <th>Customer</th>
+                        <th>Total Job</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            </div>
+        </div>
+    </div> -->
+
 </div>
 
 <style>
-    .content-wrapper {
-        min-height: max-content !important;
-    }
-    
     #tableCustomerRetentionReport th {
         text-align: center;
     }
 
     #tableCustomerRetentionReport td {
-        text-align: left; 
+        text-align: left;
     }
 
     #tableCustomerRetentionReport td:nth-child(1),
@@ -230,7 +217,7 @@
         #tableCustomerRetentionReport th {
             text-align: center;
         }
-        
+
         #tableCustomerRetentionReport td:nth-child(1),
         #tableCustomerRetentionReport td:nth-child(3),
         #tableCustomerRetentionReport td:nth-child(6) {
@@ -251,10 +238,10 @@
             text-align: center !important;
         }
 
-        
+
     }
 
-    
+
 
 </style>
 
@@ -271,7 +258,7 @@
         let fileName = `Customer_Retention_Report_${now}`;
 
         $.ajax({
-            url: '<?= base_url('ReportCustomer/getCustomersSession') ?>', 
+            url: '<?= base_url('ReportCustomer/getCustomersSession') ?>',
             type: 'GET',
             success: function(data) {
                 var customers = JSON.parse(data);
@@ -299,7 +286,7 @@
                 }
             },
             columns: [
-                { 
+                {
                     data: "No", className: "text-center",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -309,7 +296,7 @@
                         });
                     }
                 },
-                { 
+                {
                     data: "CustomerName",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -319,7 +306,7 @@
                         });
                     }
                 },
-                { 
+                {
                     data: "CompanyName",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -328,8 +315,8 @@
                             'vertical-align': 'middle'
                         });
                     }
-                }, 
-                { 
+                },
+                {
                     data: "TotalJob",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -339,7 +326,7 @@
                         });
                     }
                 },
-                { 
+                {
                     data: "FirstJob",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -353,11 +340,11 @@
                         if (!data || data === '-') return '-';
 
                         const date = new Date(data);
-                        const options = { 
+                        const options = {
                             weekday: 'long',   // Nama hari
-                            day: '2-digit', 
+                            day: '2-digit',
                             month: 'long',     // Nama bulan lengkap
-                            year: 'numeric' 
+                            year: 'numeric'
                         };
 
                         // Format seperti: Monday, 03 November 2025
@@ -368,7 +355,7 @@
 
                     }
                 },
-                { 
+                {
                     data: "LastJob",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -382,11 +369,11 @@
                         if (!data || data === '-') return '-';
 
                         const date = new Date(data);
-                        const options = { 
+                        const options = {
                             weekday: 'long',   // Nama hari
-                            day: '2-digit', 
+                            day: '2-digit',
                             month: 'long',     // Nama bulan lengkap
-                            year: 'numeric' 
+                            year: 'numeric'
                         };
 
                         // Format seperti: Monday, 03 November 2025
@@ -397,7 +384,7 @@
 
                     }
                 },
-                { 
+                {
                     data: "RetentionDays",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -407,7 +394,7 @@
                         });
                     }
                 },
-                { 
+                {
                     data: "StatusCustomer",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -417,7 +404,7 @@
                         });
                     }
                 },
-                { 
+                {
                     data: "Action",
                     createdCell: function(td, cellData, rowData, row, col) {
                         $(td).css({
@@ -483,11 +470,11 @@
 
         // Reset Filter
         $('#resetFilterCustomerRetentionReport').on('click', function(){
-            $('#filterFormCustomerRetentionReport')[0].reset(); 
+            $('#filterFormCustomerRetentionReport')[0].reset();
             $('#customerSelectCustomerRetentionReport').val('').trigger('change');
             $('#statusCustomerRetentionReport').val('').trigger('change');
-            $('#tableCustomerRetentionReport').DataTable().ajax.reload(); 
-            
+            $('#tableCustomerRetentionReport').DataTable().ajax.reload();
+
             const untilInput = document.querySelector('input[name="untilCustomerRetentionReport"]');
             untilInput.removeAttribute("min");
         });
@@ -511,9 +498,9 @@
                     detailTable = $('#customerDetailTable').DataTable({
                         data: res.Jobs || [],
                         columns: [
-                            { 
+                            {
                                 data: null,
-                                render: (data, type, row, meta) => meta.row + 1, 
+                                render: (data, type, row, meta) => meta.row + 1,
                                 className: "text-center"
                             },
                             { data: "JobName" },
@@ -533,7 +520,7 @@
                         order: [[2, 'desc']] // urut berdasarkan JobDate
                     });
 
-                    $('#customerDetailModal').modal('show');
+                    showModal('#customerDetailModal');
                 },
                 //     var tbody = $('#customerDetailBody');
                 //     tbody.empty();
@@ -573,7 +560,7 @@
         let fileName = `Customer_Engagement_${now}`;
 
         $.ajax({
-            url: '<?= base_url('ReportCustomer/getCustomers') ?>', 
+            url: '<?= base_url('ReportCustomer/getCustomers') ?>',
             type: 'GET',
             success: function(data) {
                 var customers = JSON.parse(data);
@@ -585,10 +572,10 @@
         });
 
         $('#tableCustomerEngagement').DataTable({
-            processing: true, 
+            processing: true,
             serverSide: true,
-            ajax: { 
-                url: "<?= base_url('ReportCustomer/CustomerEngagementReport') ?>", 
+            ajax: {
+                url: "<?= base_url('ReportCustomer/CustomerEngagementReport') ?>",
                 type: "GET",
                 data: function(d) {
                     d.customerID = $('#customerSelect').val();
@@ -600,8 +587,8 @@
                 { data: "CustomerName" },
                 { data: "TotalJob" }
             ],
-            responsive: true, 
-            pageLength: 5, 
+            responsive: true,
+            pageLength: 5,
             lengthMenu: [5, 10, 25, 50, 100],
             dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
             buttons: [
@@ -654,8 +641,8 @@
 
         // Reset Filter
         $('#resetFilterCustomerEngagementReport').on('click', function(){
-            $('#filterFormCustomerEngagementReport')[0].reset(); 
-            $('#tableCustomerEngagement').DataTable().ajax.reload(); 
+            $('#filterFormCustomerEngagementReport')[0].reset();
+            $('#tableCustomerEngagement').DataTable().ajax.reload();
         });
     });
 

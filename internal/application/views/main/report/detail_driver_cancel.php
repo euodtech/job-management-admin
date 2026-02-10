@@ -1,26 +1,26 @@
-<div class="content">
-    <div class="table-responsive">
-        <table class="table table-striped">
+<div class="p-4">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Job Name</th>
-                    <th>Driver Name</th>
-                    <th>Job Type</th>
-                    <th>Reason</th>
-                    <th>Job Date</th>
-                    <th>Cancel Date</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">No</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Job Name</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Driver Name</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Job Type</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Reason</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Job Date</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Cancel Date</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
                 $no = 1;
                 foreach($job as $val): ?>
-                <tr>
-                    <td><?= $no++; ?></td>
-                    <td><?= $val['JobName'] ?></td>
-                    <td><?= $val['Fullname'] ?></td>
-                    <td>
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-4 py-3"><?= $no++; ?></td>
+                    <td class="px-4 py-3"><?= $val['JobName'] ?></td>
+                    <td class="px-4 py-3"><?= $val['Fullname'] ?></td>
+                    <td class="px-4 py-3">
                         <?php
                             if($val['TypeJob'] == 1 ) {
                                 echo 'Line Interrupt';
@@ -31,9 +31,9 @@
                             }
                         ?>
                     </td>
-                    <td><?= $val['Reason'] ?></td>
-                    <td><?= return_date_format($val['JobDate']) ?></td>
-                    <td><?= return_date_format($val['created_at']) ?></td>
+                    <td class="px-4 py-3"><?= $val['Reason'] ?></td>
+                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format($val['JobDate']) ?></td>
+                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format($val['created_at']) ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

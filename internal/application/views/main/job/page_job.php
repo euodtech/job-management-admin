@@ -24,7 +24,7 @@
     }
 
     .content_header .label {
-        flex: 0 0 120px; /* lebar tetap untuk label */
+        flex: 0 0 120px;
         font-weight: 600;
         color: #212529;
     }
@@ -33,12 +33,6 @@
         flex: 1;
         color: #495057;
     }
-
-    /* .job-gallery {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-    } */
 
     .job-gallery img {
         width: 100%;
@@ -59,280 +53,152 @@
         border-radius: 6px;
     }
     .ongoing_job {
-        background-color: #ffc107; /* kuning */
-        box-shadow: 2px 2px 8px rgba(255, 193, 7, 0.4); /* bayangan kuning transparan */
+        background-color: #ffc107;
+        box-shadow: 2px 2px 8px rgba(255, 193, 7, 0.4);
         color: white;
     }
 
     .completed_job {
-        background-color: #28a745; /* hijau */
-        box-shadow: 2px 2px 8px rgba(40, 167, 69, 0.4); /* bayangan hijau transparan */
+        background-color: #28a745;
+        box-shadow: 2px 2px 8px rgba(40, 167, 69, 0.4);
         color: white;
     }
 
 </style>
 
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Job <?= $label_job ?></h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= base_url("home") ?>">Dashboard</a></li>
-                    </ol>
-                </div>
-            </div>
-        </div><!-- /.container-fluid -->
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header ">
-                            
-                            <div class="row">
-                                <!-- Today's Job -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="info-box">
-                                        <span class="info-box-icon elevation-1" style="background-color: #0a1431ff;">
-                                            <i class="fa-solid fa-calendar-day text-white"></i>
-                                        </span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text">
-                                                Today's Job <br>
-                                                <strong id="today_job_count"></strong>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Ongoing Job -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="info-box">
-                                        <span class="info-box-icon elevation-1" style="background-color: #ffc107;">
-                                            <i class="fa-solid fa-briefcase text-white"></i>
-                                        </span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text">
-                                                Ongoing Job <br>
-                                                <strong id="ongoing_job_count"></strong>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Completed Job -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="info-box">
-                                        <span class="info-box-icon elevation-1" style="background-color: #28a745;">
-                                            <i class="fa-solid fa-circle-check text-white"></i>
-                                        </span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text">
-                                                Upcomming Job <br>
-                                                <strong id="upcoming_job_count"></strong>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Upcoming Job -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="info-box">
-                                        <span class="info-box-icon elevation-1" style="background-color: #17a2b8;">
-                                            <i class="fa-solid fa-calendar-plus text-white"></i>
-                                        </span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text">
-                                                Reschedule Job <br>
-                                                <strong id="reschedule_job_count"></strong>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
-
-                        <!-- /.card-header -->
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div>
-                                    <button class="btn btn-sm btn-primary" id="addButton" type="button">
-                                        Add Job
-                                    </button>
-                                </div>
-                                <div>
-                                    <?php if($this->session->flashdata('message')): ?>
-                                        <?= $this->session->flashdata('message'); ?>
-                                    <?php endif; ?>
-                                </div>
-                                
-
-                            </div>
-                            
-
-                            <div class="table-responsive">
-
-                                <input type="hidden" id="type_for_job" value="<?= $type_job ?>">
-                                <!--  -->
-                                <table class="table table-bordered table-striped" id="tableJobRider">
-                                    <thead class="">
-                                        <tr style="white-space: nowrap;">
-                                            <th style="width: 10%; text-align: center;">No</th>
-                                            <th>Create Job</th>
-                                            <th>Job Name</th>
-                                            <th>To Customer</th>
-                                            <th>Customer Address</th>
-                                            <th>User Get The Job</th>
-                                            <th>Type Job</th>
-                                            <th >Status Job</th>
-                                            <th style="width: 15%; text-align: center;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <!-- <tbody>
-                                        <?php 
-                                    $no = 1;
-                                    foreach($job as $val) : ?>
-                                        <tr>
-                                            <td style="text-align: center;"><?= $no++ ?></td>
-                                            <td style="white-space: nowrap;"><?= return_date_format($val['JobDate']) ?>
-                                            </td>
-                                            <td><?= $val['JobName'] ?></td>
-                                            <td><?= $val['CustomerName'] ?></td>
-                                            <td style="white-space: nowrap;"><?= $val['Address'] ?></td>
-                                            <td>
-                                                <?php $hasCancel = ($val['StatusCancelJob'] !== null && count($val['StatusCancelJob']) > 0);?>
-
-                                                <?php if ($val['Fullname'] === null): ?>
-                                                    <span class="text-danger">Not Assign User</span>
-                                                <?php else: ?>
-                                                    <span style="white-space: nowrap;">Driver Name : <strong><?= $val['Fullname'] ?></strong></span>
-                                                <?php endif; ?>
-                                            </td>
-
-                                            <td>
-                                                <?php if($val['TypeJob'] == 1) {
-                                                echo "Line Interrupt";
-                                            } elseif($val['TypeJob'] ==2) {
-                                                echo "Reconnection";
-                                            } elseif($val['TypeJob'] == 3) {
-                                                echo "Short Circuit";
-                                            } ?>
-                                            </td>
-                                            <td style="width: 20%;">
-                                                <?php if($val['Status'] == 1) : ?>
-                                                    <span class='ongoing_job'>Ongoing Job</span>
-                                                <?php elseif($val['Status'] ==2): ?>
-                                                    <span class='finished_job'>Finished Job</span>
-                                                <?php  else:?>
-                                                    <span class='awaiting_job'>Awaiting Driver</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td style="text-align: center; white-space: nowrap;">
-
-                                                <?php if($val['Status'] == null) : ?>
-                                                    <button data-jobid="<?= $val['JobID'] ?>" type="button"
-                                                        class="btn btn-sm btn-warning buttonEdit" title="Edit Job">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button> |
-                                                    <button type="button" data-jobid="<?= $val['JobID'] ?>"
-                                                        data-job-name="<?= $val['JobName'] ?>"
-                                                        class="btn btn-sm btn-danger buttonDelete" title="Delete Job">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                <?php elseif($val['Status'] == 1 OR $val['Status'] == 2): ?>
-
-                                                    <?php if($hasCancel) : ?>
-                                                        <button class="btn btn-sm  btn-danger button_history_cancel_job" data-job-id="<?= $val['JobID'] ?>" title="History cancel Job" ><i class="fa-solid fa-clock-rotate-left"></i></button> |
-                                                    <?php endif ?>
-                                                    
-                                                    <button data-jobid="<?= $val['JobID'] ?>" type="button"
-                                                        class="btn btn-sm btn-success buttonDetail" title="Detail Job">
-                                                        <i class="fas fa-eye" ></i>
-                                                    </button>
-
-                                                    <?php if($val['Status'] == 2) : ?>
-                                                        |
-                                                        <button data-jobid="<?= $val['JobID'] ?>" type="button"
-                                                            class="btn btn-sm btn-info buttonCamera" title="Detail Photo">
-                                                            <i class="fas fa-camera" ></i>
-                                                        </button>
-                                                    <?php endif; ?>
-
-                                                <?php endif ?>
-                                                
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
-
-                                    </tbody> -->
-                                </table>
-                            </div>
-
-
-
-                            <!-- /.row -->
-                        </div>
-                        <!-- ./card-body -->
-
-                        <!-- /.card-footer -->
-                    </div>
-                    <!-- /.card -->
-                </div>
-                <!-- /.col -->
-            </div>
-            <!-- /.row -->
-        </div>
-        <!--/. container-fluid -->
-    </section>
+<!-- Content Header -->
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <h1 class="text-xl font-bold text-gray-800">Job <?= $label_job ?></h1>
+        <nav class="flex">
+            <ol class="flex items-center gap-1.5 text-sm">
+                <li><a href="<?= base_url('home') ?>" class="text-primary hover:underline">Dashboard</a></li>
+            </ol>
+        </nav>
+    </div>
 </div>
 
-<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalAddLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
+<!-- Content -->
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-5 py-4 border-b border-gray-200">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Today's Job -->
+                <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-dark">
+                        <i class="fa-solid fa-calendar-day text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Today's Job</p>
+                        <p class="text-lg font-bold text-gray-800" id="today_job_count"></p>
+                    </div>
+                </div>
+
+                <!-- Ongoing Job -->
+                <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg" style="background-color: #ffc107;">
+                        <i class="fa-solid fa-briefcase text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Ongoing Job</p>
+                        <p class="text-lg font-bold text-gray-800" id="ongoing_job_count"></p>
+                    </div>
+                </div>
+
+                <!-- Upcoming Job -->
+                <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg" style="background-color: #28a745;">
+                        <i class="fa-solid fa-circle-check text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Upcomming Job</p>
+                        <p class="text-lg font-bold text-gray-800" id="upcoming_job_count"></p>
+                    </div>
+                </div>
+
+                <!-- Reschedule Job -->
+                <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+                    <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg" style="background-color: #17a2b8;">
+                        <i class="fa-solid fa-calendar-plus text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Reschedule Job</p>
+                        <p class="text-lg font-bold text-gray-800" id="reschedule_job_count"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Card Body -->
+        <div class="px-5 py-4">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <button class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors" id="addButton" type="button">
+                        Add Job
+                    </button>
+                </div>
+                <div>
+                    <?php if($this->session->flashdata('message')): ?>
+                        <?= $this->session->flashdata('message'); ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <input type="hidden" id="type_for_job" value="<?= $type_job ?>">
+                <table class="table table-bordered table-striped" id="tableJobRider">
+                    <thead>
+                        <tr class="whitespace-nowrap">
+                            <th style="width: 10%; text-align: center;">No</th>
+                            <th>Create Job</th>
+                            <th>Job Name</th>
+                            <th>To Customer</th>
+                            <th>Customer Address</th>
+                            <th>User Get The Job</th>
+                            <th>Type Job</th>
+                            <th>Status Job</th>
+                            <th style="width: 15%; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Job Modal -->
+<div id="modal" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalAddLabel">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
 
             <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalAddLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modalAddLabel"></h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
             <!-- Body -->
-            <div class="modal-body">
+            <div class="p-4 overflow-y-auto">
                 <form id="formAddUser" method="post">
 
-                    <h5>Job Information: </h5>
-                    <hr>
-                    <div class="form-group">
+                    <h5 class="text-base font-semibold text-gray-800">Job Information: </h5>
+                    <hr class="my-3 border-gray-200">
+                    <div class="form-group mb-4">
                         <input type="hidden" id="job_id" name="job_id" class="form-control">
-                        <label for="fullname">Job Name</label>
-                        <input type="text" class="form-control" id="job_name" name="job_name"
+                        <label for="job_name" class="block text-sm font-medium text-gray-700 mb-1">Job Name</label>
+                        <input type="text" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="job_name" name="job_name"
                             placeholder="Enter Job Name">
                     </div>
-                    <!-- <div class="form-group">
-                        <label for="customer_id">Customer</label>
-                        <select class="form-control select2For_modal" name="customer_id" id="customer_id" required>
-                            <option value="">--- Select Customer ---</option>
-                            <?php foreach($customer as $val): ?>
-                            <option value="<?= $val['CustomerID'] ?>"><?= $val['CustomerName'] ?> -
-                                <?= $val['Address'] ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div> -->
-                    <div class="form-group">
-                        <label for="type_job">Type Job</label>
-                        <select class="form-control select2bs4" name="type_job" id="type_job" disabled required>
+                    <div class="form-group mb-4">
+                        <label for="type_job" class="block text-sm font-medium text-gray-700 mb-1">Type Job</label>
+                        <select class="form-control select2bs4 w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" name="type_job" id="type_job" disabled required>
                             <option value="">--- Select Type Job ---</option>
                             <option value="1">Line Interrupt</option>
                             <option value="2">Reconnection</option>
@@ -342,42 +208,40 @@
 
                         <input type="hidden" name="type_job_input" id="type_job_input">
                     </div>
-                    <div class="form-group">
-                        <label for="type_job">Date Job</label>
-                        <input type="date" class="form-control" id="job_date" name="job_date" value="<?= date('Y-m-d') ?>"
+                    <div class="form-group mb-4">
+                        <label for="job_date" class="block text-sm font-medium text-gray-700 mb-1">Date Job</label>
+                        <input type="date" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="job_date" name="job_date" value="<?= date('Y-m-d') ?>"
                             placeholder="Enter Job Date">
                     </div>
 
-                    <hr>
-                    <h5>Customer Information: </h5>
-                    <hr>
-                    <div class="form-group">
-                        <label for="fullname">Customer Name</label>
+                    <hr class="my-3 border-gray-200">
+                    <h5 class="text-base font-semibold text-gray-800">Customer Information: </h5>
+                    <hr class="my-3 border-gray-200">
+                    <div class="form-group mb-4">
+                        <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
                         <input type="hidden" class="form-control" id="customer_id" name="customer_id">
-                        <input type="text" class="form-control" id="customer_name" name="customer_name"
+                        <input type="text" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="customer_name" name="customer_name"
                             placeholder="Enter Customer Name">
                     </div>
-                    <div class="form-group">
-                        <label for="fullname">Customer Email</label>
-                        <input type="email" class="form-control" id="customer_email" name="customer_email"
+                    <div class="form-group mb-4">
+                        <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
+                        <input type="email" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="customer_email" name="customer_email"
                             placeholder="Enter Customer Email">
                     </div>
-                    <div class="form-group">
-                        <label for="phone_number">Phone Number</label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">+63</span>
-                            </div>
-                            <input type="text" class="form-control" id="phone_number" name="phone_number"
+                    <div class="form-group mb-4">
+                        <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
+                            <input type="text" class="form-control w-full rounded-r-lg rounded-l-none border-gray-300 text-sm focus:border-primary focus:ring-primary" id="phone_number" name="phone_number"
                                 placeholder="Enter Phone Number">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="type_job">Address</label>
-                        <textarea name="address" id="address" rows="5" class="form-control"></textarea>
+                    <div class="form-group mb-4">
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <textarea name="address" id="address" rows="5" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary"></textarea>
                     </div>
-                    <div class="form-group mt-3">
-                        <label for="map">Select Location on Map</label>
+                    <div class="form-group mb-4 mt-3">
+                        <label for="map" class="block text-sm font-medium text-gray-700 mb-1">Select Location on Map</label>
                         <div id="map" style="width: 100%; height: 300px; border-radius: 8px; border: 1px solid #ccc;"></div>
                         <input type="hidden" id="latitude" name="latitude">
                         <input type="hidden" id="longitude" name="longitude">
@@ -386,30 +250,30 @@
             </div>
 
             <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formAddUser" class="btn btn-sm btn-primary">Save</button>
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal">Close</button>
+                <button type="submit" form="formAddUser" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors">Save</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal_delete" tabindex="-1" role="dialog" aria-labelledby="modalAddLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
+<!-- Delete Job Modal -->
+<div id="modal_delete" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalDeleteLabel">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
 
             <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalDeleteLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modalDeleteLabel"></h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_delete">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
             <!-- Body -->
-            <div class="modal-body">
+            <div class="p-4 overflow-y-auto">
                 <form id="formDelete" method="post">
                     <input type="hidden" id="job_id" name="job_id">
                     <span>Do You Sure To delete Job Name : <strong id="job_name"></strong></span>
@@ -417,30 +281,30 @@
             </div>
 
             <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Save</button>
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_delete">Close</button>
+                <button type="submit" form="formDelete" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors">Save</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal_detail" tabindex="-1" role="dialog" aria-labelledby="modalDetailLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
+<!-- Detail Job Modal -->
+<div id="modal_detail" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalDetailLabel">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
 
             <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalDetailLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modalDetailLabel"></h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_detail">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
             <!-- Body -->
-            <div class="modal-body">
+            <div class="p-4 overflow-y-auto">
                 <div class="container_status_job ">
                     <p class="mb-0" id="to_status_detail"></p>
                 </div>
@@ -458,7 +322,7 @@
                         <div class="label">Type Job:</div>
                         <div class="value" id="to_type_detail"></div>
                     </div>
-                    
+
                     <div class="row-item job_reschedule">
                         <div class="label">Create Job :</div>
                         <div class="value" id="to_assign_date"></div>
@@ -467,116 +331,95 @@
                         <div class="label">Reschedule Job :</div>
                         <div class="value" id="to_reschedule_date"></div>
                     </div>
-
-                    <!-- <div class="row-item">
-                        <div class="label">Assign To Job:</div>
-                        <div class="value" id="to_assign_detail"></div>
-                    </div> -->
-                </div>
-
-                <!-- <div class="row job-gallery">
-                    <div class="col-12 col-md-6">
-                        <img src="http://quetraverse.pro/efms/api/storage/app/finished_jobs/job_4_1759466668_0.png" alt="Job Photo 1">
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <img src="http://quetraverse.pro/efms/api/storage/app/finished_jobs/job_4_1759466668_0.png" alt="Job Photo 2">
-                    </div>
-                </div> -->
-            </div>
-
-            <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <!-- <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Save</button> -->
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modal_camera" tabindex="-1" role="dialog" aria-labelledby="modalCameraLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
-
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalCameraLabel">Detail Photo Job</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-
-            <!-- Body -->
-            <div class="modal-body">
-                <div class="row job-gallery">
-                    
                 </div>
             </div>
 
             <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <!-- <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Save</button> -->
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_detail">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal_history_cancel_job" tabindex="-1" role="dialog" aria-labelledby="modalCameraLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
+<!-- Photo Job Modal -->
+<div id="modal_camera" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalCameraLabel">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-4xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
 
             <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalCameraLabel">Detail Cancel Job</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modalCameraLabel">Detail Photo Job</h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_camera">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
             <!-- Body -->
-            <div class="modal-body body_detail_history_cancel_job">
-                
+            <div class="p-4 overflow-y-auto">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 job-gallery">
+
+                </div>
             </div>
 
             <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_camera">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+<!-- History Cancel Job Modal -->
+<div id="modal_history_cancel_job" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalHistoryCancelLabel">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+
+            <!-- Header -->
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modalHistoryCancelLabel">Detail Cancel Job</h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_history_cancel_job">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4 overflow-y-auto body_detail_history_cancel_job">
+
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_history_cancel_job">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script>
 function showMaps(defaultLat, defaultLng) {
-    // ✅ Cek kalau sebelumnya sudah ada map, hapus dulu biar gak dobel instance
     if (window.currentMap) {
         window.currentMap.remove();
         window.currentMap = null;
     }
 
-    // ✅ Buat map baru
     var map = L.map('map').setView([defaultLat, defaultLng], 13);
-    window.currentMap = map; // simpan instance biar bisa dihapus nanti
+    window.currentMap = map;
 
     var marker = L.marker([defaultLat, defaultLng]).addTo(map);
 
     $('#latitude').val(defaultLat);
     $('#longitude').val(defaultLng);
 
-    // Tile layer OSM
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
 
-    // Klik di peta untuk ubah posisi marker
     map.on('click', function(e) {
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
@@ -591,7 +434,6 @@ function showMaps(defaultLat, defaultLng) {
         $('#longitude').val(lng);
     });
 
-    // ✅ Tambahkan Search Geocoder (fokus Filipina)
     var geocoder = L.Control.geocoder({
         geocoder: new L.Control.Geocoder.Nominatim({
             geocodingQueryParams: {
@@ -618,12 +460,15 @@ function showMaps(defaultLat, defaultLng) {
     })
     .addTo(map);
 
-    // 🔥 Fix tampilan map setengah saat modal muncul
-    $('#modal').on('shown.bs.modal', function () {
-        setTimeout(function() {
-            map.invalidateSize();
-        }, 300);
-    });
+    // Fix map rendering when Preline overlay opens
+    var modalEl = document.querySelector('#modal');
+    if (modalEl) {
+        modalEl.addEventListener('open.hs.overlay', function () {
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 400);
+        });
+    }
 }
 </script>
 
@@ -671,7 +516,7 @@ $(document).ready(function() {
     // handle button add
     buttonAdd.on('click', function(e) {
         e.preventDefault();
-        modal.modal('show');
+        showModal('#modal');
 
         textHeaderModal.text('Add Job');
         formUser.attr("action", '<?= base_url('create-job') ?>')
@@ -680,7 +525,6 @@ $(document).ready(function() {
         modal.find('#job_name').val('');
         const today = new Date().toISOString().slice(0, 10);
         modal.find('#job_date').val(today);
-        // modal.find('#customer_id').val('').trigger('change');
 
         let type_job_label = '<?= $this->uri->segment(1) ?>';
         let value_selected;
@@ -698,7 +542,7 @@ $(document).ready(function() {
             case 'disconnection-job':
                 value_selected = "4";
                 break;
-        
+
             default:
                 value_selected = "1";
                 break;
@@ -714,35 +558,35 @@ $(document).ready(function() {
     });
 
     var table = $('#tableJobRider').DataTable({
-        processing: false, 
+        processing: false,
         serverSide: true,
-        ajax: { 
-            url: "<?= base_url('Job/getDataAllJob/') ?>" + type_job, 
+        ajax: {
+            url: "<?= base_url('Job/getDataAllJob/') ?>" + type_job,
             type: "GET",
         },
         columns: [
             { data: "no", className: "text-center" },
-            { 
+            {
                 data: "JobDate",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
-                } 
+                }
             },
             { data: "JobName" },
-            { 
+            {
                 data: "CustomerName",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
                 }
             },
-            { 
+            {
                 data: "Address",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
                 }
-                
+
              },
-            { 
+            {
                 data: "Fullname",
                 render: function(data, type, row) {
 
@@ -750,9 +594,9 @@ $(document).ready(function() {
 
                     if (data === null) {
 
-                        userDriver = `<span class="text-danger">Not Assign User</span>`;
+                        userDriver = `<span class="text-red-600">Not Assign User</span>`;
                     } else {
-                        
+
                         userDriver = ` <span style="white-space: nowrap;">Driver Name : <strong>${data}</strong></span>`;
                     }
 
@@ -760,7 +604,7 @@ $(document).ready(function() {
 
                 }
             },
-            { 
+            {
                 data: "TypeJob",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
@@ -782,7 +626,7 @@ $(document).ready(function() {
 
                 }
             },
-            { 
+            {
                 data: "Status",
                 render: function(data, type, row) {
 
@@ -790,12 +634,12 @@ $(document).ready(function() {
                     if(data == 1) {
 
                         labelStatusJob = `<span class='ongoing_job'>Ongoing Job</span>`;
-                        
+
                     } else if(data ==2) {
-                        
+
                         labelStatusJob = `<span class='finished_job'>Finished Job</span>`;
                     }  else if(data ==3) {
-                        
+
                         labelStatusJob = `<span class='reschedule_job'>Reschedule Job</span>`;
                     } else {
                         labelStatusJob = `<span class='awaiting_job'>Awaiting Driver</span>`;
@@ -803,10 +647,10 @@ $(document).ready(function() {
                     }
 
                     return labelStatusJob;
-                        
+
                 }
             },
-            { 
+            {
                 data: "JobID",
                 className: "text-center",
                 createdCell: function(td, cellData, rowData, row, col) {
@@ -820,12 +664,12 @@ $(document).ready(function() {
 
                         labelButtonAction = `
                         <button data-jobid="${data}" type="button"
-                            class="btn btn-sm btn-warning buttonEdit" title="Edit Job">
+                            class="btn-tw-warning buttonEdit" title="Edit Job">
                             <i class="fas fa-edit"></i>
                         </button> |
                         <button type="button" data-jobid="${data}"
                             data-job-name="${row.JobName}"
-                            class="btn btn-sm btn-danger buttonDelete" title="Delete Job">
+                            class="btn-tw-danger buttonDelete" title="Delete Job">
                             <i class="fas fa-trash"></i>
                         </button>
                         `;
@@ -836,17 +680,17 @@ $(document).ready(function() {
                         if(row.StatusCancelJob.length > 0) {
 
                             labelButtonAction = `
-                            <button class="btn btn-sm  btn-danger button_history_cancel_job" data-job-id="${data}" title="History cancel Job" ><i class="fa-solid fa-clock-rotate-left"></i></button> | 
+                            <button class="btn-tw-danger button_history_cancel_job" data-job-id="${data}" title="History cancel Job" ><i class="fa-solid fa-clock-rotate-left"></i></button> |
 
                             <button data-jobid="${data}" type="button"
-                                class="btn btn-sm btn-success buttonDetail" title="Detail Job">
+                                class="btn-tw-success buttonDetail" title="Detail Job">
                                 <i class="fas fa-eye" ></i>
                             </button>
                             `;
                         } else {
                             labelButtonAction = `
                             <button data-jobid="${data}" type="button"
-                                class="btn btn-sm btn-success buttonDetail" title="Detail Job">
+                                class="btn-tw-success buttonDetail" title="Detail Job">
                                 <i class="fas fa-eye" ></i>
                             </button>
                             `
@@ -857,7 +701,7 @@ $(document).ready(function() {
                             labelButtonAction += `
                              |
                             <button data-jobid="${data}" type="button"
-                                class="btn btn-sm btn-info buttonCamera" title="Detail Photo">
+                                class="btn-tw-info buttonCamera" title="Detail Photo">
                                 <i class="fas fa-camera" ></i>
                             </button>
                             `;
@@ -870,8 +714,8 @@ $(document).ready(function() {
                 }
             },
         ],
-        responsive: false, 
-        pageLength: 10, 
+        responsive: false,
+        pageLength: 10,
         lengthMenu: [10, 25, 50, 100],
         paging: true,
         autoWidth: true,
@@ -915,7 +759,7 @@ function returnDateFormatDetailJS(value) {
 $(document).on('click', '.buttonEdit', function(e) {
 
     e.preventDefault();
-    $('#modal').modal('show');
+    showModal('#modal');
 
     let jobID = $(this).data('jobid');
     $('#modalAddLabel').text('Edit Job');
@@ -959,7 +803,7 @@ $(document).on('click', '.buttonEdit', function(e) {
 $(document).on('click', '.buttonDelete', function(e) {
 
     e.preventDefault();
-    $('#modal_delete').modal('show');
+    showModal('#modal_delete');
     $("#modalDeleteLabel").text('Delete Job')
     $("#formDelete").attr("action", '<?= base_url('delete-job') ?>');
 
@@ -975,7 +819,7 @@ $(document).on('click', ".buttonDetail", function(e) {
     e.preventDefault();
     let jobID = $(this).data('jobid');
 
-    $('#modal_detail').modal('show');
+    showModal('#modal_detail');
     $('#modal_detail').find('#modalDetailLabel').text('Detail Job');
 
     $.ajax({
@@ -987,8 +831,6 @@ $(document).on('click', ".buttonDetail", function(e) {
         dataType: 'json',
         success: function(response) {
 
-            // console.log(response);
-
             let statusJob = response.Status;
             let typeJob = response.TypeJob;
 
@@ -998,15 +840,15 @@ $(document).on('click', ".buttonDetail", function(e) {
 
                 labelJob = 'Ongoing';
                 classLabelJob = "ongoing_job";
-                $('#modal_detail').find('.job_reschedule').addClass('d-none');
+                $('#modal_detail').find('.job_reschedule').addClass('hidden');
             } else if(statusJob == 2) {
                 labelJob = 'Complete Job';
                 classLabelJob = "completed_job";
-                $('#modal_detail').find('.job_reschedule').addClass('d-none');
+                $('#modal_detail').find('.job_reschedule').addClass('hidden');
             } else if(statusJob == 3) {
                 labelJob = 'Reschedule Job';
                 classLabelJob = "reschedule_job";
-                $('#modal_detail').find('.job_reschedule').removeClass('d-none');
+                $('#modal_detail').find('.job_reschedule').removeClass('hidden');
             }
 
             if(typeJob == 1) {
@@ -1017,8 +859,6 @@ $(document).on('click', ".buttonDetail", function(e) {
                 labelTypeJob = "Short Circuit";
             }
 
-            // console.log(response.RescheduledDateJob);
-
             $('#modal_detail').find('#to_customer_detail').text(response.CustomerName);
             $('#modal_detail').find('#to_driver_detail').text(response.Fullname);
             $('#modal_detail').find('#to_status_detail').text(labelJob);
@@ -1028,7 +868,7 @@ $(document).on('click', ".buttonDetail", function(e) {
             $('#modal_detail').find('.container_status_job').removeClass("ongoing_job");
             $('#modal_detail').find('.container_status_job').removeClass("completed_job");
             $('#modal_detail').find('.container_status_job').addClass(classLabelJob);
-            
+
         },
     })
 
@@ -1039,7 +879,7 @@ $(document).on('click', '.button_history_cancel_job', function() {
 
     let jobID = $(this).data('job-id');
 
-    $('#modal_history_cancel_job').modal('show');
+    showModal('#modal_history_cancel_job');
     $('#modal_history_cancel_job .body_detail_history_cancel_job').load('<?= base_url('Job/historyCancelJob?jobID=') ?>' + jobID);
 });
 
@@ -1050,7 +890,7 @@ $(document).on('click', '.buttonCamera', function(e) {
     e.preventDefault();
     let jobID = $(this).data('jobid');
 
-    $('#modal_camera').modal('show');
+    showModal('#modal_camera');
 
     $.ajax({
         url: '<?= base_url('Job/getDetailPhoto') ?>',
@@ -1059,24 +899,21 @@ $(document).on('click', '.buttonCamera', function(e) {
         dataType: 'json',
         success: function(response) {
 
-            // Kosongkan isi sebelumnya dulu
             let galleryContainer = $('.job-gallery');
             galleryContainer.empty();
 
-            // Kalau data ada
             if (response.length > 0) {
                 response.forEach((item, index) => {
                     let html = `
-                        <div class="col-12 col-md-3 mb-3">
-                            <img src="${item.Photo}" alt="Job Photo ${index + 1}" class="img-fluid rounded shadow-sm">
+                        <div>
+                            <img src="${item.Photo}" alt="Job Photo ${index + 1}" class="rounded-lg shadow-sm">
                         </div>
                     `;
                     galleryContainer.append(html);
                 });
             } else {
-                // Kalau gak ada foto
                 galleryContainer.html(`
-                    <div class="col-12 text-center text-muted py-4">
+                    <div class="col-span-full text-center text-gray-500 py-4">
                         <i class="fa-solid fa-image-slash fa-2x mb-2"></i><br>
                         No photos available
                     </div>
@@ -1091,6 +928,6 @@ $(document).on('click', '.buttonCamera', function(e) {
             });
         }
     });
-    
+
 });
 </script>

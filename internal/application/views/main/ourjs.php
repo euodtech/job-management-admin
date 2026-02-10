@@ -1,4 +1,20 @@
 <script type="text/javascript">
+
+    // Modal compatibility helpers (Preline)
+    function showModal(selector) {
+        const el = document.querySelector(selector);
+        if (el && typeof HSOverlay !== 'undefined') {
+            HSOverlay.open(el);
+        }
+    }
+
+    function hideModal(selector) {
+        const el = document.querySelector(selector);
+        if (el && typeof HSOverlay !== 'undefined') {
+            HSOverlay.close(el);
+        }
+    }
+
 	function sweatAlertLoader() {
         $('#content-blur').addClass('blur');
         let timerInterval;
@@ -31,10 +47,10 @@
 
    function refreshTable(callback) {
         var table = $('#example1').DataTable();
-        table.destroy(); 
+        table.destroy();
 
         $('.ref').load(location.href + ' .this', function() {
-            setTimeout(function() { 
+            setTimeout(function() {
                 $('#example1').DataTable({
                     "responsive": false,
                     "autoWidth": true,
@@ -43,13 +59,13 @@
                 });
 
                 if (typeof callback === 'function') {
-                    callback(); 
+                    callback();
                 }
             }, 100);
         });
 
         $('.ref3').load(location.href + ' .this3', function() {
-            setTimeout(function() { 
+            setTimeout(function() {
                 $("#example3").DataTable({
                     "stateSave": true,
                     "paging": true,
@@ -57,7 +73,7 @@
 
                 });
                 if (typeof callback === 'function') {
-                    callback(); 
+                    callback();
                 }
             }, 100);
         });
@@ -65,15 +81,15 @@
 
 
     function afterTableRefresh() {
-        Swal.close(); 
+        Swal.close();
     }
 
     function import_file(form) {
         $('#content-blur').addClass('blur');
-        sweatAlertLoader(); 
+        sweatAlertLoader();
         var formData = new FormData(form);
         $.ajax({
-            url: $(form).attr('action'), 
+            url: $(form).attr('action'),
             type: $(form).attr('method'),
             data: formData,
             processData: false,
@@ -96,9 +112,9 @@
     function create(url,serializedData)
     {
         $('#content-blur').addClass('blur');
-        $('#modal-add').modal('hide');
+        hideModal('#modal-add');
 
-        sweatAlertLoader(); 
+        sweatAlertLoader();
 
         $.ajax({
             url: url,
@@ -108,7 +124,7 @@
             success: function(response) {
                 if (response.status === 'success') {
                     refreshTable(afterTableRefresh);
-                   
+
                 } else {
                     alert('Terjadi kesalahan: ' + response.message);
                 }
@@ -123,9 +139,9 @@
     {
 
         $('#content-blur').addClass('blur');
-        $('#modal-add').modal('hide');
+        hideModal('#modal-add');
 
-        sweatAlertLoader(); 
+        sweatAlertLoader();
         $.ajax({
             url: urlUpdate,
             type: 'POST',
@@ -147,7 +163,7 @@
     function deleteItem(url)
     {
         $('#content-blur').addClass('blur');
-        sweatAlertLoader(); 
+        sweatAlertLoader();
     	$.ajax({
             url: url,
             type: 'GET',
@@ -167,7 +183,7 @@
     function deleteProduct(url)
     {
         $('#content-blur').addClass('blur');
-        sweatAlertLoader(); 
+        sweatAlertLoader();
     	$.ajax({
             url: url,
             type: 'GET',
@@ -189,7 +205,7 @@
 	function updateImage(urlUpdate,serializedData)
 	{
         $('#content-blur').addClass('blur');
-        $('#modal-add').modal('hide');
+        hideModal('#modal-add');
         sweatAlertLoader();
 
 		$.ajax({
@@ -197,7 +213,7 @@
             type: 'POST',
             data: serializedData,
             dataType: 'json',
-            processData: false,  
+            processData: false,
             contentType: false,
             success: function(response) {
                 if (response.status === 'success') {
@@ -216,16 +232,15 @@
 	{
 
         $('#content-blur').addClass('blur');
-        $('#modal-add').modal('hide');
+        hideModal('#modal-add');
         sweatAlertLoader();
-		
+
         $.ajax({
             url: url,
             type: 'POST',
             data: serializedData,
             dataType: 'json',
-            contentType: 'application/x-www-form-urlencoded',
-            processData: false,  
+            processData: false,
             contentType: false,
             success: function(response) {
                 // console.log(response);

@@ -1,92 +1,55 @@
-<style type="text/css">
-/* .login-page {
-    background-color: #070f26;
-} */
-
-.loginnich {
-    background-color: #da1e26;
-    border-color: #da1e26;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #251abe, #9f22f0) !important;
-    border-color: unset !important;
-    transition: transform 0.2s ease-in-out;
-    /* biar animasi halus */
-}
-
-.btn-primary:hover {
-    transform: scale(1.02);
-    /* agak gede 5% pas hover */
-}
-
-.card {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-}
-
-
-.card-body {
-    border-radius: 45px;
-    /* Adjust the value as needed */
-}
-
-.field-error .form-control {
-    border-color: #dc3545 !important;
-}
-.field-error .input-group-text {
-    border-color: #dc3545 !important;
-}
-.inline-error {
-    color: #dc3545;
-    font-size: 0.8rem;
-    margin-top: 4px;
-    display: block;
-}
+<style>
+.field-error input { @apply !border-red-500; }
+.field-error .input-icon-box { @apply !border-red-500; }
+.inline-error { @apply text-red-500 text-xs mt-1 block; }
 </style>
-<div class="login-box">
-    <div class="login-logo">
-        <a href="<?php echo base_url('auth'); ?>">
-        </a>
 
-    </div>
-    <!-- /.login-logo -->
-    <div class="card card-image">
-        <div class="card-header text-center" style="background-color:white;">
-            <img class="img-logo-text" src="<?= base_url('assets/dist/logo_efms.jpg') ?>" style="width:50%;">
+<div class="w-full max-w-md mx-auto px-4">
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Logo Header -->
+        <div class="bg-white px-6 pt-8 pb-4 text-center">
+            <img class="h-14 mx-auto object-contain" src="<?= base_url('assets/dist/logo_efms.jpg') ?>" alt="EFMS Logo">
         </div>
-        <div class="card-body login-card-body">
-            <p class="login-box-msg">Administrator Sign In</p>
+
+        <!-- Form Body -->
+        <div class="px-8 pb-8">
+            <p class="text-center text-gray-500 text-sm mb-6">Administrator Sign In</p>
+
             <?php echo $this->session->flashdata('message'); ?>
+
             <form id="loginForm" action="<?php echo base_url('auth/login'); ?>" method="post" novalidate>
-                <div class="mb-3">
-                    <div class="input-group" id="email-group">
-                        <input type="email" autofocus class="form-control" name="email" id="login-email" placeholder="Email"
-                            autocomplete="off">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fa fa-envelope"></span>
-                            </div>
-                        </div>
+                <!-- Email -->
+                <div class="mb-4" id="email-wrapper">
+                    <div class="flex" id="email-group">
+                        <input type="email" autofocus
+                               class="flex-1 rounded-l-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                               name="email" id="login-email" placeholder="Email" autocomplete="off">
+                        <span class="input-icon-box inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3">
+                            <i class="fa fa-envelope text-gray-400 text-sm"></i>
+                        </span>
                     </div>
                     <span class="inline-error" id="email-error"></span>
                 </div>
-                <div class="mb-3">
-                    <div class="input-group" id="password-group">
-                        <input type="password" class="form-control" name="password" id="login-password" placeholder="Password">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fa fa-lock"></span>
-                            </div>
-                        </div>
+
+                <!-- Password -->
+                <div class="mb-6" id="password-wrapper">
+                    <div class="flex" id="password-group">
+                        <input type="password"
+                               class="flex-1 rounded-l-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                               name="password" id="login-password" placeholder="Password">
+                        <span class="input-icon-box inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3">
+                            <i class="fa fa-lock text-gray-400 text-sm"></i>
+                        </span>
                     </div>
                     <span class="inline-error" id="password-error"></span>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <button type="submit" class="loginnich btn btn-primary btn-block">Sign In</button>
-                    </div>
-                    <!-- /.col -->
-                </div>
+
+                <!-- Submit -->
+                <button type="submit"
+                        class="w-full rounded-lg bg-gradient-to-r from-[#251abe] to-[#9f22f0] px-4 py-2.5 text-sm font-semibold text-white hover:scale-[1.02] transition-transform">
+                    Sign In
+                </button>
             </form>
 
             <script>
@@ -146,6 +109,5 @@
             });
             </script>
         </div>
-        <!-- /.login-card-body -->
     </div>
 </div>

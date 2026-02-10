@@ -1,268 +1,213 @@
-<style>
-.field-error .form-control,
-.field-error .select2-selection {
-    border-color: #dc3545 !important;
-}
-.field-error .input-group-text {
-    border-color: #dc3545 !important;
-}
-.inline-error {
-    color: #dc3545;
-    font-size: 0.8rem;
-    margin-top: 4px;
-    display: block;
-}
-</style>
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Rider</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= base_url("home") ?>">Dashboard</a></li>
-                    </ol>
-                </div>
-            </div>
-            <?php if ($this->session->flashdata('message')): ?>
-                <div class="container-fluid mt-2">
-                    <?= $this->session->flashdata('message'); ?>
-                </div>
-            <?php endif; ?>
-            
-        </div><!-- /.container-fluid -->
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-
-                        <?php if($this->session->userdata('Role') ==1): ?>
-                        <form action="<?= base_url('user-list') ?>" method="post" class="mb-3">
-                            <div class="form-row align-items-end">
-                                <div class="col-auto">
-                                    <label>Company</label>
-                                    <select name="company_select" class="form-control select2bs4">
-                                        <option value="all">----- All Company -----</option>
-                                        <?php foreach($list_company as $val): ?>
-                                            <option value="<?= $val['ListCompanyID'] ?>"
-                                                <?= (isset($_POST['company_select']) && $_POST['company_select'] == $val['ListCompanyID']) ? "selected" : "" ?>>
-                                                <?= $val['CompanyName'] ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-auto">
-                                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
-                                </div>
-                            </div>
-                        </form>
-                        <?php endif; ?>
-
-                        <!-- ROW 2: Tombol Excel + Add -->
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div class="d-flex" style="gap: 10px;">
-                                <!-- Import Excel -->
-                                <form id="import_excel_form" enctype="multipart/form-data">
-                                    <label for="import_excel" class="btn btn-success btn-sm mb-0">
-                                        <i class="fa fa-file-excel"></i> Import Excel
-                                    </label>
-                                    <input type="file" id="import_excel" name="import_excel" accept=".xls,.xlsx" hidden>
-                                </form>
-
-                                <!-- Download Example -->
-                                <a style="height: fit-content; padding: .31rem .5rem;" href="<?= base_url('assets/dist/Example Excel Upload Rider.xlsx') ?>"
-                                    class="btn btn-primary btn-sm mb-0" download>
-                                    <i class="fa fa-download"></i> Download Example Excel
-                                </a>
-                            </div>
-
-                            <!-- Button Add -->
-                            <button class="btn btn-sm btn-primary" style="padding: .31rem .5rem;" id="add_user" type="button">
-                                Add User
-                            </button>
-                        </div>
-
-                    </div>
-
-                    <div class="card-body">
-                        <table class="table table-bordered table-striped" id="example3" style="width: 100%;">
-                            <thead>
-                                <tr class="text-center">
-                                    <th style="width: 10%;">No</th>
-                                    <th>Company</th>
-                                    <th>User Name</th>
-                                    <th>User Role</th>
-                                    <th>Email</th>
-                                    <th>Phone Number</th>
-                                    <th style="width: 15%;">Action</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <?php $no = 1; foreach($user as $val): ?>
-                                <tr class="text-center">
-                                    <td><?= $no++ ?></td>
-                                    <td><?= $val['CompanyName'] ?></td>
-                                    <td><?= $val['Fullname'] ?></td>
-                                    <td><?= $val['UserRole'] ?></td>
-                                    <td><?= $val['Email'] ?></td>
-                                    <td><?= $val['PhoneNumber'] ?></td>
-                                    <td>
-                                        <button data-userid="<?= $val['UserID'] ?>" class="btn btn-warning btn-sm buttonEditUser">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-
-                                        <button data-userid="<?= $val['UserID'] ?>" data-email="<?= $val['Email'] ?>"
-                                            class="btn btn-danger btn-sm buttonDeleteUser">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                        <!-- ./card-body -->
-
-                        <!-- /.card-footer -->
-                    </div>
-                    <!-- /.card -->
-                </div>
-                <!-- /.col -->
-            </div>
-            <!-- /.row -->
+<!-- Content Header -->
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <h1 class="text-xl font-bold text-gray-800">Rider</h1>
+        <nav class="flex">
+            <ol class="flex items-center gap-1.5 text-sm">
+                <li><a href="<?= base_url('home') ?>" class="text-primary hover:underline">Dashboard</a></li>
+            </ol>
+        </nav>
+    </div>
+    <?php if ($this->session->flashdata('message')): ?>
+        <div class="mt-2">
+            <?= $this->session->flashdata('message'); ?>
         </div>
-        <!--/. container-fluid -->
-    </section>
+    <?php endif; ?>
 </div>
 
-<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalAddLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalAddLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+<!-- Content -->
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <!-- Card Header -->
+        <div class="px-5 py-4 border-b border-gray-200">
 
-            <!-- Body -->
-            <div class="modal-body">
-                 <div class="mt-2 <?= ($this->session->userdata('Role') == 1) ? "d-none" : "" ?>" >
-                    <span id="company_package_badge" class="badge badge-secondary">Package: -</span>
-                </div>
-                <form id="formAddUser" method="post">
-                    <div class="form-group <?= ($this->session->userdata('Role') != 1) ? "d-none" : "" ?>">
-                        <label for="email">Select Company</label>
-                        <select name="company_selected" class="form-control select2For_modal" id="company_selected" required>
-                            <option value="">---- Select Company ----</option>
+            <?php if($this->session->userdata('Role') ==1): ?>
+            <form action="<?= base_url('user-list') ?>" method="post" class="mb-3">
+                <div class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                        <select name="company_select" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2bs4">
+                            <option value="all">----- All Company -----</option>
                             <?php foreach($list_company as $val): ?>
-                                <option value="<?= $val['ListCompanyID'] ?>" data-subscribe="<?= $val['CompanySubscribe'] ?>" <?= ($this->session->userdata('CompanyID') == $val['ListCompanyID']) ? "selected" : "" ?> <?= ($this->session->userdata('Role') != 1) ?  "disabled" : "" ?> ><?= $val['CompanyName'] ?></option>
+                                <option value="<?= $val['ListCompanyID'] ?>"
+                                    <?= (isset($_POST['company_select']) && $_POST['company_select'] == $val['ListCompanyID']) ? "selected" : "" ?>>
+                                    <?= $val['CompanyName'] ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
-                        <span class="inline-error" id="error-company_selected"></span>
                     </div>
-                    <div class="form-group">
-                        <input type="hidden" id="user_id" name="user_id">
-                        <label for="fullname">Fullname</label>
-                        <input type="text" class="form-control" id="fullname" name="fullname"
-                            placeholder="Enter Full Name">
-                        <span class="inline-error" id="error-fullname"></span>
+                    <div>
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Submit</button>
                     </div>
+                </div>
+            </form>
+            <?php endif; ?>
 
-                    <!-- New feature where the riders will have two roles. One is Rider only and one is a viewing user. -Kian -->
-                    <div class="form-group">
-                        <label for="email">Select User Role</label>
-                         <select name="user_role" class="form-control select2For_modal" id="user_role" required>
-                            <option value="">Select Role</option>
-                            <option value="monitor">Monitor</option>
-                            <option value="field">Field</option>
-                         </select>
-                        <span class="inline-error" id="error-user_role"></span>
-                    </div>
+            <!-- Row 2: Excel + Add buttons -->
+            <div class="flex justify-between items-center">
+                <div class="flex gap-2.5">
+                    <!-- Import Excel -->
+                    <form id="import_excel_form" enctype="multipart/form-data">
+                        <label for="import_excel" class="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 transition-colors cursor-pointer">
+                            <i class="fa fa-file-excel"></i> Import Excel
+                        </label>
+                        <input type="file" id="import_excel" name="import_excel" accept=".xls,.xlsx" hidden>
+                    </form>
 
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter Email">
-                        <span class="inline-error" id="error-email"></span>
-                    </div>
+                    <!-- Download Example -->
+                    <a href="<?= base_url('assets/dist/Example Excel Upload Rider.xlsx') ?>"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors" download>
+                        <i class="fa fa-download"></i> Download Example Excel
+                    </a>
+                </div>
 
-                    <div class="form-group">
-                        <label for="pass">Password</label>
-                        <input type="password" class="form-control" id="pass" name="pass">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="phone_number">Phone Number</label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">+63</span>
-                            </div>
-                                <input type="text" class="form-control" id="phone" name="phone"
-                                placeholder="9XXXXXXXXX" maxlength="13">
-
-                        </div>
-                        <span class="inline-error" id="error-phone"></span>
-                    </div>
-                </form>
-
-                <!-- <div class="container_notes">
-                    <p class="mb-0"><strong>Notes</strong> : By adding a Rider, the Rider can <strong>log in</strong>
-                        using the
-                        <strong>registered email</strong> and the
-                        default <strong>password</strong> (12345).
-                    </p>
-                </div> -->
+                <!-- Button Add -->
+                <button class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors" id="add_user" type="button">
+                    Add User
+                </button>
             </div>
+        </div>
 
-            <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formAddUser" class="btn btn-sm btn-primary">Save</button>
+        <!-- Card Body -->
+        <div class="px-5 py-4">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm" id="example3" style="width: 100%;">
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">User Name</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">User Role</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Email</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Phone Number</th>
+                            <th class="w-[15%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $no = 1; foreach($user as $val): ?>
+                        <tr class="text-center border-b border-gray-100 hover:bg-gray-50">
+                            <td class="px-4 py-3"><?= $no++ ?></td>
+                            <td class="px-4 py-3"><?= $val['CompanyName'] ?></td>
+                            <td class="px-4 py-3"><?= $val['Fullname'] ?></td>
+                            <td class="px-4 py-3"><?= $val['UserRole'] ?></td>
+                            <td class="px-4 py-3"><?= $val['Email'] ?></td>
+                            <td class="px-4 py-3"><?= $val['PhoneNumber'] ?></td>
+                            <td class="px-4 py-3">
+                                <button data-userid="<?= $val['UserID'] ?>" class="btn-tw-warning buttonEditUser">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button data-userid="<?= $val['UserID'] ?>" data-email="<?= $val['Email'] ?>"
+                                    class="btn-tw-danger buttonDeleteUser">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal_delete" tabindex="-1" role="dialog" aria-labelledby="modalAddLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
-
+<!-- Add/Edit User Modal (Preline) -->
+<div id="modal" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto [--overlay-backdrop:static]" role="dialog">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto">
+        <div class="flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl">
             <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalDeleteLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800" id="modalAddLabel"></h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors" data-hs-overlay="#modal">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
             <!-- Body -->
-            <div class="modal-body">
-                <form id="formDelete" method="post">
-                    <input type="hidden" id="user_id" name="user_id">
-                    <input type="hidden" id="current_job" name="current_job">
-                    <p id="detail_reason_delete" class="mb-0"></p>
-                    <span>Do you want to delete the rider : <strong id="email_users"></strong></span>
+            <div class="px-5 py-4 overflow-y-auto max-h-[70vh]">
+                <div class="mt-2 <?= ($this->session->userdata('Role') == 1) ? 'hidden' : '' ?>">
+                    <span id="company_package_badge" class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">Package: -</span>
+                </div>
+                <form id="formAddUser" method="post">
+                    <div class="form-group mb-4 <?= ($this->session->userdata('Role') != 1) ? 'hidden' : '' ?>">
+                        <label for="company_selected" class="block text-sm font-medium text-gray-700 mb-1">Select Company</label>
+                        <select name="company_selected" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2For_modal" id="company_selected" required>
+                            <option value="">---- Select Company ----</option>
+                            <?php foreach($list_company as $val): ?>
+                                <option value="<?= $val['ListCompanyID'] ?>" data-subscribe="<?= $val['CompanySubscribe'] ?>" <?= ($this->session->userdata('CompanyID') == $val['ListCompanyID']) ? "selected" : "" ?> <?= ($this->session->userdata('Role') != 1) ? "disabled" : "" ?>><?= $val['CompanyName'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <span class="inline-error" id="error-company_selected"></span>
+                    </div>
+                    <div class="form-group mb-4">
+                        <input type="hidden" id="user_id" name="user_id">
+                        <label for="fullname" class="block text-sm font-medium text-gray-700 mb-1">Fullname</label>
+                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="fullname" name="fullname" placeholder="Enter Full Name">
+                        <span class="inline-error" id="error-fullname"></span>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="user_role" class="block text-sm font-medium text-gray-700 mb-1">Select User Role</label>
+                        <select name="user_role" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2For_modal" id="user_role" required>
+                            <option value="">Select Role</option>
+                            <option value="monitor">Monitor</option>
+                            <option value="field">Field</option>
+                        </select>
+                        <span class="inline-error" id="error-user_role"></span>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="email" name="email" placeholder="Enter Email">
+                        <span class="inline-error" id="error-email"></span>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="pass" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="pass" name="pass">
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <div class="flex">
+                            <span class="input-group-text-tw inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">+63</span>
+                            <input type="text" class="tw-input block w-full rounded-r-lg rounded-l-none border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="phone" name="phone" placeholder="9XXXXXXXXX" maxlength="13">
+                        </div>
+                        <span class="inline-error" id="error-phone"></span>
+                    </div>
                 </form>
             </div>
 
             <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Delete</button>
+            <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200">
+                <button type="button" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-600 transition-colors" data-hs-overlay="#modal">Close</button>
+                <button type="submit" form="formAddUser" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal (Preline) -->
+<div id="modal_delete" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto [--overlay-backdrop:static]" role="dialog">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+        <div class="flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800" id="modalDeleteLabel"></h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors" data-hs-overlay="#modal_delete">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="px-5 py-4">
+                <form id="formDelete" method="post">
+                    <input type="hidden" id="user_id" name="user_id">
+                    <input type="hidden" id="current_job" name="current_job">
+                    <p id="detail_reason_delete" class="mb-0 text-sm text-gray-700"></p>
+                    <span class="text-sm">Do you want to delete the rider : <strong id="email_users"></strong></span>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200">
+                <button type="button" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-600 transition-colors" data-hs-overlay="#modal_delete">Close</button>
+                <button type="submit" form="formDelete" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Delete</button>
             </div>
         </div>
     </div>
@@ -283,19 +228,18 @@ $(document).ready(function() {
     let formUserDelete = $("#formDelete");
 
     $('#phone').on('input', function() {
-        // hapus semua karakter yang bukan angka
         this.value = this.value.replace(/[^0-9]/g, '');
     });
 
     // handle button add
     buttonAddUser.on('click', function(e) {
         e.preventDefault();
-        modal.modal('show');
+        showModal('#modal');
         modal.find('.container_notes').show();
 
         textHeaderModal.text('Add User');
         modal.find('#user_id').val('');
-        modal.find('#user_role').val(''); // gets user_role input -Kian
+        modal.find('#user_role').val('');
         modal.find('#fullname').val('');
         modal.find('#email').val('');
         modal.find('#pass').val('');
@@ -311,7 +255,7 @@ $(document).ready(function() {
     // handle button edit
     buttonEditUser.on('click', function(e) {
         e.preventDefault();
-        modal.modal('show');
+        showModal('#modal');
         modal.find('.container_notes').hide();
 
         // Clear validation errors
@@ -341,18 +285,12 @@ $(document).ready(function() {
                 modal.find('#phone').val(phoneNumber);
                 modal.find('#pass').attr('placeholder', 'Leave blank to keep current password').val('');
 
-                // 1. Prepare the User Role (Handle nulls and force Lowercase)
-                // This fixes the issue where "Field" from DB didn't match "field" in HTML
                 let roleVal = response.UserRole ? response.UserRole.toLowerCase() : 'monitor';
 
-                // 2. Set Company and Trigger Change
-                // We must trigger 'change' so the data('subscribe') attribute is accessible
                 modal.find('#company_selected')
                     .val(response.ListCompanyID)
-                    .trigger('change'); 
+                    .trigger('change');
 
-                // 3. Apply Restrictions and Pass the Role
-                // We pass roleVal so the function knows which option to select after building the list
                 applyRoleRestrictionBasedOnCompany(roleVal);
             },
         })
@@ -380,7 +318,7 @@ $(document).ready(function() {
         textHeaderModalDelete.text('Delete Rider');
         formUserDelete.attr('action', '<?= base_url("User/delete") ?>');
 
-        modalDelete.modal('show');
+        showModal('#modal_delete');
 
         // Load job info (AJAX GET)
         $.ajax({
@@ -403,93 +341,51 @@ $(document).ready(function() {
 
     function setRoleOptions(optionsHtml, value) {
         let $role = modal.find('#user_role');
-
-        // 1. Remove old options and add the new HTML
         $role.empty().html(optionsHtml);
-
-        // 2. If a value is passed (like 'field' or 'monitor'), select it immediately
         if (typeof value !== 'undefined' && value !== null) {
             $role.val(value);
         }
-
-        // 3. Trigger the update for Select2 ONCE at the end
-        // This refreshes the UI to show the new options and the selected value
         if ($role.data('select2')) {
-            $role.trigger('change.select2'); 
+            $role.trigger('change.select2');
         } else {
             $role.trigger('change');
         }
     }
 
-    // function applyRoleRestrictionBasedOnCompany() {
-    //     let $sel = modal.find('#company_selected');
-    //     let $badge = modal.find('#company_package_badge');
-    //     let pkg = $sel.find('option:selected').data('subscribe');
-    //     if (typeof pkg === 'undefined' || pkg === '' || pkg === null) {
-    //         $badge.text('Package: -').removeClass('badge-success badge-warning').addClass('badge-secondary');
-    //         setRoleOptions('<option value="">Select Role</option><option value="monitor">Monitor</option><option value="field">Field</option>');
-    //         return;
-    //     }
-    //     if (parseInt(pkg) === 1) {
-    //         $badge.text('Package: Basic').removeClass('badge-success badge-secondary').addClass('badge-warning');
-    //         setRoleOptions('<option value="">Select Role</option><option value="monitor">Monitor</option>', 'monitor');
-    //     } else {
-    //         $badge.text('Package: Pro').removeClass('badge-warning badge-secondary').addClass('badge-success');
-    //         setRoleOptions('<option value="">Select Role</option><option value="monitor">Monitor</option><option value="field">Field</option>');
-    //     }
-    // }
-
     function applyRoleRestrictionBasedOnCompany(targetRole = null) {
-    let $sel = modal.find('#company_selected');
-    let $badge = modal.find('#company_package_badge');
-    
-    // Get the package ID (1 = Basic, 2 = Pro, etc.)
-    let pkg = $sel.find('option:selected').data('subscribe');
+        let $sel = modal.find('#company_selected');
+        let $badge = modal.find('#company_package_badge');
+        let pkg = $sel.find('option:selected').data('subscribe');
 
-    // HTML Templates
-    let optionsAll = '<option value="">Select Role</option><option value="monitor">Monitor</option><option value="field">Field</option>';
-    let optionsMonitorOnly = '<option value="">Select Role</option><option value="monitor">Monitor</option>';
+        let optionsAll = '<option value="">Select Role</option><option value="monitor">Monitor</option><option value="field">Field</option>';
+        let optionsMonitorOnly = '<option value="">Select Role</option><option value="monitor">Monitor</option>';
 
-    // CASE 1: No Company Selected (Reset to all options, but badge is gray)
-    if (typeof pkg === 'undefined' || pkg === '' || pkg === null) {
-        $badge.text('Package: -').removeClass('badge-success badge-warning').addClass('badge-secondary');
-        setRoleOptions(optionsAll, targetRole);
-        return;
+        if (typeof pkg === 'undefined' || pkg === '' || pkg === null) {
+            $badge.text('Package: -').removeClass('bg-green-100 text-green-800 bg-amber-100 text-amber-800').addClass('bg-gray-100 text-gray-800');
+            setRoleOptions(optionsAll, targetRole);
+            return;
+        }
+
+        if (parseInt(pkg) === 1) {
+            $badge.text('Package: Basic').removeClass('bg-green-100 text-green-800 bg-gray-100 text-gray-800').addClass('bg-amber-100 text-amber-800');
+            let forcedRole = (targetRole === 'field') ? 'monitor' : targetRole;
+            setRoleOptions(optionsMonitorOnly, forcedRole);
+        } else {
+            $badge.text('Package: Pro').removeClass('bg-amber-100 text-amber-800 bg-gray-100 text-gray-800').addClass('bg-green-100 text-green-800');
+            setRoleOptions(optionsAll, targetRole);
+        }
     }
-
-    // CASE 2: Basic Package (Force Monitor)
-    if (parseInt(pkg) === 1) {
-        $badge.text('Package: Basic').removeClass('badge-success badge-secondary').addClass('badge-warning');
-        
-        // If the user was "field" but company is Basic, force them to "monitor"
-        // Otherwise, keep them as is (or null)
-        let forcedRole = (targetRole === 'field') ? 'monitor' : targetRole;
-        
-        setRoleOptions(optionsMonitorOnly, forcedRole);
-    } 
-    // CASE 3: Pro Package (Allow Field or Monitor)
-    else {
-        $badge.text('Package: Pro').removeClass('badge-warning badge-secondary').addClass('badge-success');
-        setRoleOptions(optionsAll, targetRole);
-    }
-}
 
     modal.on('change', '#company_selected', function() {
         applyRoleRestrictionBasedOnCompany();
     });
 
-    // Ensure initial state when modal is shown/for add
-    // modal.on('shown.bs.modal', function() {
-    //     applyRoleRestrictionBasedOnCompany();
-    // });
-
-    modal.on('shown.bs.modal', function() {
-    // Only auto-apply if we are ADDING a user (id is empty)
-    // If we are EDITING, the AJAX success will handle the call
-    if (modal.find('#user_id').val() === "") {
-        applyRoleRestrictionBasedOnCompany();
-    }
-});
+    // When modal opens for Add, apply role restrictions
+    document.querySelector('#modal').addEventListener('open.hs.overlay', function() {
+        if (modal.find('#user_id').val() === "") {
+            applyRoleRestrictionBasedOnCompany();
+        }
+    });
 
     $('#import_excel').on('change', function() {
         var file = this.files[0];
@@ -510,7 +406,7 @@ $(document).ready(function() {
         var formData = new FormData($('#import_excel_form')[0]);
 
         $.ajax({
-            url: '<?= base_url("User/import_excel"); ?>', // ganti sesuai endpoint
+            url: '<?= base_url("User/import_excel"); ?>',
             type: 'POST',
             data: formData,
             processData: false,
@@ -531,43 +427,22 @@ $(document).ready(function() {
                 Swal.close();
 
                 if(response.status) {
-
-                    if(response.label == "success") {
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Upload Successful!',
-                            html: response.message,
-                            showConfirmButton: true,
-                            confirmButtonText: 'OK',
-                            customClass: {
-                                confirmButton: 'btn btn-sm btn-primary'
-                            },
-                            buttonsStyling: false // wajib biar class bootstrap nya jalan
-                        }).then(() => {
-                            location.reload();
-                        });
-
-                    } else {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Upload Successful!',
-                            html: response.message,
-                            showConfirmButton: true,
-                            confirmButtonText: 'OK',
-                            customClass: {
-                                confirmButton: 'btn btn-sm btn-primary'
-                            },
-                            buttonsStyling: false // wajib biar class bootstrap nya jalan
-                        }).then(() => {
-                            location.reload();
-                        });
-
-                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Upload Successful!',
+                        html: response.message,
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white'
+                        },
+                        buttonsStyling: false
+                    }).then(() => {
+                        location.reload();
+                    });
                 }
 
-                // console.log(response);
-                $('#import_excel').val(''); // reset input
+                $('#import_excel').val('');
             },
             error: function(xhr, status, error) {
                 Swal.close();
@@ -622,39 +497,33 @@ $(document).ready(function () {
         var hasError = false;
         var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // values
         var company  = $('#company_selected').val();
         var fullname = $('#fullname').val().trim();
         var role     = $('#user_role').val();
         var email    = $('#email').val().trim();
         var phoneRaw = $('#phone').val().trim();
 
-        // Reset all errors
         clearFieldError('company_selected');
         clearFieldError('fullname');
         clearFieldError('user_role');
         clearFieldError('email');
         clearFieldError('phone');
 
-        // company (admin only)
         if ($('#company_selected').is(':visible') && !company) {
             setFieldError('company_selected', 'Please select a company.');
             hasError = true;
         }
 
-        // fullname
         if (!fullname) {
             setFieldError('fullname', 'Full name is required.');
             hasError = true;
         }
 
-        // role
         if (!role) {
             setFieldError('user_role', 'Please select a user role.');
             hasError = true;
         }
 
-        // email
         if (!email) {
             setFieldError('email', 'Email is required.');
             hasError = true;
@@ -663,7 +532,6 @@ $(document).ready(function () {
             hasError = true;
         }
 
-        // PH phone validation
         var digits = phoneRaw.replace(/\D/g, '');
 
         if (!phoneRaw) {
@@ -684,7 +552,6 @@ $(document).ready(function () {
             return;
         }
 
-        // submit if valid
         this.submit();
     });
 
@@ -693,7 +560,7 @@ $(document).ready(function () {
 <script>
 $(document).ready(function () {
     if ($('.alert-success').length) {
-        $('#modalAddUser').modal('hide');
+        hideModal('#modal');
     }
 });
 </script>

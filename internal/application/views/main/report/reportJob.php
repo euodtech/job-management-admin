@@ -3,7 +3,7 @@
 .btn_custom {
     padding: 3px 5px !important;
     font-size: 12px !important;
-}  
+}
 .ongoing_job {
     background-color: #fff3cd;       /* kuning lembut */
     color: #856404;                  /* teks coklat gelap */
@@ -69,402 +69,396 @@ div div.dt-buttons {
 }
 </style>
 
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <h4>Efms | Report Job</h4>
-        </div>
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-            <!-- Job Report per Customer -->
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                        <div class="card-header">
-                            <h5 class="card-title">📌 Job Report</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="formFilterJobReportperCustomer" method="GET" action="">
-                                <div class="row mb-3">
-                                    <!-- Customers -->
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterFromDateJobReportperCustomer" class="mr-2">From Date:</label>
-                                         <input class="form-control" type="date" id="filterFromDateJobReportperCustomer" name="from_date" value="<?= (isset($_GET['from_date'])) ?  $_GET['from_date'] : date('Y-m-d') ?>">
-                                    </div>
-
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterUntilDateJobReportperCustomer" class="mr-2">Until Date:</label>
-                                         <input class="form-control" type="date" id="filterUntilDateJobReportperCustomer" name="until_date" value="<?= (isset($_GET['until_date'])) ?  $_GET['until_date'] : date('Y-m-d') ?>">
-                                    </div>
-
-                                    <!-- Jobs -->
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterStatusJobReportperCustomer" class="mr-2">Status Job:</label>
-                                        <select id="filterStatusJobReportperCustomer" class="form-control">
-                                            <option value="all_status">-- All Status --</option>
-                                            <option value="awaiting_job">Awaiting Driver</option>
-                                            <option value="ongoing_job">Ongoing Job</option>
-                                            <option value="finished">Finished Job</option>
-                                        </select>
-                                    </div>
-    
-                                    <!-- Button -->
-                                    <div class="col-md-3 align-self-end my-1">
-                                        <button type="submit" class="btn btn-info"> Filter</button>
-                                        <button type="button" class="btn btn-secondary" id="resetFilterJobReportperCustomer">Reset</button>
-                                    </div>
-                                </div>
-                            </form>
-                            <div class="table-responsive">
-                                <table class="table table-striped table-bordered dt-responsive display responsive nowrap" cellspacing="0" width="100%" id="tableJobCustomer">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Job Date</th>
-                                            <th>Job Name</th>
-                                            <th>Customer</th>
-                                            <th>Driver</th>
-                                            <th>Status Job</th>
-                                            <th>Detail</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Job Compliance Report -->
-            <!-- <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                        <div class="card-header">
-                            <h5 class="card-title">📌 Job Compliance Report</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="formFilterJobCompliance" method="GET" action="">
-                                <div class="row mb-3">
-                                    <div class="col-md-3 my-1">
-                                        <label>Job Name</label>
-                                        <select name="jobName" id="jobNameFilter" class="form-control">
-                                            <option value="">-- All Job --</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 my-1">
-                                        <label>Type Job</label>
-                                        <select name="typeJob" id="typeJobFilter" class="form-control">
-                                            <option value="">-- All Type Job --</option>
-                                            <option value="Line Interrupt">Line Interrupt</option>
-                                            <option value="Reconnection">Reconnection</option>
-                                            <option value="Short Circuit">Short Circuit</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 my-1">
-                                        <label>Job Date</label>
-                                        <input type="date" name="jobDate" id="jobDateFilter" class="form-control">
-                                    </div>
-                                    <div class="col-md-3 my-1">
-                                        <label>Total Documentation</label>
-                                        <input type="number" name="totalDokumentasi" id="totalDokumentasiFilter" class="form-control" placeholder="e.g. 60" min="0" >
-                                    </div>
-
-                                    <div class="col-md-4 my-1">
-                                        <label>Status Documentation</label>
-                                        <select name="statusJobComplianceReport" id="statusFilterJobComplianceReport"  class="form-control">
-                                            <option value="">-- All Status Documentation --</option>
-                                            <option value="Finished" <?= $this->input->get('statusJobComplianceReport') == 'Finished' ? 'selected' : '' ?>>Finished</option>
-                                            <option value="No documentation yet" <?= $this->input->get('statusJobComplianceReport') == 'No documentation yet' ? 'selected' : '' ?>>No documentation yet</option>
-                                        </select>
-                                    </div>
-    
-                                    <div class="col-md-3 align-self-end my-1">
-                                        <button type="submit" class="btn btn-info">🔍 Filter</button>
-                                        <button type="button" class="btn btn-secondary" id="resetFilterJobCompliance">🔄 Reset</button>
-                                    </div>
-                                </div>
-                            </form>
-                            <table class="table table-striped table-bordered dt-responsive display responsive nowrap" cellspacing="0" width="100%" id="tableJobCompliance">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Job Name</th>
-                                        <th>Type Job</th>
-                                        <th>Job Date</th>
-                                        <th>Total Documentation</th>
-                                        <th>Status Documentation</th>
-                                        <th>Photo</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
-
-            <!-- Modal Preview Photo -->
-            <!-- <div class="modal fade" id="JobCompliancePhotosModal" tabindex="-1" aria-labelledby="JobCompliancePhotosModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title" id="JobCompliancePhotosModalLabel">📸 Job Compliance Report - Photos</h5>
-                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <img id="jobPhoto" src="" alt="Job Photo" class="img-fluid rounded shadow-sm">
-                        <p class="mt-2 text-muted" id="photoCaption"></p>
-                    </div>
-                    </div>
-                </div>
-            </div> -->
-
-
-
-            <!-- Job Assignment Efficiency Report -->
-            <!-- <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                        <div class="card-header">
-                            <h5 class="card-title">📌 Job Assignment Efficiency Report</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="formFilterJobAssignmentEfficiencyReport" method="GET" action="">
-                                <div class="row mb-3">
-                                    <div class="col-md-3 mb-3">
-                                        <label for="filterJobNameJobAssignmentEfficiencyReport">Job</label>
-                                        <select id="filterJobNameJobAssignmentEfficiencyReport" class="form-control">
-                                            <option value="">-- All Jobs --</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label for="filterCustomerNameJobAssignmentEfficiencyReport">Customer</label>
-                                        <select id="filterCustomerNameJobAssignmentEfficiencyReport" class="form-control">
-                                            <option value="">-- All Customers --</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>From (Created At)</label>
-                                        <input type="date" id="fromDateJobAssignmentEfficiencyReport" name="fromJobAssignmentEfficiencyReport" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label>Until (Created At)</label>
-                                        <input type="date" id="toDateJobAssignmentEfficiencyReport" name="untilJobAssignmentEfficiencyReport" class="form-control">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>From (Assign At)</label>
-                                        <input type="date" id="fromAssignAtJobAssignmentEfficiencyReport" name="fromAssignAtJobAssignmentEfficiencyReport" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label>Until (Assign At)</label>
-                                        <input type="date" id="toAssignAtJobAssignmentEfficiencyReport" name="toAssignAtJobAssignmentEfficiencyReport" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-3 align-self-end mt-3">
-                                        <button type="submit" class="btn btn-info">🔍 Filter</button>
-                                        <button type="button" class="btn btn-secondary" id="resetFilterJobAssignmentEfficiencyReport">🔄 Reset</button>
-                                    </div>
-                                </div>
-                            </form>
-                            <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobAssignment">
-                                <thead>
-                                    <tr>
-                                    <th>No</th>
-                                    <th>Job Name</th>
-                                    <th>Customer</th>
-                                    <th>Created At</th>
-                                    <th>Assigned At</th>
-                                    <th>Duration (Minutes)</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-            <!-- <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                    <div class="card-header">
-                        <h5 class="card-title">📌 Job Completion & Status Report</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="formFilterJobCompletionStatusReport" method="GET" action="">
-                            <div class="row mb-3">
-                                <div class="col-md-3 my-1">
-                                    <label for="filterJobNameJobCompletionStatusReport">Job</label>
-                                    <select id="filterJobNameJobCompletionStatusReport" class="form-control">
-                                        <option value="">-- All Jobs --</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3 my-1">
-                                    <label for="filterCustomerNameJobCompletionStatusReport">Customer</label>
-                                    <select id="filterCustomerNameJobCompletionStatusReport" class="form-control">
-                                        <option value="">-- All Customers --</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 my-1">
-                                    <label for="statusFilterJobCompletionStatusReport">Status</label>
-                                    <select id="statusFilterJobCompletionStatusReport" class="form-control">
-                                        <option value="">-- All Status --</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">In Progress</option>
-                                        <option value="3">Completed</option>
-                                        <option value="4">Failed</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 my-1">
-                                    <label>From (Job Date)</label>
-                                    <input type="date" name="jobDateFromJobCompletionStatusReport" id="jobDateFromFilterJobCompletionStatusReport" class="form-control">
-                                </div>
-
-                                <div class="col-md-3 my-1">
-                                    <label>Until (Job Date)</label>
-                                    <input type="date" name="jobDateUntilJobCompletionStatusReport" id="jobDateUntilFilterJobCompletionStatusReport" class="form-control">
-                                </div>
-
-                                <div class="col-md-3 align-self-end my-1">
-                                    <button type="submit" class="btn btn-info">🔍 Filter</button>
-                                    <button type="button" class="btn btn-secondary" id="resetFilterJobCompletionStatusReport">🔄 Reset</button>
-                                </div>
-                            </div>
-                        </form>
-                        <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobCompletion">
-                            <thead>
-                                <tr>
-                                <th>No</th>
-                                <th>Job Name</th>
-                                <th>Customer</th>
-                                <th>Status</th>
-                                <th>Job Date</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-            </div> -->
-            <!-- <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                    <div class="card-header">
-                        <h5 class="card-title">📌 Job Timeline Report</h5>
-                    </div>
-                    <div class="card-body">
-                        
-                        <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobTimeline">
-                            <thead>
-                                <tr>
-                                <th>No</th>
-                                <th>Job Date</th>
-                                <th>Total Job</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                        <div class="card-header">
-                            <h5 class="card-title">📌 Job Evidence Report</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="formFilterJobEvidenceReport" method="GET" action="">
-                                <div class="row mb-3">
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterJobName">Job</label>
-                                        <select id="filterJobName" class="form-control">
-                                            <option value="">-- All Jobs --</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterCustomerName">Customer</label>
-                                        <select id="filterCustomerName" class="form-control">
-                                            <option value="">-- All Customers --</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterTotalPhoto">Total Photo (Min)</label>
-                                        <input type="number" id="filterTotalPhoto" class="form-control" placeholder="e.g. 60" min="0" >
-                                    </div>
-
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterFromDate">From (Last Photo Date)</label>
-                                        <input type="date" name="filterFromDate" id="filterFromDate" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-3 my-1">
-                                        <label for="filterUntilDate">Until (Last Photo Date)</label>
-                                        <input type="date" name="filterUntilDate" id="filterUntilDate" class="form-control">
-                                    </div>
-                                    <div class="col-md-3 align-self-end my-1">
-                                        <button type="submit" class="btn btn-info">🔍 Filter</button>
-                                        <button type="button" class="btn btn-secondary" id="resetFilterJobEvidenceReport">🔄 Reset</button>
-                                    </div>
-                                </div>
-                            </form>
-                            <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobEvidenceReport">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Job Name</th>
-                                        <th>Customer Name</th>
-                                        <th>Total Photo</th>
-                                        <th>Last Photo Date</th>
-                                        <th>Photo</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- Modal Job Evidence Report -->
-            <!-- <div class="modal fade" id="JobEvidencePhotosModal" tabindex="-1" aria-labelledby="JobEvidencePhotosModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title" id="JobEvidencePhotosModalLabel"> 📸 Job Evidence Report - Photos</h5>
-                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body text-center">
-                    </div>
-                    </div>
-                </div>
-            </div> -->
-
-
-        </div>
-    </section>
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <h4 class="text-xl font-bold text-gray-800">Efms | Report Job</h4>
 </div>
 
-<div class="modal fade" id="modal_detail_job" tabindex="-1" aria-labelledby="modal_detail_job" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-        <div class="modal-header bg-info text-white">
-            <h5 class="modal-title" id="modal_detail_job_header">Detail Job</h5>
-            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <i class="fa-solid fa-xmark"></i>
-            </button>
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+    <!-- Job Report per Customer -->
+    <div class="bg-white rounded-xl shadow-sm border border-cyan-200">
+        <div class="px-5 py-4 border-b border-cyan-200">
+            <h5 class="text-base font-semibold text-gray-800">Job Report</h5>
         </div>
-        <div class="modal-body">
+        <div class="px-5 py-4">
+            <form id="formFilterJobReportperCustomer" method="GET" action="">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                    <!-- Customers -->
+                    <div class="my-1">
+                        <label for="filterFromDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">From Date:</label>
+                         <input class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" type="date" id="filterFromDateJobReportperCustomer" name="from_date" value="<?= (isset($_GET['from_date'])) ?  $_GET['from_date'] : date('Y-m-d') ?>">
+                    </div>
+
+                    <div class="my-1">
+                        <label for="filterUntilDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">Until Date:</label>
+                         <input class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" type="date" id="filterUntilDateJobReportperCustomer" name="until_date" value="<?= (isset($_GET['until_date'])) ?  $_GET['until_date'] : date('Y-m-d') ?>">
+                    </div>
+
+                    <!-- Jobs -->
+                    <div class="my-1">
+                        <label for="filterStatusJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">Status Job:</label>
+                        <select id="filterStatusJobReportperCustomer" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                            <option value="all_status">-- All Status --</option>
+                            <option value="awaiting_job">Awaiting Driver</option>
+                            <option value="ongoing_job">Ongoing Job</option>
+                            <option value="finished">Finished Job</option>
+                        </select>
+                    </div>
+
+                    <!-- Button -->
+                    <div class="self-end my-1">
+                        <button type="submit" class="rounded-lg bg-cyan-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-cyan-700 transition-colors"> Filter</button>
+                        <button type="button" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterJobReportperCustomer">Reset</button>
+                    </div>
+                </div>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered dt-responsive display responsive nowrap" cellspacing="0" width="100%" id="tableJobCustomer">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Job Date</th>
+                            <th>Job Name</th>
+                            <th>Customer</th>
+                            <th>Driver</th>
+                            <th>Status Job</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
+    </div>
+
+    <!-- Job Compliance Report -->
+    <!-- <div class="row">
+        <div class="col-md-12">
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h5 class="card-title">📌 Job Compliance Report</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formFilterJobCompliance" method="GET" action="">
+                        <div class="row mb-3">
+                            <div class="col-md-3 my-1">
+                                <label>Job Name</label>
+                                <select name="jobName" id="jobNameFilter" class="form-control">
+                                    <option value="">-- All Job --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 my-1">
+                                <label>Type Job</label>
+                                <select name="typeJob" id="typeJobFilter" class="form-control">
+                                    <option value="">-- All Type Job --</option>
+                                    <option value="Line Interrupt">Line Interrupt</option>
+                                    <option value="Reconnection">Reconnection</option>
+                                    <option value="Short Circuit">Short Circuit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 my-1">
+                                <label>Job Date</label>
+                                <input type="date" name="jobDate" id="jobDateFilter" class="form-control">
+                            </div>
+                            <div class="col-md-3 my-1">
+                                <label>Total Documentation</label>
+                                <input type="number" name="totalDokumentasi" id="totalDokumentasiFilter" class="form-control" placeholder="e.g. 60" min="0" >
+                            </div>
+
+                            <div class="col-md-4 my-1">
+                                <label>Status Documentation</label>
+                                <select name="statusJobComplianceReport" id="statusFilterJobComplianceReport"  class="form-control">
+                                    <option value="">-- All Status Documentation --</option>
+                                    <option value="Finished" <?= $this->input->get('statusJobComplianceReport') == 'Finished' ? 'selected' : '' ?>>Finished</option>
+                                    <option value="No documentation yet" <?= $this->input->get('statusJobComplianceReport') == 'No documentation yet' ? 'selected' : '' ?>>No documentation yet</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 align-self-end my-1">
+                                <button type="submit" class="btn btn-info">🔍 Filter</button>
+                                <button type="button" class="btn btn-secondary" id="resetFilterJobCompliance">🔄 Reset</button>
+                            </div>
+                        </div>
+                    </form>
+                    <table class="table table-striped table-bordered dt-responsive display responsive nowrap" cellspacing="0" width="100%" id="tableJobCompliance">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Job Name</th>
+                                <th>Type Job</th>
+                                <th>Job Date</th>
+                                <th>Total Documentation</th>
+                                <th>Status Documentation</th>
+                                <th>Photo</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+
+    <!-- Modal Preview Photo -->
+    <!-- <div class="modal fade" id="JobCompliancePhotosModal" tabindex="-1" aria-labelledby="JobCompliancePhotosModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="JobCompliancePhotosModalLabel">📸 Job Compliance Report - Photos</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="jobPhoto" src="" alt="Job Photo" class="img-fluid rounded shadow-sm">
+                <p class="mt-2 text-muted" id="photoCaption"></p>
+            </div>
+            </div>
+        </div>
+    </div> -->
+
+
+
+    <!-- Job Assignment Efficiency Report -->
+    <!-- <div class="row">
+        <div class="col-md-12">
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h5 class="card-title">📌 Job Assignment Efficiency Report</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formFilterJobAssignmentEfficiencyReport" method="GET" action="">
+                        <div class="row mb-3">
+                            <div class="col-md-3 mb-3">
+                                <label for="filterJobNameJobAssignmentEfficiencyReport">Job</label>
+                                <select id="filterJobNameJobAssignmentEfficiencyReport" class="form-control">
+                                    <option value="">-- All Jobs --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="filterCustomerNameJobAssignmentEfficiencyReport">Customer</label>
+                                <select id="filterCustomerNameJobAssignmentEfficiencyReport" class="form-control">
+                                    <option value="">-- All Customers --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label>From (Created At)</label>
+                                <input type="date" id="fromDateJobAssignmentEfficiencyReport" name="fromJobAssignmentEfficiencyReport" class="form-control">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label>Until (Created At)</label>
+                                <input type="date" id="toDateJobAssignmentEfficiencyReport" name="untilJobAssignmentEfficiencyReport" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label>From (Assign At)</label>
+                                <input type="date" id="fromAssignAtJobAssignmentEfficiencyReport" name="fromAssignAtJobAssignmentEfficiencyReport" class="form-control">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label>Until (Assign At)</label>
+                                <input type="date" id="toAssignAtJobAssignmentEfficiencyReport" name="toAssignAtJobAssignmentEfficiencyReport" class="form-control">
+                            </div>
+
+                            <div class="col-md-3 align-self-end mt-3">
+                                <button type="submit" class="btn btn-info">🔍 Filter</button>
+                                <button type="button" class="btn btn-secondary" id="resetFilterJobAssignmentEfficiencyReport">🔄 Reset</button>
+                            </div>
+                        </div>
+                    </form>
+                    <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobAssignment">
+                        <thead>
+                            <tr>
+                            <th>No</th>
+                            <th>Job Name</th>
+                            <th>Customer</th>
+                            <th>Created At</th>
+                            <th>Assigned At</th>
+                            <th>Duration (Minutes)</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <!-- <div class="row">
+        <div class="col-md-12">
+            <div class="card card-info card-outline">
+            <div class="card-header">
+                <h5 class="card-title">📌 Job Completion & Status Report</h5>
+            </div>
+            <div class="card-body">
+                <form id="formFilterJobCompletionStatusReport" method="GET" action="">
+                    <div class="row mb-3">
+                        <div class="col-md-3 my-1">
+                            <label for="filterJobNameJobCompletionStatusReport">Job</label>
+                            <select id="filterJobNameJobCompletionStatusReport" class="form-control">
+                                <option value="">-- All Jobs --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 my-1">
+                            <label for="filterCustomerNameJobCompletionStatusReport">Customer</label>
+                            <select id="filterCustomerNameJobCompletionStatusReport" class="form-control">
+                                <option value="">-- All Customers --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 my-1">
+                            <label for="statusFilterJobCompletionStatusReport">Status</label>
+                            <select id="statusFilterJobCompletionStatusReport" class="form-control">
+                                <option value="">-- All Status --</option>
+                                <option value="1">Pending</option>
+                                <option value="2">In Progress</option>
+                                <option value="3">Completed</option>
+                                <option value="4">Failed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 my-1">
+                            <label>From (Job Date)</label>
+                            <input type="date" name="jobDateFromJobCompletionStatusReport" id="jobDateFromFilterJobCompletionStatusReport" class="form-control">
+                        </div>
+
+                        <div class="col-md-3 my-1">
+                            <label>Until (Job Date)</label>
+                            <input type="date" name="jobDateUntilJobCompletionStatusReport" id="jobDateUntilFilterJobCompletionStatusReport" class="form-control">
+                        </div>
+
+                        <div class="col-md-3 align-self-end my-1">
+                            <button type="submit" class="btn btn-info">🔍 Filter</button>
+                            <button type="button" class="btn btn-secondary" id="resetFilterJobCompletionStatusReport">🔄 Reset</button>
+                        </div>
+                    </div>
+                </form>
+                <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobCompletion">
+                    <thead>
+                        <tr>
+                        <th>No</th>
+                        <th>Job Name</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Job Date</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            </div>
+        </div>
+    </div> -->
+    <!-- <div class="row">
+        <div class="col-md-12">
+            <div class="card card-info card-outline">
+            <div class="card-header">
+                <h5 class="card-title">📌 Job Timeline Report</h5>
+            </div>
+            <div class="card-body">
+
+                <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobTimeline">
+                    <thead>
+                        <tr>
+                        <th>No</th>
+                        <th>Job Date</th>
+                        <th>Total Job</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- <div class="row">
+        <div class="col-md-12">
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h5 class="card-title">📌 Job Evidence Report</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formFilterJobEvidenceReport" method="GET" action="">
+                        <div class="row mb-3">
+                            <div class="col-md-3 my-1">
+                                <label for="filterJobName">Job</label>
+                                <select id="filterJobName" class="form-control">
+                                    <option value="">-- All Jobs --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 my-1">
+                                <label for="filterCustomerName">Customer</label>
+                                <select id="filterCustomerName" class="form-control">
+                                    <option value="">-- All Customers --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 my-1">
+                                <label for="filterTotalPhoto">Total Photo (Min)</label>
+                                <input type="number" id="filterTotalPhoto" class="form-control" placeholder="e.g. 60" min="0" >
+                            </div>
+
+                            <div class="col-md-3 my-1">
+                                <label for="filterFromDate">From (Last Photo Date)</label>
+                                <input type="date" name="filterFromDate" id="filterFromDate" class="form-control">
+                            </div>
+
+                            <div class="col-md-3 my-1">
+                                <label for="filterUntilDate">Until (Last Photo Date)</label>
+                                <input type="date" name="filterUntilDate" id="filterUntilDate" class="form-control">
+                            </div>
+                            <div class="col-md-3 align-self-end my-1">
+                                <button type="submit" class="btn btn-info">🔍 Filter</button>
+                                <button type="button" class="btn btn-secondary" id="resetFilterJobEvidenceReport">🔄 Reset</button>
+                            </div>
+                        </div>
+                    </form>
+                    <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableJobEvidenceReport">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Job Name</th>
+                                <th>Customer Name</th>
+                                <th>Total Photo</th>
+                                <th>Last Photo Date</th>
+                                <th>Photo</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Modal Job Evidence Report -->
+    <!-- <div class="modal fade" id="JobEvidencePhotosModal" tabindex="-1" aria-labelledby="JobEvidencePhotosModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="JobEvidencePhotosModalLabel"> 📸 Job Evidence Report - Photos</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+            </div>
+            </div>
+        </div>
+    </div> -->
+
+</div>
+
+<!-- Detail Job Modal (Preline hs-overlay) -->
+<div id="modal_detail_job" class="hs-overlay hidden fixed top-0 left-0 z-[80] w-full h-full overflow-x-hidden overflow-y-auto [--overlay-backdrop:static]" role="dialog" tabindex="-1" aria-labelledby="modal_detail_job_header">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto">
+        <div class="flex flex-col bg-white border shadow-sm rounded-xl">
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modal_detail_job_header">Detail Job</h3>
+                <button type="button" class="size-8 inline-flex justify-center items-center gap-x-2 rounded-full border border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200 focus:outline-none focus:bg-gray-200" aria-label="Close" data-hs-overlay="#modal_detail_job">
+                    <span class="sr-only">Close</span>
+                    <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto">
+            </div>
         </div>
     </div>
 </div>
@@ -511,7 +505,7 @@ div div.dt-buttons {
                     });
                 },
                 error: function (xhr) {
-                    console.error("❌ Gagal memuat customer:", xhr.responseText);
+                    console.error("Gagal memuat customer:", xhr.responseText);
                 }
             });
         }
@@ -529,7 +523,7 @@ div div.dt-buttons {
                     });
                 },
                 error: function (xhr) {
-                    console.error("❌ Gagal memuat job:", xhr.responseText);
+                    console.error("Gagal memuat job:", xhr.responseText);
                 }
             });
         }
@@ -558,7 +552,7 @@ div div.dt-buttons {
         //                 }
         //             },
         //             error: function (xhr) {
-        //                 console.error("❌ Gagal filter job:", xhr.responseText);
+        //                 console.error("Gagal filter job:", xhr.responseText);
         //             }
         //         });
         //     } else {
@@ -592,11 +586,11 @@ div div.dt-buttons {
                         if (!data || data === '-') return '-';
 
                         const date = new Date(data);
-                        const options = { 
+                        const options = {
                             weekday: 'long',   // Nama hari
-                            day: '2-digit', 
+                            day: '2-digit',
                             month: 'long',     // Nama bulan lengkap
-                            year: 'numeric' 
+                            year: 'numeric'
                         };
 
                         const formattedDate = date.toLocaleDateString('en-US', options);
@@ -621,7 +615,7 @@ div div.dt-buttons {
                         return driverName;
                     }
                 },
-                { 
+                {
                     "data": "StatusJob",
                     "render" : function(data, type, row) {
 
@@ -646,7 +640,7 @@ div div.dt-buttons {
                         // kalau status job = 2 (Finished), munculkan tombol
                         if (row.StatusJob == 2) {
                             return `
-                                <button type="button" class="btn btn-sm btn-primary btn_detail_job" data-id="${data}">
+                                <button type="button" class="btn-tw-primary btn_detail_job" data-id="${data}">
                                     <i class="fa fa-eye"></i>
                                 </button>
                             `;
@@ -709,8 +703,8 @@ div div.dt-buttons {
 
             ordering: true,
             searching: true,
-            language: { 
-                search: "Search:" 
+            language: {
+                search: "Search:"
             },
             order: [[3, "desc"]]
         });
@@ -728,7 +722,7 @@ div div.dt-buttons {
 
         // Reset Filter
         $('#resetFilterJobReportperCustomer').on('click', function() {
-            $('#formFilterJobReportperCustomer')[0].reset(); 
+            $('#formFilterJobReportperCustomer')[0].reset();
             $('#filterCustomerJobReportperCustomer').empty().append('<option value="">-- All Customers --</option>');
             loadAllCustomers();
             loadAllJobs();
@@ -767,9 +761,9 @@ div div.dt-buttons {
                 type: "GET",
                 data: function(d) {
                     d.jobName = $('select[name=jobName]').val();
-                    d.typeJob = $('select[name=typeJob]').val(); 
-                    d.jobDate = $('input[name=jobDate]').val();  
-                    d.totalDokumentasi = $('input[name=totalDokumentasi]').val(); 
+                    d.typeJob = $('select[name=typeJob]').val();
+                    d.jobDate = $('input[name=jobDate]').val();
+                    d.totalDokumentasi = $('input[name=totalDokumentasi]').val();
                     d.statusJobComplianceReport = $('select[name=statusJobComplianceReport]').val();
                 }
             },
@@ -780,7 +774,7 @@ div div.dt-buttons {
                 {
                     data: "JobDate",
                     render: function(data, type, row) {
-                        return data.split(' ')[0]; 
+                        return data.split(' ')[0];
                     }
                 },
                 { data: "TotalDokumentasi"},
@@ -789,7 +783,7 @@ div div.dt-buttons {
                     data: "Dokumentasi",
                     render: function(data, type, row) {
                         if (!data) return '<button class="btn btn-sm btn-secondary" disabled>No Photo</button>';
-                        
+
                         let photos = [];
                         try {
                             photos = JSON.parse(data);
@@ -804,9 +798,9 @@ div div.dt-buttons {
 
                         // simpan data foto ke tombol
                         return `
-                            <button class="btn btn-sm btn-info view-photo" 
+                            <button class="btn btn-sm btn-info view-photo"
                                     data-photos='${JSON.stringify(valid)}'>
-                                📷 View
+                                View
                             </button>
                         `;
                     },
@@ -825,7 +819,7 @@ div div.dt-buttons {
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '📘 Excel',
+                    text: 'Excel',
                     title: `Job Compliance Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
                     className: 'btn btn-success me-2',
@@ -849,15 +843,15 @@ div div.dt-buttons {
                             // Lebarkan kolom (default 25 karakter)
                             $('col', sheet).attr('width', 25);
                         } catch (e) {
-                            console.warn('⚠️ Failed to modify Excel XML:', e.message);
+                            console.warn('Failed to modify Excel XML:', e.message);
                         }
                     },
                 },
             ],
             ordering: true,
             searching: true,
-            language: { 
-                search: "🔍 Search:" 
+            language: {
+                search: "Search:"
             },
             order: [[3, "desc"]]
         });
@@ -875,7 +869,7 @@ div div.dt-buttons {
 
         // Reset Filter
         $('#resetFilterJobCompliance').on('click', function() {
-            $('#formFilterJobCompliance')[0].reset(); 
+            $('#formFilterJobCompliance')[0].reset();
             $('#tableJobCompliance').DataTable().ajax.reload();
         });
 
@@ -917,15 +911,15 @@ div div.dt-buttons {
 
         $('#filterJobNameJobAssignmentEfficiencyReport').change(function() {
             var jobName = $(this).val();
-            
+
             // Reset customer name filter
             $('#filterCustomerNameJobAssignmentEfficiencyReport').empty();  // Kosongkan customer name
             $('#filterCustomerNameJobAssignmentEfficiencyReport').append('<option value="">-- All Customers --</option>');  // Tambahkan opsi default
-            
+
             if (jobName) {
                 // Fetch customer names yang terkait dengan Job Name
                 $.ajax({
-                    url: "<?= base_url('ReportJob/getCustomersByJobName') ?>", 
+                    url: "<?= base_url('ReportJob/getCustomersByJobName') ?>",
                     type: "GET",
                     data: { jobName: jobName },
                     success: function(data) {
@@ -942,7 +936,7 @@ div div.dt-buttons {
 
         function loadCustomerNamesJobAssignmentEfficiency(){
             $.ajax({
-                url: "<?= base_url('ReportJob/getCustomerNames') ?>", 
+                url: "<?= base_url('ReportJob/getCustomerNames') ?>",
                 type: "GET",
                 success: function(data) {
                     let customers = JSON.parse(data);
@@ -962,10 +956,10 @@ div div.dt-buttons {
 
 
         $('#tableJobAssignment').DataTable({
-            processing: true, 
+            processing: true,
             serverSide: true,
-            ajax: { 
-                url: "<?= base_url('ReportJob/JobAssignmentEfficiencyReport') ?>", 
+            ajax: {
+                url: "<?= base_url('ReportJob/JobAssignmentEfficiencyReport') ?>",
                 type: "GET",
                 data: function(d) {
                     d.jobName = $('#filterJobNameJobAssignmentEfficiencyReport').val();
@@ -984,8 +978,8 @@ div div.dt-buttons {
                 { data: "AssignWhen" },
                 { data: "DurationMinutes" }
             ],
-            responsive: true, 
-            pageLength: 5, 
+            responsive: true,
+            pageLength: 5,
             rowReorder: {
                 selector: 'td:nth-child(2)'
             },
@@ -998,7 +992,7 @@ div div.dt-buttons {
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '📘 Excel',
+                    text: 'Excel',
                     title: `Job Assignment Efficiency Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
                     className: 'btn btn-success me-2',
@@ -1015,7 +1009,7 @@ div div.dt-buttons {
                             // Lebarkan kolom (default 25 karakter)
                             $('col', sheet).attr('width', 25);
                         } catch (e) {
-                            console.warn('⚠️ Failed to modify Excel XML:', e.message);
+                            console.warn('Failed to modify Excel XML:', e.message);
                         }
                     },
                 },
@@ -1023,7 +1017,7 @@ div div.dt-buttons {
             ordering: true,
             searching: true,
             language: {
-                search: "🔍 Search:",
+                search: "Search:",
             },
             order: [[4, "desc"]]
         });
@@ -1041,7 +1035,7 @@ div div.dt-buttons {
 
         // Reset Filter
         $('#resetFilterJobAssignmentEfficiencyReport').on('click', function() {
-            $('#formFilterJobAssignmentEfficiencyReport')[0].reset(); 
+            $('#formFilterJobAssignmentEfficiencyReport')[0].reset();
             $('#tableJobAssignment').DataTable().ajax.reload();
             const untilInput = document.querySelector('input[name="untilJobAssignmentEfficiencyReport"]');
             const untilAssignInput = document.querySelector('input[name="toAssignAtJobAssignmentEfficiencyReport"]');
@@ -1074,15 +1068,15 @@ div div.dt-buttons {
 
         $('#filterJobNameJobCompletionStatusReport').change(function() {
             var jobName = $(this).val();
-            
+
             // Reset customer name filter
             $('#filterCustomerNameJobCompletionStatusReport').empty();  // Kosongkan customer name
             $('#filterCustomerNameJobCompletionStatusReport').append('<option value="">-- All Customers --</option>');  // Tambahkan opsi default
-            
+
             if (jobName) {
                 // Fetch customer names yang terkait dengan Job Name
                 $.ajax({
-                    url: "<?= base_url('ReportJob/getCustomersByJobName') ?>", 
+                    url: "<?= base_url('ReportJob/getCustomersByJobName') ?>",
                     type: "GET",
                     data: { jobName: jobName },
                     success: function(data) {
@@ -1099,7 +1093,7 @@ div div.dt-buttons {
 
         function loadCustomerNamesJobCompletionStatusReport(){
             $.ajax({
-                url: "<?= base_url('ReportJob/getCustomerNames') ?>", 
+                url: "<?= base_url('ReportJob/getCustomerNames') ?>",
                 type: "GET",
                 success: function(data) {
                     let customers = JSON.parse(data);
@@ -1116,11 +1110,11 @@ div div.dt-buttons {
         if ($('#filterJobNameJobCompletionStatusReport').val() === '') {
             loadCustomerNamesJobCompletionStatusReport();
         }
-        
+
         $('#tableJobCompletion').DataTable({
-            processing: true, 
+            processing: true,
             serverSide: true,
-            ajax: { 
+            ajax: {
                 url: "<?= base_url('ReportJob/JobCompletionStatusReport') ?>",
                 type: "GET",
                 data: function(d) {
@@ -1138,7 +1132,7 @@ div div.dt-buttons {
                 { data: "Status" },
                 { data: "JobDate" }
             ],
-            responsive: true, 
+            responsive: true,
             pageLength: 5,
             rowReorder: {
                 selector: 'td:nth-child(2)'
@@ -1152,7 +1146,7 @@ div div.dt-buttons {
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '📘 Excel',
+                    text: 'Excel',
                     title: `Job Completion Status Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
                     className: 'btn btn-success me-2',
@@ -1169,7 +1163,7 @@ div div.dt-buttons {
                             // Lebarkan kolom (default 25 karakter)
                             $('col', sheet).attr('width', 25);
                         } catch (e) {
-                            console.warn('⚠️ Failed to modify Excel XML:', e.message);
+                            console.warn('Failed to modify Excel XML:', e.message);
                         }
                     },
                 },
@@ -1177,7 +1171,7 @@ div div.dt-buttons {
             ordering: true,
             searching: true,
             language: {
-                search: "🔍 Search:",
+                search: "Search:",
             },
             order: [[4, "desc"]]
         });
@@ -1211,19 +1205,19 @@ div div.dt-buttons {
         let fileName = `Job_Timeline_Report_${now}`;
 
         $('#tableJobTimeline').DataTable({
-            processing: true, 
+            processing: true,
             serverSide: true,
-            ajax: { 
-                url: "<?= base_url('ReportJob/JobTimelineReport') ?>", 
-                type: "GET" 
+            ajax: {
+                url: "<?= base_url('ReportJob/JobTimelineReport') ?>",
+                type: "GET"
             },
             columns: [
                 { data: "no", className: "text-center" },
                 { data: "JobDate" },
                 { data: "TotalJob" }
             ],
-            responsive: true, 
-            pageLength: 5, 
+            responsive: true,
+            pageLength: 5,
             lengthMenu: [5, 10, 25, 50, 100],
             dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
             buttons: [
@@ -1233,7 +1227,7 @@ div div.dt-buttons {
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '📘 Excel',
+                    text: 'Excel',
                     title: `Job Timeline Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
                     className: 'btn btn-success me-2',
@@ -1250,7 +1244,7 @@ div div.dt-buttons {
                             // Lebarkan kolom (default 25 karakter)
                             $('col', sheet).attr('width', 25);
                         } catch (e) {
-                            console.warn('⚠️ Failed to modify Excel XML:', e.message);
+                            console.warn('Failed to modify Excel XML:', e.message);
                         }
                     },
                 },
@@ -1258,7 +1252,7 @@ div div.dt-buttons {
             ordering: true,
             searching: true,
             language: {
-                search: "🔍 Search:",
+                search: "Search:",
             },
             order: [[1, "desc"]]
         });
@@ -1286,15 +1280,15 @@ div div.dt-buttons {
 
         $('#filterJobName').change(function() {
             var jobName = $(this).val();
-            
+
             // Reset customer name filter
             $('#filterCustomerName').empty();  // Kosongkan customer name
             $('#filterCustomerName').append('<option value="">-- All Customers --</option>');  // Tambahkan opsi default
-            
+
             if (jobName) {
                 // Fetch customer names yang terkait dengan Job Name
                 $.ajax({
-                    url: "<?= base_url('ReportJob/getCustomersByJobName') ?>", 
+                    url: "<?= base_url('ReportJob/getCustomersByJobName') ?>",
                     type: "GET",
                     data: { jobName: jobName },
                     success: function(data) {
@@ -1311,7 +1305,7 @@ div div.dt-buttons {
 
         function loadCustomerNames(){
             $.ajax({
-                url: "<?= base_url('ReportJob/getCustomerNames') ?>", 
+                url: "<?= base_url('ReportJob/getCustomerNames') ?>",
                 type: "GET",
                 success: function(data) {
                     let customers = JSON.parse(data);
@@ -1331,16 +1325,16 @@ div div.dt-buttons {
 
 
         $('#tableJobEvidenceReport').DataTable({
-            processing: true, 
+            processing: true,
             serverSide: true,
-            ajax: { 
-                url: "<?= base_url('ReportJob/JobEvidenceReport') ?>", 
+            ajax: {
+                url: "<?= base_url('ReportJob/JobEvidenceReport') ?>",
                 type: "GET",
                 data: function (d) {
                     d.jobNameFilter = $('#filterJobName').val();
-                    d.customerNameFilter = $('#filterCustomerName').val(); 
+                    d.customerNameFilter = $('#filterCustomerName').val();
                     d.totalPhotoFilter = $('#filterTotalPhoto').val();
-                    d.fromDateFilter = $('#filterFromDate').val(); 
+                    d.fromDateFilter = $('#filterFromDate').val();
                     d.untilDateFilter = $('#filterUntilDate').val();
                 }
             },
@@ -1350,8 +1344,8 @@ div div.dt-buttons {
                 { data: "CustomerName" },
                 { data: "TotalPhoto" },
                 { data: "LastPhotoDate" },
-                { 
-                    data: "Photos", 
+                {
+                    data: "Photos",
                     render: function(data, type, row) {
                         if (!data) return '<button class="btn btn-sm btn-secondary" disabled>No Photo</button>';
                         let photos = [];
@@ -1368,7 +1362,7 @@ div div.dt-buttons {
 
                         // // simpan data foto ke tombol
                         // return `
-                        //     <button class="btn btn-sm btn-info view-photo" 
+                        //     <button class="btn btn-sm btn-info view-photo"
                         //             data-photos='${JSON.stringify(valid)}'>
                         //         📷 View
                         //     </button>
@@ -1378,9 +1372,9 @@ div div.dt-buttons {
                             if (!valid.length)
                                 return '<button class="btn btn-sm btn-secondary" disabled>No Photo</button>';
                             return `
-                                <button class="btn btn-sm btn-info view-photo" 
+                                <button class="btn btn-sm btn-info view-photo"
                                         data-photos='${JSON.stringify(valid)}'>
-                                    📷 View
+                                    View
                                 </button>
                             `;
                         }
@@ -1398,23 +1392,23 @@ div div.dt-buttons {
             ],
             columnDefs: [
                 {
-                    targets: [2],  
-                    type: 'string', 
+                    targets: [2],
+                    type: 'string',
                 },
                 {
-                    targets: [3],  
-                    type: 'num',   
+                    targets: [3],
+                    type: 'num',
                 },
                 {
-                    targets: [4],  
-                    type: 'datetime', 
+                    targets: [4],
+                    type: 'datetime',
                     render: function(data) {
                         return data === '-' ? '-' : moment(data).format('YYYY-MM-DD HH:mm:ss');
                     }
                 }
             ],
-            responsive: true, 
-            pageLength: 5, 
+            responsive: true,
+            pageLength: 5,
             lengthMenu: [5, 10, 25, 50, 100],
             dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
             buttons: [
@@ -1424,7 +1418,7 @@ div div.dt-buttons {
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '📘 Excel',
+                    text: 'Excel',
                     title: `Job Evidence Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
                     className: 'btn btn-success me-2',
@@ -1448,7 +1442,7 @@ div div.dt-buttons {
                             $('row c[r^="F"]', sheet).attr('s', '4');
 
                         } catch (e) {
-                            console.warn('⚠️ Failed to modify Excel XML:', e.message);
+                            console.warn('Failed to modify Excel XML:', e.message);
                         }
                     },
                 },
@@ -1456,14 +1450,14 @@ div div.dt-buttons {
             ordering: true,
             searching: true,
             language: {
-                search: "🔍 Search:",
+                search: "Search:",
             },
             order: [[4, "desc"]]
         });
 
         // Reload Otomatic
         $('#filterJobName, #filterCustomerName, #filterTotalPhoto, #filterFromDate, #filterUntilDate').change(function() {
-            $('#tableJobEvidenceReport').DataTable().ajax.reload();  
+            $('#tableJobEvidenceReport').DataTable().ajax.reload();
         });
 
         // Submit Filter
@@ -1474,7 +1468,7 @@ div div.dt-buttons {
 
         // Reset Filter
         $('#resetFilterJobEvidenceReport').click(function() {
-            $('#formFilterJobEvidenceReport')[0].reset(); 
+            $('#formFilterJobEvidenceReport')[0].reset();
             loadCustomerNames();
             $('#tableJobEvidenceReport').DataTable().ajax.reload();
             const untilInput = document.querySelector('input[name="filterUntilDate"]');
@@ -1492,7 +1486,7 @@ div div.dt-buttons {
         function addOneDay(dateStr) {
             const date = new Date(dateStr);
             date.setDate(date.getDate() + 1);
-            return date.toISOString().split('T')[0]; 
+            return date.toISOString().split('T')[0];
         }
 
         function updateUntilMin() {
@@ -1500,14 +1494,14 @@ div div.dt-buttons {
                 const minUntil = addOneDay(fromInput.value);
                 untilInput.setAttribute("min", minUntil);
                 if (untilInput.value && untilInput.value < minUntil) {
-                    untilInput.value = minUntil; 
+                    untilInput.value = minUntil;
                 }
             } else {
                 untilInput.removeAttribute("min");
             }
         }
 
-        updateUntilMin(); 
+        updateUntilMin();
 
         fromInput.addEventListener("change", updateUntilMin); // Update on change
     });
@@ -1522,7 +1516,7 @@ div div.dt-buttons {
         function addOneDay(dateStr) {
             const date = new Date(dateStr);
             date.setDate(date.getDate() + 1);
-            return date.toISOString().split('T')[0]; 
+            return date.toISOString().split('T')[0];
         }
 
         function updateUntilMin() {
@@ -1530,14 +1524,14 @@ div div.dt-buttons {
                 const minUntil = addOneDay(fromInput.value);
                 untilInput.setAttribute("min", minUntil);
                 if (untilInput.value && untilInput.value < minUntil) {
-                    untilInput.value = minUntil; 
+                    untilInput.value = minUntil;
                 }
             } else {
                 untilInput.removeAttribute("min");
             }
         }
 
-        updateUntilMin(); 
+        updateUntilMin();
 
         fromInput.addEventListener("change", updateUntilMin); // Update on change
     });
@@ -1553,7 +1547,7 @@ div div.dt-buttons {
         function addOneDay(dateStr) {
             const date = new Date(dateStr);
             date.setDate(date.getDate() + 1);
-            return date.toISOString().split('T')[0]; 
+            return date.toISOString().split('T')[0];
         }
 
         function updateUntilMin() {
@@ -1561,14 +1555,14 @@ div div.dt-buttons {
                 const minUntil = addOneDay(fromInput.value);
                 untilInput.setAttribute("min", minUntil);
                 if (untilInput.value && untilInput.value < minUntil) {
-                    untilInput.value = minUntil; 
+                    untilInput.value = minUntil;
                 }
             } else {
                 untilInput.removeAttribute("min");
             }
         }
 
-        updateUntilMin(); 
+        updateUntilMin();
 
         fromInput.addEventListener("change", updateUntilMin); // Update on change
     });
@@ -1577,13 +1571,13 @@ div div.dt-buttons {
     document.addEventListener("DOMContentLoaded", function () {
         const fromInput = document.querySelector('input[name="filterFromDate"]');
         const untilInput = document.querySelector('input[name="filterUntilDate"]');
-        
+
          if (!fromInput || !untilInput) return;
 
         function addOneDay(dateStr) {
             const date = new Date(dateStr);
             date.setDate(date.getDate() + 1);
-            return date.toISOString().split('T')[0]; 
+            return date.toISOString().split('T')[0];
         }
 
         function updateUntilMin() {
@@ -1591,29 +1585,29 @@ div div.dt-buttons {
                 const minUntil = addOneDay(fromInput.value);
                 untilInput.setAttribute("min", minUntil);
                 if (untilInput.value && untilInput.value < minUntil) {
-                    untilInput.value = minUntil; 
+                    untilInput.value = minUntil;
                 }
             } else {
                 untilInput.removeAttribute("min");
             }
         }
 
-        updateUntilMin(); 
+        updateUntilMin();
 
         fromInput.addEventListener("change", updateUntilMin); // Update on change
     });
-        
+
 
     // Event tombol "View Photo"
     $('#tableJobCompliance').on('click', '.view-photo', function() {
         const photos = JSON.parse($(this).attr('data-photos'));
-        
+
         // kalau cuma 1 foto
         if (photos.length === 1) {
             $('#JobCompliancePhotosModal .modal-body').html(`
                 <img src="${photos[0].photo}" class="img-fluid rounded shadow-sm mb-2" style="max-height:70vh;object-fit:contain;">
                 <p class="text-muted small">${photos[0].caption || ''}</p>
-            `); 
+            `);
             $('#JobCompliancePhotosModal').modal('show');
             return;
         }
@@ -1625,8 +1619,8 @@ div div.dt-buttons {
                 ${photos.map((p, i) => `
                     <div class="carousel-item ${i === 0 ? 'active' : ''}">
                         <div class="d-flex flex-column align-items-center justify-content-center" style="max-height:75vh;">
-                            <img src="${p.photo}" 
-                                alt="photo-${i}" 
+                            <img src="${p.photo}"
+                                alt="photo-${i}"
                                 class="img-fluid rounded shadow-sm"
                                 style="max-height:65vh; object-fit:contain;">
                             <p class="mt-2 text-center small text-muted bg-dark bg-opacity-50 px-2 rounded">${p.caption || ''}</p>
@@ -1652,7 +1646,7 @@ div div.dt-buttons {
     });
 
 
-    // 
+    //
     $('#tableJobEvidenceReport').on('click', '.view-photo', function() {
         const photos = JSON.parse($(this).attr('data-photos'));
 
@@ -1671,8 +1665,8 @@ div div.dt-buttons {
                 ${photos.map((p, i) => `
                     <div class="carousel-item ${i === 0 ? 'active' : ''}">
                         <div class="d-flex flex-column align-items-center justify-content-center" style="max-height:75vh;">
-                            <img src="${p.photo}" 
-                                alt="photo-${i}" 
+                            <img src="${p.photo}"
+                                alt="photo-${i}"
                                 class="img-fluid rounded shadow-sm"
                                 style="max-height:65vh; object-fit:contain;">
                             <p class="mt-2 text-center small text-muted bg-dark bg-opacity-50 px-2 rounded">${p.caption || ''}</p>
@@ -1703,10 +1697,10 @@ div div.dt-buttons {
         const jobId = $(this).data('id'); // ambil ID job dari tombol
 
         // Tampilkan modal dulu
-        $('#modal_detail_job').modal('show');
+        showModal('#modal_detail_job');
 
         // Load konten dari controller (kirim jobId ke backend)
-        $("#modal_detail_job .modal-body").load("<?= base_url('ReportJob/detail_job/') ?>" + jobId);
+        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportJob/detail_job/') ?>" + jobId);
     });
 
 </script>

@@ -24,7 +24,7 @@
     }
 
     .content_header .label {
-        flex: 0 0 120px; /* lebar tetap untuk label */
+        flex: 0 0 120px;
         font-weight: 600;
         color: #212529;
     }
@@ -33,12 +33,6 @@
         flex: 1;
         color: #495057;
     }
-
-    /* .job-gallery {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-    } */
 
     .job-gallery img {
         width: 100%;
@@ -59,162 +53,132 @@
         border-radius: 6px;
     }
     .ongoing_job {
-        background-color: #ffc107; /* kuning */
-        box-shadow: 2px 2px 8px rgba(255, 193, 7, 0.4); /* bayangan kuning transparan */
+        background-color: #ffc107;
+        box-shadow: 2px 2px 8px rgba(255, 193, 7, 0.4);
         color: white;
     }
 
     .completed_job {
-        background-color: #28a745; /* hijau */
-        box-shadow: 2px 2px 8px rgba(40, 167, 69, 0.4); /* bayangan hijau transparan */
+        background-color: #28a745;
+        box-shadow: 2px 2px 8px rgba(40, 167, 69, 0.4);
         color: white;
     }
 
 </style>
 
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Job Summary</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= base_url("home") ?>">Dashboard</a></li>
-                    </ol>
-                </div>
-            </div>
-        </div><!-- /.container-fluid -->
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header ">
-
-                            <?php 
-                            $colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6']; 
-                            $i = 0;
-                            ?>
-                            
-                            <!-- <div class="row">
-                                <?php foreach($customer as $val): ?>
-                                    <?php 
-                                        // Ambil warna berdasarkan index (muter ulang kalau warna habis)
-                                        $color = $colors[$i % count($colors)];
-                                        $i++;
-                                    ?>
-                                    <div class="col-12 col-sm-6 col-md-3">
-                                        <div class="info-box" style="background-color: <?= $color ?>; color: white; border-radius: 10px;">
-                                            <div class="info-box-content">
-                                                <span style="font-size: 18px;"><i class="fas fa-user"></i> <?= $val['CustomerName'] ?? "Customer" ?></span>
-                                                    <span class="mt-2">Total Complaint : <strong id="complaint_job<?= $val['CustomerID'] ?>"></strong></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div> -->
-
-                            <div class="row">
-                                <div class="col-md-3 form-group">
-                                    <label for="">Date From</label>
-                                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control" name="from_date_job" id="from_date_job">
-                                </div>
-                                <div class="col-md-3 form-group">
-                                    <label for="">Date Until</label>
-                                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control" name="until_date_job" id="until_date_job">
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="">Customer</label>
-                                        <select name="customer_name_form" class="form-control select2bs4" id="customer_name_form">
-                                            <option value="all">--- All Customer ---</option>
-                                            <?php foreach($customer as $val): ?>
-                                                <option value="<?= $val['CustomerID'] ?>"><?= $val['CustomerName'] ?></option>
-                                            <?php endforeach ?>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
-
-                        <!-- /.card-header -->
-                        <div class="card-body">
-                            <div class="table-responsive">
-
-                                <input type="hidden" id="type_for_job" value="<?= $type_job ?>">
-                                <!--  -->
-                                <table class="table table-bordered table-striped" id="tableJobRider">
-                                    <thead class="">
-                                        <tr style="white-space: nowrap;">
-                                            <th style="width: 10%; text-align: center;">No</th>
-                                            <th>Create Job</th>
-                                            <th>Job Name</th>
-                                            <th>To Customer</th>
-                                            <th>Customer Address</th>
-                                            <th>User Get The Job</th>
-                                            <th>Type Job</th>
-                                            <th>Assign Date</th>
-                                            <th>History Cancel</th>
-                                            <th>History Reschedule</th>
-                                            <th>Finish Date</th>
-                                            <th >Status Job</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-
-
-
-                            <!-- /.row -->
-                        </div>
-                        <!-- ./card-body -->
-
-                        <!-- /.card-footer -->
-                    </div>
-                    <!-- /.card -->
-                </div>
-                <!-- /.col -->
-            </div>
-            <!-- /.row -->
-        </div>
-        <!--/. container-fluid -->
-    </section>
+<!-- Content Header -->
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <h1 class="text-xl font-bold text-gray-800">Job Summary</h1>
+        <nav class="flex">
+            <ol class="flex items-center gap-1.5 text-sm">
+                <li><a href="<?= base_url('home') ?>" class="text-primary hover:underline">Dashboard</a></li>
+            </ol>
+        </nav>
+    </div>
 </div>
 
-<div class="modal fade" id="modal_history_cancel_job" tabindex="-1" role="dialog" aria-labelledby="modalCameraLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
+<!-- Content -->
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-5 py-4 border-b border-gray-200">
 
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalHeader"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <?php
+            $colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6'];
+            $i = 0;
+            ?>
+
+            <!-- <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <?php foreach($customer as $val): ?>
+                    <?php
+                        $color = $colors[$i % count($colors)];
+                        $i++;
+                    ?>
+                    <div class="flex items-center gap-4 rounded-xl p-4 shadow-sm" style="background-color: <?= $color ?>; color: white;">
+                        <div>
+                            <span class="text-lg"><i class="fas fa-user"></i> <?= $val['CustomerName'] ?? "Customer" ?></span>
+                            <span class="block mt-2">Total Complaint : <strong id="complaint_job<?= $val['CustomerID'] ?>"></strong></span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div> -->
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="form-group mb-0">
+                    <label for="from_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" name="from_date_job" id="from_date_job">
+                </div>
+                <div class="form-group mb-0">
+                    <label for="until_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date Until</label>
+                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" name="until_date_job" id="until_date_job">
+                </div>
+                <div class="form-group mb-0 md:col-span-2">
+                    <label for="customer_name_form" class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                    <select name="customer_name_form" class="form-control select2bs4 w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="customer_name_form">
+                        <option value="all">--- All Customer ---</option>
+                        <?php foreach($customer as $val): ?>
+                            <option value="<?= $val['CustomerID'] ?>"><?= $val['CustomerName'] ?></option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
             </div>
 
-            <!-- Body -->
-            <div class="modal-body body_detail_history_cancel_job">
-                
-            </div>
+        </div>
 
-            <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+        <!-- Card Body -->
+        <div class="px-5 py-4">
+            <div class="overflow-x-auto">
+
+                <input type="hidden" id="type_for_job" value="<?= $type_job ?>">
+                <table class="table table-bordered table-striped" id="tableJobRider">
+                    <thead>
+                        <tr class="whitespace-nowrap">
+                            <th style="width: 10%; text-align: center;">No</th>
+                            <th>Create Job</th>
+                            <th>Job Name</th>
+                            <th>To Customer</th>
+                            <th>Customer Address</th>
+                            <th>User Get The Job</th>
+                            <th>Type Job</th>
+                            <th>Assign Date</th>
+                            <th>History Cancel</th>
+                            <th>History Reschedule</th>
+                            <th>Finish Date</th>
+                            <th>Status Job</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+<!-- History Modal (shared for Cancel and Reschedule) -->
+<div id="modal_history_cancel_job" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalHeader">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+
+            <!-- Header -->
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modalHeader"></h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_history_cancel_job">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4 overflow-y-auto body_detail_history_cancel_job">
+
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_history_cancel_job">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 
@@ -249,10 +213,9 @@ $(document).ready(function() {
     let form_date_until = $('#from_date_job').val();
     $('#until_date_job').attr('min', form_date_until);
 
-    // bayunovandrie
     $('#from_date_job').on('change', function() {
         let fromDate = $(this).val();
-        $('#until_date_job').attr('min', fromDate); // batas bawah until date
+        $('#until_date_job').attr('min', fromDate);
     });
 
     $('#until_date_job').on('change', function() {
@@ -261,7 +224,7 @@ $(document).ready(function() {
 
         if (untilDate < fromDate) {
             alert('Until Date cannot be earlier than From Date.');
-            $(this).val(fromDate); // reset jadi sama dengan from date
+            $(this).val(fromDate);
         }
     });
 
@@ -285,7 +248,7 @@ $(document).ready(function() {
     // handle button add
     buttonAdd.on('click', function(e) {
         e.preventDefault();
-        modal.modal('show');
+        showModal('#modal');
 
         textHeaderModal.text('Add Job');
         formUser.attr("action", '<?= base_url('create-job') ?>')
@@ -311,7 +274,7 @@ $(document).ready(function() {
             case 'disconnection-job':
                 value_selected = "4";
                 break;
-        
+
             default:
                 value_selected = "1";
                 break;
@@ -321,11 +284,11 @@ $(document).ready(function() {
     });
 
     var table = $('#tableJobRider').DataTable({
-        processing: false, 
+        processing: false,
         serverSide: true,
         searching: true,
-        ajax: { 
-            url: "<?= base_url('Job/getDataAllJobCustomer') ?>", 
+        ajax: {
+            url: "<?= base_url('Job/getDataAllJobCustomer') ?>",
             type: "GET",
             data : function(d) {
                 d.customerID = $('#customer_name_form').val();
@@ -335,24 +298,24 @@ $(document).ready(function() {
         },
         columns: [
             { data: "no", className: "text-center" },
-            { 
+            {
                 data: "JobDate",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
                 }
             },
             { data: "JobName" },
-            { 
+            {
                 data: "CustomerName",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
                 }
             },
-            { 
+            {
                 data: "Address"
-                
+
              },
-            { 
+            {
                 data: "Fullname",
                 render: function(data, type, row) {
 
@@ -360,9 +323,9 @@ $(document).ready(function() {
 
                     if (data === null) {
 
-                        userDriver = `<span class="text-danger">Not Assign User</span>`;
+                        userDriver = `<span class="text-red-600">Not Assign User</span>`;
                     } else {
-                        
+
                         userDriver = ` <span style="white-space: nowrap;">Driver Name : <strong>${data}</strong></span>`;
                     }
 
@@ -370,7 +333,7 @@ $(document).ready(function() {
 
                 }
             },
-            { 
+            {
                 data: "TypeJob",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
@@ -392,14 +355,12 @@ $(document).ready(function() {
 
                 }
             },
-            { 
+            {
                 data: "AssignWhen",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
                 },
                 render : function(data , type, row) {
-
-                    
 
                     return data;
 
@@ -415,7 +376,7 @@ $(document).ready(function() {
                     let htmlReturn;
 
                     if(data.length > 0) {
-                        htmlReturn = `<button class="btn btn-sm  btn-primary btn_cancel_job" data-job-id="${row.JobID}" ><i class="fas fa-eye" ></i></button>`;
+                        htmlReturn = `<button class="btn-tw-primary btn_cancel_job" data-job-id="${row.JobID}"><i class="fas fa-eye"></i></button>`;
                     } else {
 
                         htmlReturn = `-`;
@@ -433,7 +394,7 @@ $(document).ready(function() {
                     let htmlReturn;
 
                     if(data.length > 0) {
-                        htmlReturn = `<button class="btn btn-sm  btn-primary btn_reschedule"  data-job-id="${row.JobID}" ><i class="fas fa-eye" ></i></button>`;
+                        htmlReturn = `<button class="btn-tw-primary btn_reschedule" data-job-id="${row.JobID}"><i class="fas fa-eye"></i></button>`;
                     } else {
 
                         htmlReturn = `-`;
@@ -442,20 +403,18 @@ $(document).ready(function() {
                     return htmlReturn;
                 }
             },
-            { 
+            {
                 data: "FinishWhen",
                 createdCell: function(td, cellData, rowData, row, col) {
                     $(td).css('white-space', 'nowrap');
                 },
                 render : function(data , type, row) {
 
-                    
-
                     return data;
 
                 }
             },
-            { 
+            {
                 data: "Status",
                 render: function(data, type, row) {
 
@@ -463,9 +422,9 @@ $(document).ready(function() {
                     if(data == 1) {
 
                         labelStatusJob = `<span class='ongoing_job'>Ongoing Job</span>`;
-                        
+
                     } else if(data ==2) {
-                        
+
                         labelStatusJob = `<span class='finished_job'>Finished Job</span>`;
                     } else {
                         labelStatusJob = `<span class='awaiting_job'>Awaiting Driver</span>`;
@@ -473,12 +432,12 @@ $(document).ready(function() {
                     }
 
                     return labelStatusJob;
-                        
+
                 }
             }
         ],
-        responsive: false, 
-        pageLength: 10, 
+        responsive: false,
+        pageLength: 10,
         lengthMenu: [10, 25, 50, 100],
         order: [[0, 'desc']],
         paging: true,
@@ -494,7 +453,7 @@ $(document).ready(function() {
 });
 
 $('#customer_name_form, #from_date_job, #until_date_job').on('change', function() {
-    $('#tableJobRider').DataTable().ajax.reload();  
+    $('#tableJobRider').DataTable().ajax.reload();
     refreshCard();
 });
 
@@ -503,7 +462,7 @@ $(document).on('click', '.btn_cancel_job', function() {
 
     let jobID = $(this).data('job-id');
 
-    $('#modal_history_cancel_job').modal('show');
+    showModal('#modal_history_cancel_job');
     $('#modal_history_cancel_job #modalHeader').text('Detail Cancel Job');
     $('#modal_history_cancel_job .body_detail_history_cancel_job').load('<?= base_url('Job/historyCancelJob?jobID=') ?>' + jobID);
 });
@@ -512,7 +471,7 @@ $(document).on('click', '.btn_reschedule', function() {
 
     let jobID = $(this).data('job-id');
 
-    $('#modal_history_cancel_job').modal('show');
+    showModal('#modal_history_cancel_job');
     $('#modal_history_cancel_job #modalHeader').text('Detail Reschedule Job');
     $('#modal_history_cancel_job .body_detail_history_cancel_job').load('<?= base_url('Job/historyReschedule?jobID=') ?>' + jobID);
 });

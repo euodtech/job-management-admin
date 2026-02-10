@@ -1,28 +1,28 @@
-<div class="content">
-    <div class="table-responsive">
-        <table class="table table-striped">
+<div class="p-4">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Driver Name</th>
-                    <th>Customer Name</th>
-                    <th>Job Name</th>
-                    <th>Job Type</th>
-                    <th>Job Date</th>
-                    <th>Assign Date</th>
-                    <th class="<?= ($type_job == 1) ? "d-none" :  "" ?>" >Finish Date</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">No</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Driver Name</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Customer Name</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Job Name</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Job Type</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Job Date</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">Assign Date</th>
+                    <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200 <?= ($type_job == 1) ? 'hidden' : '' ?>">Finish Date</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
                 $no = 1;
                 foreach($job as $val): ?>
-                <tr>
-                    <td><?= $no++; ?></td>
-                    <td><?= $val['Fullname'] ?></td>
-                    <td><?= $val['CustomerName'] ?></td>
-                    <td><?= $val['JobName'] ?></td>
-                    <td>
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-4 py-3"><?= $no++; ?></td>
+                    <td class="px-4 py-3"><?= $val['Fullname'] ?></td>
+                    <td class="px-4 py-3"><?= $val['CustomerName'] ?></td>
+                    <td class="px-4 py-3"><?= $val['JobName'] ?></td>
+                    <td class="px-4 py-3">
                         <?php
                             if($val['TypeJob'] == 1 ) {
                                 echo 'Line Interrupt';
@@ -33,9 +33,9 @@
                             }
                         ?>
                     </td>
-                    <td style="white-space: nowrap;"><?= return_date_format($val['JobDate']) ?></td>
-                    <td style="white-space: nowrap;"><?= return_date_format($val['AssignWhen']) ?></td>
-                    <td class="<?= ($type_job == 1) ? "d-none" :  "" ?>"><?= return_date_format($val['FinishWhen']) ?></td>
+                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format($val['JobDate']) ?></td>
+                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format($val['AssignWhen']) ?></td>
+                    <td class="px-4 py-3 <?= ($type_job == 1) ? 'hidden' : '' ?>"><?= return_date_format($val['FinishWhen']) ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

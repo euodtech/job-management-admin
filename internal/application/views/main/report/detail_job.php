@@ -1,114 +1,109 @@
-<div class="content">
-    <h6 style="font-weight: bold;">Job Information :</h6>
-    <div class="table-responsive">
-        <table class="table table-borderless">
+<div class="p-4">
+    <h6 class="font-bold text-gray-800 mb-3">Job Information :</h6>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
             <tbody>
                 <tr>
-                    <th style="width: 30%">Job Name</th>
-                    <td>: <?= $detail[0]['JobName'] ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600 w-[30%]">Job Name</th>
+                    <td class="px-4 py-2">: <?= $detail[0]['JobName'] ?></td>
                 </tr>
                 <tr>
-                    <th>Type Job</th>
-                    <td>: <?= $detail[0]['TypeJob'] ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Type Job</th>
+                    <td class="px-4 py-2">: <?= $detail[0]['TypeJob'] ?></td>
                 </tr>
                 <tr>
-                    <th>Job Create</th>
-                    <td>: <?= return_date_format($detail[0]['created_at']) ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Job Create</th>
+                    <td class="px-4 py-2">: <?= return_date_format($detail[0]['created_at']) ?></td>
                 </tr>
                 <tr>
-                    <th>Job Date</th>
-                    <td>: <?= return_date_format($detail[0]['JobDate']) ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Job Date</th>
+                    <td class="px-4 py-2">: <?= return_date_format($detail[0]['JobDate']) ?></td>
                 </tr>
             </tbody>
         </table>
-
     </div>
 </div>
 <?php if(count($detail[0]['StatusCancelJob']) > 0): ?>
-<div class="content">
-    <h6 style="font-weight: bold;" class="text-danger">History Cancel Job:</h6>
-    <div class="table-responsive">
+<div class="p-4">
+    <h6 class="font-bold text-red-600 mb-3">History Cancel Job:</h6>
+    <div class="overflow-x-auto">
         <?php foreach($detail[0]['StatusCancelJob'] as $val): ?>
-            <table class="table table-borderless">
+            <table class="w-full text-sm mb-3">
                 <tbody>
                     <tr>
-                        <th style="width: 30%" class="text-danger">Driver Name</th>
-                        <td>: <?= $val['Fullname'] ?></td>
+                        <th class="px-4 py-2 text-left text-red-600 w-[30%]">Driver Name</th>
+                        <td class="px-4 py-2">: <?= $val['Fullname'] ?></td>
                     </tr>
                     <tr>
-                        <th class="text-danger">Cancel Time</th>
-                        <td>: <?= return_date_format_detail($val['created_at']) ?></td>
+                        <th class="px-4 py-2 text-left text-red-600">Cancel Time</th>
+                        <td class="px-4 py-2">: <?= return_date_format_detail($val['created_at']) ?></td>
                     </tr>
                     <tr>
-                        <th class="text-danger">Reason</th>
-                        <td>: <?= $val['Reason'] ?></td>
+                        <th class="px-4 py-2 text-left text-red-600">Reason</th>
+                        <td class="px-4 py-2">: <?= $val['Reason'] ?></td>
                     </tr>
                 </tbody>
             </table>
         <?php endforeach; ?>
-
     </div>
 </div>
 <?php endif; ?>
-<hr>
-<div class="content">
-    <h6 style="font-weight: bold;">Customer Information :</h6>
-    <div class="table-responsive">
-        <table class="table table-borderless">
+<hr class="border-gray-200">
+<div class="p-4">
+    <h6 class="font-bold text-gray-800 mb-3">Customer Information :</h6>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
             <tbody>
                 <tr>
-                    <th style="width: 30%">Customer Name</th>
-                    <td>: <?= $detail[0]['CustomerName'] ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600 w-[30%]">Customer Name</th>
+                    <td class="px-4 py-2">: <?= $detail[0]['CustomerName'] ?></td>
                 </tr>
                 <tr>
-                    <th>Customer Address</th>
-                    <td>: <?= $detail[0]['Address'] ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Customer Address</th>
+                    <td class="px-4 py-2">: <?= $detail[0]['Address'] ?></td>
                 </tr>
                 <tr>
-                    <th>Customer Contact</th>
-                    <td>: <?= $detail[0]['PhoneNumber'] ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Customer Contact</th>
+                    <td class="px-4 py-2">: <?= $detail[0]['PhoneNumber'] ?></td>
                 </tr>
             </tbody>
         </table>
-
     </div>
 </div>
-<hr>
-<div class="content">
-    <h6 style="font-weight: bold;">Driver Information :</h6>
-    <div class="table-responsive">
-        <table class="table table-borderless">
+<hr class="border-gray-200">
+<div class="p-4">
+    <h6 class="font-bold text-gray-800 mb-3">Driver Information :</h6>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
             <tbody>
                 <tr>
-                    <th style="width: 30%">Driver Name</th>
-                    <td>: <?= $detail[0]['Fullname'] ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600 w-[30%]">Driver Name</th>
+                    <td class="px-4 py-2">: <?= $detail[0]['Fullname'] ?></td>
                 </tr>
                 <tr>
-                    <th>Driver Contact</th>
-                    <td>: <?= $detail[0]['Email'] ?> - <?= $detail[0]['PhoneNumber'] ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Driver Contact</th>
+                    <td class="px-4 py-2">: <?= $detail[0]['Email'] ?> - <?= $detail[0]['PhoneNumber'] ?></td>
                 </tr>
                 <tr>
-                    <th>Get Job</th>
-                    <td>: <?= return_date_format_detail($detail[0]['AssignWhen']) ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Get Job</th>
+                    <td class="px-4 py-2">: <?= return_date_format_detail($detail[0]['AssignWhen']) ?></td>
                 </tr>
                 <tr>
-                    <th>Finished Job</th>
-                    <td>: <?= return_date_format_detail($detail[0]['FinishWhen']) ?></td>
+                    <th class="px-4 py-2 text-left text-gray-600">Finished Job</th>
+                    <td class="px-4 py-2">: <?= return_date_format_detail($detail[0]['FinishWhen']) ?></td>
                 </tr>
             </tbody>
         </table>
-
     </div>
 </div>
-<hr>
-<div class="content">
-    <h6 style="font-weight: bold;">Assets Job :</h6>
-<div class="row">
-    <?php foreach($detail[0]['AssetsJob'] as $val): ?>
-    <div class="col-md-6">
-        <img src="<?= 'http://localhost:8080/be-fms/api/' . $val['Photo'] ?>" style="width: 100%;" alt="">
+<hr class="border-gray-200">
+<div class="p-4">
+    <h6 class="font-bold text-gray-800 mb-3">Assets Job :</h6>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <?php foreach($detail[0]['AssetsJob'] as $val): ?>
+        <div>
+            <img src="<?= 'http://localhost:8080/be-fms/api/' . $val['Photo'] ?>" class="w-full rounded-lg shadow-sm" alt="">
+        </div>
+        <?php endforeach; ?>
     </div>
-    <?php endforeach; ?>
 </div>
-</div>
-

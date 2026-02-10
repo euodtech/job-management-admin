@@ -1,10 +1,6 @@
 <style>
-    .content-wrapper {
-        min-height: max-content !important;
-    }
-
-    #tableUserPerformance th, 
-    #tableUserActivity th, 
+    #tableUserPerformance th,
+    #tableUserActivity th,
     #tableUserWorkloadReport th {
         text-align: center;
     }
@@ -28,7 +24,7 @@
         background-color: #ffffffff;
         white-space: nowrap;
     }
-    
+
     table.dataTable>tbody>tr.child span.dtr-title {
         display: inline-block;
         font-weight: bold;
@@ -63,7 +59,7 @@
         #tableUserActivity td:nth-child(4) {
             text-align: center;
         }
-        
+
         #tableUserActivity td:nth-child(1),
         #tableUserActivity td:nth-child(5) {
             text-align: left !important;
@@ -108,78 +104,66 @@
     }
 </style>
 
-<div class="content-wrapper" >
-    <section class="content-header">
-        <div class="container-fluid">
-            <h4><?= $title ?></h4>
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <h4 class="text-xl font-bold text-gray-800"><?= $title ?></h4>
+</div>
+
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-cyan-200">
+        <div class="px-5 py-4 border-b border-cyan-200">
+            <h5 class="text-base font-semibold text-gray-800">📌 Report Rider</h5>
         </div>
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card card-info card-outline">
-                    <div class="card-header">
-                        <h5 class="card-title">📌 Report Rider</h5>
+        <div class="px-5 py-4">
+            <form id="formFilterUserLoginActivityReport" method="GET" action="">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                        <input type="date" name="from_UserLoginActivityReport" id="from_UserLoginActivityReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" value="<?= (isset($_GET['from_UserLoginActivityReport'])) ? $_GET['from_UserLoginActivityReport'] : date('Y-m-01') ?>">
                     </div>
-                    <div class="card-body">
-                        <form id="formFilterUserLoginActivityReport" method="GET" action="">
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label>From Date</label>
-                                    <input type="date" name="from_UserLoginActivityReport" id="from_UserLoginActivityReport" class="form-control" value="<?= (isset($_GET['from_UserLoginActivityReport'])) ? $_GET['from_UserLoginActivityReport'] : date('Y-m-01') ?>">
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Until Date</label>
-                                    <input type="date" name="until_UserLoginActivityReport" id="until_UserLoginActivityReport" class="form-control" value="<?= (isset($_GET['until_UserLoginActivityReport'])) ? $_GET['until_UserLoginActivityReport'] : date('Y-m-d')?>" >
-                                </div>
-                                <div class="col-md-3 align-self-end mt-3">
-                                    <!-- <button type="submit" class="btn btn-info">Filter</button> -->
-                                    <button type="button" class="btn btn-secondary" id="resetFilterUserLoginActivityReport" >Reset</button>
-                                </div>
-                            </div>
-                        </form>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableUserLogin">
-                                <thead>
-                                    <tr>
-                                    <th>No</th>
-                                    <th>Fullname</th>
-                                    <th>Email</th>
-                                    <th>Cancel Job</th>
-                                    <th>Total Job</th>
-                                    <th>Complete Job</th>
-                                    <th>Ongoing Job</th>
-                                    </tr>
-                                </thead>
-                            </table>
-
-                        </div>
-                        
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Until Date</label>
+                        <input type="date" name="until_UserLoginActivityReport" id="until_UserLoginActivityReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" value="<?= (isset($_GET['until_UserLoginActivityReport'])) ? $_GET['until_UserLoginActivityReport'] : date('Y-m-d')?>" >
                     </div>
+                    <div class="self-end mt-3">
+                        <!-- <button type="submit" class="btn btn-info">Filter</button> -->
+                        <button type="button" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterUserLoginActivityReport" >Reset</button>
                     </div>
                 </div>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableUserLogin">
+                    <thead>
+                        <tr>
+                        <th>No</th>
+                        <th>Fullname</th>
+                        <th>Email</th>
+                        <th>Cancel Job</th>
+                        <th>Total Job</th>
+                        <th>Complete Job</th>
+                        <th>Ongoing Job</th>
+                        </tr>
+                    </thead>
+                </table>
+
             </div>
 
-
-
         </div>
-    </section>
+    </div>
 </div>
 
 
-<div class="modal fade" id="modal_detail_job" tabindex="-1" aria-labelledby="modal_detail_job" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content">
-        <div class="modal-header bg-info text-white">
-            <h5 class="modal-title" id="modal_detail_job_header"></h5>
-            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-        </div>
+<div id="modal_detail_job" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modal_detail_job_header">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-4xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800" id="modal_detail_job_header"></h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_detail_job">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto">
+            </div>
         </div>
     </div>
 </div>
@@ -212,14 +196,14 @@
         let fileName = `User_Login_Activity_${now}`;
 
         var table = $('#tableUserLogin').DataTable({
-            processing: true, 
+            processing: true,
             serverSide: true,
             order: [[1, 'asc']],
             columnDefs: [
                 { targets: [3, 4, 5, 6], orderable: false } // kolom 3–6 gak bisa di-sort
             ],
-            ajax: { 
-                url: "<?= base_url('ReportDriver/UserLoginActivityReport') ?>", 
+            ajax: {
+                url: "<?= base_url('ReportDriver/UserLoginActivityReport') ?>",
                 type: "GET",
                 data: function(d) {
                     d.from_UserLoginActivityReport = $('input[name=from_UserLoginActivityReport]').val();
@@ -230,13 +214,13 @@
                 { data: "no", className: "text-center" },
                 { data: "Fullname" },
                 { data: "Email" },
-                { 
+                {
                     "data": "CancelJob",
                     "className": "text-center",
                     "render":  function(data, type, row) {
 
                         let total = 0;
-                        let jobID = ''; 
+                        let jobID = '';
 
                         // Pastikan data itu array
                         if (Array.isArray(data) && data.length > 0) {
@@ -254,42 +238,41 @@
 
                         }
 
-                        
 
-                        return `<button type='button' class='btn btn-sm btn-danger btn_detail_cancel_job' data-job-id='${jobID}' >${total}</button>`;
+
+                        return `<button type='button' class='btn-tw-danger btn_detail_cancel_job' data-job-id='${jobID}' >${total}</button>`;
 
                     }
                 },
                 { "data": "TotalJob", className: "text-center" },
-                { 
-                    "data": "CompleteJob", 
+                {
+                    "data": "CompleteJob",
                     "className": "text-center",
                     "render" : function(data, type, row) {
-                        return `<button type='button' class='btn btn-sm btn-primary btn_detail_complete_job' data-user-id='${row.UserID}' data-from-date='${row.FromDate}' data-until-date='${row.UntilDate}'>${data}</button>`;
+                        return `<button type='button' class='btn-tw-primary btn_detail_complete_job' data-user-id='${row.UserID}' data-from-date='${row.FromDate}' data-until-date='${row.UntilDate}'>${data}</button>`;
 
                     }
                 },
-                { 
-                    "data": "OngoingJob", 
+                {
+                    "data": "OngoingJob",
                     "className": "text-center" ,
                     "render" : function(data, type, row) {
-                        return `<button type='button' class='btn btn-sm btn-primary btn_detail_ongoing_job' data-user-id='${row.UserID}' data-from-date='${row.FromDate}' data-until-date='${row.UntilDate}'>${data}</button>`;
+                        return `<button type='button' class='btn-tw-primary btn_detail_ongoing_job' data-user-id='${row.UserID}' data-from-date='${row.FromDate}' data-until-date='${row.UntilDate}'>${data}</button>`;
                     }
                 }
 
             ],
-            responsive: false, 
+            responsive: false,
             scrollX: true ,
-            pageLength: 10, 
+            pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
-            dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
             buttons: [
                 {
                     extend: 'excelHtml5',
                     text: 'Excel',
                     title: `Report Rider (${today.getDate().toString().padStart(2, '0')}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn btn-sm btn-primary ',
+                    className: 'btn-tw-primary',
                     customize: function (xlsx) {
                         try {
                             var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -313,7 +296,7 @@
 
         // Reload Otomatic
         $('#from_UserLoginActivityReport, #until_UserLoginActivityReport').on('change', function() {
-            $('#tableUserLogin').DataTable().ajax.reload();  
+            $('#tableUserLogin').DataTable().ajax.reload();
         });
 
         // Submit Filter
@@ -324,7 +307,7 @@
 
         // Reset Filter
         $('#resetFilterUserLoginActivityReport').on('click', function() {
-            $('#formFilterUserLoginActivityReport')[0].reset(); 
+            $('#formFilterUserLoginActivityReport')[0].reset();
             $('#tableUserLogin').DataTable().ajax.reload();
             const untilInput = document.querySelector('input[name="until_UserLoginActivityReport"]');
             untilInput.removeAttribute("min");
@@ -334,42 +317,42 @@
     $(document).on("click", ".btn_detail_complete_job", function() {
 
         const userID = $(this).data('user-id'); // ambil ID job dari tombol
-        const fromDate = $(this).data('from-date'); 
-        const untilDate = $(this).data('until-date'); 
+        const fromDate = $(this).data('from-date');
+        const untilDate = $(this).data('until-date');
         // Tampilkan modal dulu
-        $('#modal_detail_job').modal('show');
+        showModal('#modal_detail_job');
         $('#modal_detail_job #modal_detail_job_header').text('Detail Complete Job');
 
 
 
         // Load konten dari controller (kirim jobId ke backend)
-        $("#modal_detail_job .modal-body").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/2/" + fromDate + "/" + untilDate );
+        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/2/" + fromDate + "/" + untilDate );
     });
 
     $(document).on("click", ".btn_detail_ongoing_job", function() {
 
         const userID = $(this).data('user-id');
-        const fromDate = $(this).data('from-date'); 
-        const untilDate = $(this).data('until-date'); 
+        const fromDate = $(this).data('from-date');
+        const untilDate = $(this).data('until-date');
         // Tampilkan modal dulu
-        $('#modal_detail_job').modal('show');
+        showModal('#modal_detail_job');
         $('#modal_detail_job #modal_detail_job_header').text('Detail Ongoing Job');
 
 
 
         // Load konten dari controller (kirim jobId ke backend)
-        $("#modal_detail_job .modal-body").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/1/" + fromDate + "/" + untilDate );
+        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/1/" + fromDate + "/" + untilDate );
     });
 
     $(document).on("click", ".btn_detail_cancel_job", function() {
 
         const jobID = $(this).data('job-id');
         // Tampilkan modal dulu
-        $('#modal_detail_job').modal('show');
+        showModal('#modal_detail_job');
         $('#modal_detail_job #modal_detail_job_header').text('Detail Cancel Job');
 
         // Load konten dari controller (kirim jobId ke backend)
-        $("#modal_detail_job .modal-body").load("<?= base_url('ReportDriver/detail_job_cancel?job_id=') ?>"  + encodeURIComponent(jobID));
+        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job_cancel?job_id=') ?>"  + encodeURIComponent(jobID));
     });
 
 </script>

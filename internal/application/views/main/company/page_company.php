@@ -1,312 +1,226 @@
 <style>
-    table tbody tr td {
-        vertical-align: middle !important;
-    }
-    .field-error .form-control,
-    .field-error .form-check-input,
-    .field-error .custom-file-label {
-        border-color: #dc3545 !important;
-    }
-    .field-error .input-group-text {
-        border-color: #dc3545 !important;
-    }
-    .inline-error {
-        color: #dc3545;
-        font-size: 0.8rem;
-        margin-top: 4px;
-        display: block;
-    }
+    table tbody tr td { vertical-align: middle !important; }
 </style>
 
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Company</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    </ol>
-                </div>
-            </div>
-        </div><!-- /.container-fluid -->
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header ">
-                            <div class="d-flex justify-content-start align-items-center" style="gap: 10px;">
-                                <button class="btn btn-sm btn-primary-gradient" id="addButton" type="button">
-                                    Add Company
-                                </button>
-
-                                <a class="btn btn-sm btn-secondary" href="<?= base_url('company/synchronize-traxroot') ?>" role="button">
-                                    <i class="fa-solid fa-repeat"></i> Data Synchronisation
-                                </a>
-
-                                <?php if($this->session->flashdata('message')): ?>
-                                <?= $this->session->flashdata('message'); ?>
-                                <?php endif; ?>
-
-                            </div>
-
-
-                        </div>
-
-                        <!-- /.card-header -->
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped w-100" id="example3">
-                                    <thead class="">
-                                        <tr style="text-align: center !important;">
-                                            <th style="width: 10%; text-align: center;">No</th>
-                                            <th>Company Logo</th>
-                                            <th>Company Code</th>
-                                            <th>Company Name</th>
-                                            <th>Company Email</th>
-                                            <th>Package</th>
-                                            <th>Update Profile</th>
-                                            <th style="width: 15%; text-align: center;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php 
-                                    $no = 1;
-                                    foreach($company as $val) : ?>
-                                        <tr>
-                                            <td style="text-align: center !important;"><?= $no++ ?></td>
-                                            <td style="text-align: center !important;">
-                                                <img src="<?= base_url('assets/dist/img/company_logo/' . $val['CompanyLogo']) ?>" width="50" alt="">
-                                            </td>
-                                            <td style="text-align: center !important;"><?= $val['CompanyCode'] ?></td>
-                                            <td style="text-align: center !important;"><?= $val['CompanyName'] ?></td>
-                                            <td style="text-align: center !important;"><?= $val['CompanyEmail'] ?></td>
-                                            <td style="text-align: center !important;">
-                                                <?= ($val['CompanySubscribe'] == 1) ? "Basic" : "Pro" ?>
-                                            </td>
-                                            <td style="text-align: center; white-space: nowrap;">
-                                                <?php if ($val['CompanySubscribe'] == 2): ?>
-                                                    <button data-company-id="<?= $val['ListCompanyID'] ?>" 
-                                                            type="button"
-                                                            class="btn btn-sm btn-info buttonEditProfile">
-                                                        <i class="fas fa-user-cog"></i> Update Profile
-                                                    </button>
-                                                <?php else: ?>
-                                                    <span class="badge badge-secondary">No Access</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td style="text-align: center; white-space: nowrap;">
-                                                <button data-company-id="<?= $val['ListCompanyID'] ?>" type="button"
-                                                    class="btn btn-sm btn-warning buttonEdit">
-                                                    <i class="fas fa-edit"></i>
-                                                </button> |
-                                                <button type="button" data-company-id="<?= $val['ListCompanyID'] ?>"
-                                                    data-company-name="<?= $val['CompanyName'] ?>" data-user-login-id="<?= $val['UserLoginID'] ?>"
-                                                    class="btn btn-sm btn-danger buttonDelete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
-
-                                    </tbody>
-                                </table>
-                            </div>
-
-
-
-                            <!-- /.row -->
-                        </div>
-                        <!-- ./card-body -->
-
-                        <!-- /.card-footer -->
-                    </div>
-                    <!-- /.card -->
-                </div>
-                <!-- /.col -->
-            </div>
-            <!-- /.row -->
-        </div>
-        <!--/. container-fluid -->
-    </section>
+<!-- Content Header -->
+<div class="px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <h1 class="text-xl font-bold text-gray-800">Company</h1>
+        <nav class="flex">
+            <ol class="flex items-center gap-1.5 text-sm">
+                <li><a href="<?= base_url('home') ?>" class="text-primary hover:underline">Home</a></li>
+            </ol>
+        </nav>
+    </div>
 </div>
 
-<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalAddLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
+<!-- Content -->
+<div class="px-4 sm:px-6 lg:px-8 pb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <!-- Card Header -->
+        <div class="px-5 py-4 border-b border-gray-200">
+            <div class="flex items-center gap-2.5">
+                <button class="inline-flex items-center gap-1.5 rounded-lg btn-gradient-primary px-3 py-1.5 text-sm font-medium" id="addButton" type="button">
+                    Add Company
+                </button>
 
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalAddLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <a class="inline-flex items-center gap-1.5 rounded-lg bg-gray-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-600 transition-colors" href="<?= base_url('company/synchronize-traxroot') ?>" role="button">
+                    <i class="fa-solid fa-repeat"></i> Data Synchronisation
+                </a>
+
+                <?php if($this->session->flashdata('message')): ?>
+                <?= $this->session->flashdata('message'); ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="px-5 py-4">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm" id="example3">
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="w-[10%] text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company Logo</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company Code</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company Name</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company Email</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Package</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Update Profile</th>
+                            <th class="w-[15%] text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $no = 1; foreach($company as $val) : ?>
+                        <tr class="text-center border-b border-gray-100 hover:bg-gray-50">
+                            <td class="px-4 py-3"><?= $no++ ?></td>
+                            <td class="px-4 py-3">
+                                <img src="<?= base_url('assets/dist/img/company_logo/' . $val['CompanyLogo']) ?>" width="50" alt="" class="mx-auto">
+                            </td>
+                            <td class="px-4 py-3"><?= $val['CompanyCode'] ?></td>
+                            <td class="px-4 py-3"><?= $val['CompanyName'] ?></td>
+                            <td class="px-4 py-3"><?= $val['CompanyEmail'] ?></td>
+                            <td class="px-4 py-3"><?= ($val['CompanySubscribe'] == 1) ? "Basic" : "Pro" ?></td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <?php if ($val['CompanySubscribe'] == 2): ?>
+                                    <button data-company-id="<?= $val['ListCompanyID'] ?>" type="button" class="btn-tw-info buttonEditProfile">
+                                        <i class="fas fa-user-cog"></i> Update Profile
+                                    </button>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">No Access</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <button data-company-id="<?= $val['ListCompanyID'] ?>" type="button" class="btn-tw-warning buttonEdit">
+                                    <i class="fas fa-edit"></i>
+                                </button> |
+                                <button type="button" data-company-id="<?= $val['ListCompanyID'] ?>"
+                                    data-company-name="<?= $val['CompanyName'] ?>" data-user-login-id="<?= $val['UserLoginID'] ?>"
+                                    class="btn-tw-danger buttonDelete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Company Modal (Preline) -->
+<div id="modal" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto [--overlay-backdrop:static]" role="dialog">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto">
+        <div class="flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800" id="modalAddLabel"></h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors" data-hs-overlay="#modal">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-
-            <!-- Body -->
-            <div class="modal-body">
+            <div class="px-5 py-4 overflow-y-auto max-h-[70vh]">
                 <form id="formAddUser" method="post" enctype="multipart/form-data">
-                    <input type="hidden" id="company_id_add" name="company_id" class="form-control">
-                    <input type="hidden" id="user_login_id_add" name="user_login_id" class="form-control">
-                    
-                    <div class="form-group">
-                        <label for="fullname">Company Name</label>
-                        <input type="text" class="form-control" id="company_name" name="company_name"
-                            placeholder="Enter Company Name">
+                    <input type="hidden" id="company_id_add" name="company_id">
+                    <input type="hidden" id="user_login_id_add" name="user_login_id">
+
+                    <div class="form-group mb-4">
+                        <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="company_name" name="company_name" placeholder="Enter Company Name">
                         <span class="inline-error" id="error-company_name"></span>
                     </div>
 
-                    <!-- Company Phone -->
-                    <div class="form-group">
-                        <label for="phone_number">Company Phone</label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">+63</span>
-                            </div>
-                            <input type="text" class="form-control" id="company_phone" name="company_phone"
-                                placeholder="Enter Phone Number">
+                    <div class="form-group mb-4">
+                        <label for="company_phone" class="block text-sm font-medium text-gray-700 mb-1">Company Phone</label>
+                        <div class="flex">
+                            <span class="input-group-text-tw inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">+63</span>
+                            <input type="text" class="tw-input block w-full rounded-r-lg rounded-l-none border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="company_phone" name="company_phone" placeholder="Enter Phone Number">
                         </div>
                         <span class="inline-error" id="error-company_phone"></span>
                     </div>
 
-                    <!-- Company Email -->
-                    <div class="form-group">
-                        <label for="type_job">Company Email</label>
-                        <input type="email" class="form-control" id="company_email" name="company_email"
-                            placeholder="Enter Company Name">
+                    <div class="form-group mb-4">
+                        <label for="company_email" class="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
+                        <input type="email" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="company_email" name="company_email" placeholder="Enter Company Email">
                         <span class="inline-error" id="error-company_email"></span>
                     </div>
 
-                    <!-- Password -->
-                    <div class="form-group">
-                        <label for="type_job">Password</label>
-                        <input type="password" class="form-control" id="pass" name="pass"
-                            placeholder="Enter Password">
-
+                    <div class="form-group mb-4">
+                        <label for="pass" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="pass" name="pass" placeholder="Enter Password">
                     </div>
 
-                    <div class="form-group">
-                        <label for="package">Select Package</label>
-                        <div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="package" id="basic" value="1">
-                                <label class="form-check-label" for="basic">Basic</label>
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Package</label>
+                        <div class="flex gap-4">
+                            <div class="inline-flex items-center gap-2">
+                                <input type="radio" name="package" id="basic" value="1" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary">
+                                <label for="basic" class="text-sm text-gray-700">Basic</label>
                             </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="package" id="pro" value="2">
-                                <label class="form-check-label" for="pro">Pro</label>
+                            <div class="inline-flex items-center gap-2">
+                                <input type="radio" name="package" id="pro" value="2" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary">
+                                <label for="pro" class="text-sm text-gray-700">Pro</label>
                             </div>
                         </div>
                         <span class="inline-error" id="error-package"></span>
                     </div>
 
-                    <div class="form-group">
-                        <label for="company_logo">Company Logo</label>
-                        <div class="">
-                            <img id="preview_logo" src="https://tse2.mm.bing.net/th/id/OIP.IZWJ479vW3ZlLf2HS18k6wHaEa?pid=Api&P=0&h=180" alt="Preview Logo" style="max-width: 150px; border-radius: 8px; border: 1px solid #ccc; padding: 4px;">
+                    <div class="form-group mb-4">
+                        <label for="company_logo" class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
+                        <div class="mb-2">
+                            <img id="preview_logo" src="https://tse2.mm.bing.net/th/id/OIP.IZWJ479vW3ZlLf2HS18k6wHaEa?pid=Api&P=0&h=180" alt="Preview Logo" class="max-w-[150px] rounded-lg border border-gray-300 p-1">
                         </div>
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="company_logo" name="company_logo" accept="image/*">
-                            <label class="custom-file-label" for="company_logo">Choose image</label>
-                        </div>
+                        <input type="file" class="block w-full text-sm text-gray-500 file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-primary-light" id="company_logo" name="company_logo" accept="image/*">
                         <span class="inline-error" id="error-company_logo"></span>
                     </div>
                 </form>
-                
             </div>
-
-            <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formAddUser" class="btn btn-sm btn-primary">Save</button>
+            <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200">
+                <button type="button" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-600 transition-colors" data-hs-overlay="#modal">Close</button>
+                <button type="submit" form="formAddUser" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Save</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal_delete" tabindex="-1" role="dialog" aria-labelledby="modalAddLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document">
-        <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
-        <div class="modal-content">
-
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalDeleteLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+<!-- Delete Company Modal (Preline) -->
+<div id="modal_delete" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto [--overlay-backdrop:static]" role="dialog">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+        <div class="flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800" id="modalDeleteLabel"></h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors" data-hs-overlay="#modal_delete">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-
-            <!-- Body -->
-            <div class="modal-body">
-                <form id="formDelete" method="post" action="<?= base_url('company/delete') ?>">>
+            <div class="px-5 py-4">
+                <form id="formDelete" method="post" action="<?= base_url('company/delete') ?>">
                     <input type="hidden" id="company_id_delete" name="company_id">
                     <input type="hidden" id="user_login_id_delete" name="user_login_id">
-                    <span>Do You Sure To delete Company Name : <strong id="company_name"></strong></span>
+                    <span class="text-sm">Do You Sure To delete Company Name : <strong id="company_name"></strong></span>
                 </form>
             </div>
-
-            <!-- Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formDelete" class="btn btn-sm btn-primary">Delete</button>
-                
-
+            <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200">
+                <button type="button" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-600 transition-colors" data-hs-overlay="#modal_delete">Close</button>
+                <button type="submit" form="formDelete" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Delete</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modal_update_profile" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-md" role="document">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title">Update Profile</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
+<!-- Update Profile Modal (Preline) -->
+<div id="modal_update_profile" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto [--overlay-backdrop:static]" role="dialog">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+        <div class="flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Update Profile</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors" data-hs-overlay="#modal_update_profile">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-
-            <div class="modal-body">
+            <div class="px-5 py-4">
                 <form id="formUpdateProfile" method="post">
                     <input type="hidden" id="company_id_profile" name="company_id">
-
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" class="form-control" id="username_traxroot" name="username_traxroot">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="username_traxroot" name="username_traxroot">
                     </div>
-
-                    <div class="form-group">
-                        <label>Password</label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password_traxroot" name="password_traxroot">
-
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary toggle-password" type="button">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <div class="flex">
+                            <input type="password" class="tw-input block w-full rounded-l-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="password_traxroot" name="password_traxroot">
+                            <button class="toggle-password inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500 hover:bg-gray-100 transition-colors" type="button">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                     </div>
-
                 </form>
             </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                <button type="submit" form="formUpdateProfile" class="btn btn-primary btn-sm">Save</button>
+            <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200">
+                <button class="inline-flex items-center gap-1.5 rounded-lg bg-gray-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-600 transition-colors" data-hs-overlay="#modal_update_profile">Close</button>
+                <button type="submit" form="formUpdateProfile" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Save</button>
             </div>
-
-            </div>
+        </div>
     </div>
 </div>
 
@@ -319,27 +233,23 @@
 <script>
 
 function showMaps(defaultLat, defaultLng) {
-    // ✅ Cek kalau sebelumnya sudah ada map, hapus dulu biar gak dobel instance
     if (window.currentMap) {
         window.currentMap.remove();
         window.currentMap = null;
     }
 
-    // ✅ Buat map baru
     var map = L.map('map').setView([defaultLat, defaultLng], 13);
-    window.currentMap = map; // simpan instance biar bisa dihapus nanti
+    window.currentMap = map;
 
     var marker = L.marker([defaultLat, defaultLng]).addTo(map);
 
     $('#latitude').val(defaultLat);
     $('#longitude').val(defaultLng);
 
-    // Tile layer OSM
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
 
-    // Klik di peta untuk ubah posisi marker
     map.on('click', function(e) {
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
@@ -354,7 +264,6 @@ function showMaps(defaultLat, defaultLng) {
         $('#longitude').val(lng);
     });
 
-    // ✅ Tambahkan Search Geocoder (fokus Filipina)
     var geocoder = L.Control.geocoder({
         geocoder: new L.Control.Geocoder.Nominatim({
             geocodingQueryParams: {
@@ -381,11 +290,11 @@ function showMaps(defaultLat, defaultLng) {
     })
     .addTo(map);
 
-    // 🔥 Fix tampilan map setengah saat modal muncul
-    $('#modal').on('shown.bs.modal', function () {
+    // Fix map display when Preline overlay opens
+    document.querySelector('#modal').addEventListener('open.hs.overlay', function () {
         setTimeout(function() {
             map.invalidateSize();
-        }, 300);
+        }, 400);
     });
 }
 
@@ -394,9 +303,6 @@ $(document).ready(function() {
     // handle image preview
     $('#company_logo').on('change', function () {
         let file = this.files[0];
-        let fileName = $(this).val().split('\\').pop();
-        $(this).next('.custom-file-label').addClass("selected").html(fileName);
-
         if (file) {
             let reader = new FileReader();
             reader.onload = function (e) {
@@ -418,14 +324,13 @@ $(document).ready(function() {
     let formUserDelete = $("#formDelete");
 
     $('#company_phone').on('input', function() {
-        // hapus semua karakter yang bukan angka
         this.value = this.value.replace(/[^0-9]/g, '');
     });
 
     // handle button add
     buttonAdd.on('click', function(e) {
         e.preventDefault();
-        modal.modal('show');
+        showModal('#modal');
 
         textHeaderModal.text('Add Company');
         modal.find('#company_id_add').val('');
@@ -435,7 +340,6 @@ $(document).ready(function() {
         modal.find('#company_email').val('');
         modal.find('#pass').val('');
         modal.find('input[name="package"]').prop('checked', false);
-        // Misal ini di dalam modal
         modal.find('#preview_logo').attr('src', "https://tse2.mm.bing.net/th/id/OIP.IZWJ479vW3ZlLf2HS18k6wHaEa?pid=Api&P=0&h=180");
 
         // Clear validation errors
@@ -448,7 +352,7 @@ $(document).ready(function() {
 
     buttonEdit.on('click', function(e) {
         e.preventDefault();
-        modal.modal('show');
+        showModal('#modal');
 
         // Clear validation errors
         modal.find('.form-group').removeClass('field-error');
@@ -465,17 +369,14 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 let phoneNumber = (response.CompanyPhone || '').replace(/^\+63/, '');
-                
+
                 modal.find('#company_id_add').val(response.ListCompanyID);
                 modal.find('#user_login_id_add').val(response.UserLoginID);
                 modal.find('#company_name').val(response.CompanyName);
                 modal.find('#company_phone').val(phoneNumber);
                 modal.find('#company_email').val(response.CompanyEmail);
 
-                // Password input stays EMPTY
                 modal.find('#pass').val('');
-
-                // Set placeholder dynamically for edit
                 modal.find('#pass').attr('placeholder', 'Leave blank to keep current password');
 
                 modal.find('input[name="package"]').prop('checked', false);
@@ -520,27 +421,21 @@ $(document).ready(function() {
         e.preventDefault();
 
         var hasError = false;
-
-        // Get form values
         var companyName = $('#company_name').val().trim();
         var companyPhone = $('#company_phone').val().trim();
         var companyEmail = $('#company_email').val().trim();
         var packageSelected = $('input[name="package"]:checked').val();
 
-        // Reset all errors
         clearFieldError('company_name');
         clearFieldError('company_phone');
         clearFieldError('company_email');
         clearFieldError('package');
         clearFieldError('company_logo');
 
-        // Validate Company Name
         if (companyName === '') {
             setFieldError('company_name', 'Please enter Company Name.');
             hasError = true;
         }
-
-        // Validate Phone Number (should be 10 digits)
         if (companyPhone === '') {
             setFieldError('company_phone', 'Please enter Phone Number.');
             hasError = true;
@@ -548,8 +443,6 @@ $(document).ready(function() {
             setFieldError('company_phone', 'Please enter a valid 10-digit phone number.');
             hasError = true;
         }
-
-        // Validate Email
         if (companyEmail === '') {
             setFieldError('company_email', 'Please enter Company Email.');
             hasError = true;
@@ -557,14 +450,10 @@ $(document).ready(function() {
             setFieldError('company_email', 'Please enter a valid email address.');
             hasError = true;
         }
-
-        // Validate Package Selection
         if (!packageSelected) {
             setFieldError('package', 'Please select a package (Basic or Pro).');
             hasError = true;
         }
-
-        // Optional: Validate file type if logo is selected
         var logoFile = $('#company_logo')[0].files[0];
         if (logoFile) {
             var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp'];
@@ -577,20 +466,16 @@ $(document).ready(function() {
             }
         }
 
-        if (hasError) {
-            return;
-        }
-
-        // All validations passed - submit
+        if (hasError) return;
         this.submit();
     });
 
 
-// handle button delete
+    // handle button delete
     buttonDelete.on('click', function(e) {
         e.preventDefault();
 
-        modalDelete.modal('show');
+        showModal('#modal_delete');
         textHeaderModalDelete.text('Delete Company');
         formUserDelete.attr("action", '<?= base_url('delete-company') ?>');
 
@@ -610,38 +495,33 @@ $(document).ready(function() {
 
 <!-- Update Profile -->
 <script>
-    // === Update Profile Traxroot ===
     $('.buttonEditProfile').on('click', function() {
-    let companyID = $(this).data('company-id');
-    
-    $('#modal_update_profile').modal('show');
-    $("#formUpdateProfile").attr("action", "<?= base_url('company/update-traxroot-profile') ?>");
-    
-    // kosongkan dulu
-    $('#username_traxroot').val('');
-    $('#password_traxroot').val('');
-    
-    // ambil data detail
-    $.ajax({
-        url: "<?= base_url('Company/getCompanyDetail') ?>",
-        type: "POST",
-        data: { companyID: companyID },
-        dataType: "json",
-        success: function(res) {
-            $('#company_id_profile').val(res.ListCompanyID);
-            $('#username_traxroot').val(res.username_traxroot);
-            $('#password_traxroot').val(res.password_traxroot);
-        }
-    });
+        let companyID = $(this).data('company-id');
+
+        showModal('#modal_update_profile');
+        $("#formUpdateProfile").attr("action", "<?= base_url('company/update-traxroot-profile') ?>");
+
+        $('#username_traxroot').val('');
+        $('#password_traxroot').val('');
+
+        $.ajax({
+            url: "<?= base_url('Company/getCompanyDetail') ?>",
+            type: "POST",
+            data: { companyID: companyID },
+            dataType: "json",
+            success: function(res) {
+                $('#company_id_profile').val(res.ListCompanyID);
+                $('#username_traxroot').val(res.username_traxroot);
+                $('#password_traxroot').val(res.password_traxroot);
+            }
+        });
     });
 </script>
 
 <!-- Hide and Show Password -->
 <script>
 document.addEventListener("click", function (e) {
-    // Jika yang diklik adalah tombol toggle password
     if (e.target.closest(".toggle-password")) {
-
         const button = e.target.closest(".toggle-password");
         const icon = button.querySelector("i");
         const input = document.getElementById("password_traxroot");
@@ -662,14 +542,14 @@ document.addEventListener("click", function (e) {
 <!-- Data Syncronisation -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<?php if ($this->session->flashdata('swal')) : 
+<?php if ($this->session->flashdata('swal')) :
 $swal = $this->session->flashdata('swal');
 ?>
 <script>
 Swal.fire({
-title: "<?= $swal['title']; ?>",
-html: "<?= $swal['text']; ?>",
-icon: "<?= $swal['icon']; ?>",
+    title: "<?= $swal['title']; ?>",
+    html: "<?= $swal['text']; ?>",
+    icon: "<?= $swal['icon']; ?>",
 });
 </script>
 <?php endif; ?>
