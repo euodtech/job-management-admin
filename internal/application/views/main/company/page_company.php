@@ -2,6 +2,20 @@
     table tbody tr td {
         vertical-align: middle !important;
     }
+    .field-error .form-control,
+    .field-error .form-check-input,
+    .field-error .custom-file-label {
+        border-color: #dc3545 !important;
+    }
+    .field-error .input-group-text {
+        border-color: #dc3545 !important;
+    }
+    .inline-error {
+        color: #dc3545;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        display: block;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -145,6 +159,7 @@
                         <label for="fullname">Company Name</label>
                         <input type="text" class="form-control" id="company_name" name="company_name"
                             placeholder="Enter Company Name">
+                        <span class="inline-error" id="error-company_name"></span>
                     </div>
 
                     <!-- Company Phone -->
@@ -157,6 +172,7 @@
                             <input type="text" class="form-control" id="company_phone" name="company_phone"
                                 placeholder="Enter Phone Number">
                         </div>
+                        <span class="inline-error" id="error-company_phone"></span>
                     </div>
 
                     <!-- Company Email -->
@@ -164,6 +180,7 @@
                         <label for="type_job">Company Email</label>
                         <input type="email" class="form-control" id="company_email" name="company_email"
                             placeholder="Enter Company Name">
+                        <span class="inline-error" id="error-company_email"></span>
                     </div>
 
                     <!-- Password -->
@@ -171,7 +188,6 @@
                         <label for="type_job">Password</label>
                         <input type="password" class="form-control" id="pass" name="pass"
                             placeholder="Enter Password">
-                            <!-- <input type="password" name="pass" id="pass" class="form-control"> -->
 
                     </div>
 
@@ -188,6 +204,7 @@
                                 <label class="form-check-label" for="pro">Pro</label>
                             </div>
                         </div>
+                        <span class="inline-error" id="error-package"></span>
                     </div>
 
                     <div class="form-group">
@@ -199,6 +216,7 @@
                             <input type="file" class="custom-file-input" id="company_logo" name="company_logo" accept="image/*">
                             <label class="custom-file-label" for="company_logo">Choose image</label>
                         </div>
+                        <span class="inline-error" id="error-company_logo"></span>
                     </div>
                 </form>
                 
@@ -416,9 +434,13 @@ $(document).ready(function() {
         modal.find('#company_phone').val('');
         modal.find('#company_email').val('');
         modal.find('#pass').val('');
-        modal.find('input[name="package"]').prop('checked', false); 
+        modal.find('input[name="package"]').prop('checked', false);
         // Misal ini di dalam modal
         modal.find('#preview_logo').attr('src', "https://tse2.mm.bing.net/th/id/OIP.IZWJ479vW3ZlLf2HS18k6wHaEa?pid=Api&P=0&h=180");
+
+        // Clear validation errors
+        modal.find('.form-group').removeClass('field-error');
+        modal.find('.inline-error').text('');
 
         formUser.attr("action", '<?= base_url('create-company') ?>')
     });
@@ -427,6 +449,10 @@ $(document).ready(function() {
     buttonEdit.on('click', function(e) {
         e.preventDefault();
         modal.modal('show');
+
+        // Clear validation errors
+        modal.find('.form-group').removeClass('field-error');
+        modal.find('.inline-error').text('');
 
         let companyID = $(this).data('company-id');
         textHeaderModal.text('Edit Company');
@@ -438,7 +464,7 @@ $(document).ready(function() {
             data: { companyID: companyID },
             dataType: 'json',
             success: function(response) {
-                let phoneNumber = response.CompanyPhone.replace(/^\+63/, '');
+                let phoneNumber = (response.CompanyPhone || '').replace(/^\+63/, '');
                 
                 modal.find('#company_id_add').val(response.ListCompanyID);
                 modal.find('#user_login_id_add').val(response.UserLoginID);
@@ -462,74 +488,101 @@ $(document).ready(function() {
     });
 
 
+    // Helper: set inline error on a field
+    function setFieldError(fieldId, msg) {
+        var $field = $('#' + fieldId);
+        $field.closest('.form-group').addClass('field-error');
+        $('#error-' + fieldId).text(msg);
+    }
+
+    // Helper: clear inline error on a field
+    function clearFieldError(fieldId) {
+        var $field = $('#' + fieldId);
+        $field.closest('.form-group').removeClass('field-error');
+        $('#error-' + fieldId).text('');
+    }
+
+    // Auto-clear errors on input/change
+    $('#company_name, #company_email').on('input', function() {
+        clearFieldError(this.id);
+    });
+    $('#company_phone').on('input', function() {
+        clearFieldError('company_phone');
+    });
+    $('input[name="package"]').on('change', function() {
+        clearFieldError('package');
+    });
+    $('#company_logo').on('change', function() {
+        clearFieldError('company_logo');
+    });
+
     formUser.on('submit', function(e) {
+        e.preventDefault();
+
+        var hasError = false;
+
         // Get form values
-        let companyName = $('#company_name').val().trim();
-        let companyPhone = $('#company_phone').val().trim();
-        let companyEmail = $('#company_email').val().trim();
-        let packageSelected = $('input[name="package"]:checked').val();
-        
+        var companyName = $('#company_name').val().trim();
+        var companyPhone = $('#company_phone').val().trim();
+        var companyEmail = $('#company_email').val().trim();
+        var packageSelected = $('input[name="package"]:checked').val();
+
+        // Reset all errors
+        clearFieldError('company_name');
+        clearFieldError('company_phone');
+        clearFieldError('company_email');
+        clearFieldError('package');
+        clearFieldError('company_logo');
+
         // Validate Company Name
         if (companyName === '') {
-            alert('Please enter Company Name!');
-            e.preventDefault();
-            return false;
+            setFieldError('company_name', 'Please enter Company Name.');
+            hasError = true;
         }
-        
+
         // Validate Phone Number (should be 10 digits)
         if (companyPhone === '') {
-            alert('Please enter Phone Number!');
-            e.preventDefault();
-            return false;
+            setFieldError('company_phone', 'Please enter Phone Number.');
+            hasError = true;
+        } else if (!/^\d{10}$/.test(companyPhone)) {
+            setFieldError('company_phone', 'Please enter a valid 10-digit phone number.');
+            hasError = true;
         }
-        
-        if (!/^\d{10}$/.test(companyPhone)) {
-            alert('Please enter a valid 10-digit phone number!');
-            e.preventDefault();
-            return false;
-        }
-        
+
         // Validate Email
         if (companyEmail === '') {
-            alert('Please enter Company Email!');
-            e.preventDefault();
-            return false;
+            setFieldError('company_email', 'Please enter Company Email.');
+            hasError = true;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail)) {
+            setFieldError('company_email', 'Please enter a valid email address.');
+            hasError = true;
         }
-        
-        // Basic email format validation
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail)) {
-            alert('Please enter a valid email address!');
-            e.preventDefault();
-            return false;
-        }
-        
+
         // Validate Package Selection
         if (!packageSelected) {
-            alert('Please select a package (Basic or Pro)!');
-            e.preventDefault();
-            return false;
+            setFieldError('package', 'Please select a package (Basic or Pro).');
+            hasError = true;
         }
-        
+
         // Optional: Validate file type if logo is selected
-        let logoFile = $('#company_logo')[0].files[0];
+        var logoFile = $('#company_logo')[0].files[0];
         if (logoFile) {
-            let allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp'];
+            var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp'];
             if (!allowedTypes.includes(logoFile.type)) {
-                alert('Please upload a valid image file (JPEG, JPG, PNG, GIF, BMP)!');
-                e.preventDefault();
-                return false;
-            }
-            
-            // Check file size (2MB = 2 * 1024 * 1024 bytes)
-            if (logoFile.size > 2 * 1024 * 1024) {
-                alert('Logo file size must be less than 2MB!');
-                e.preventDefault();
-                return false;
+                setFieldError('company_logo', 'Please upload a valid image file (JPEG, JPG, PNG, GIF, BMP).');
+                hasError = true;
+            } else if (logoFile.size > 2 * 1024 * 1024) {
+                setFieldError('company_logo', 'Logo file size must be less than 2MB.');
+                hasError = true;
             }
         }
-        
-        // All validations passed - form will submit
-        return true;
+
+        if (hasError) {
+            return;
+        }
+
+        // All validations passed - submit
+        this.submit();
     });
 
 

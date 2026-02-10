@@ -1,3 +1,18 @@
+<style>
+.field-error .form-control,
+.field-error .select2-selection {
+    border-color: #dc3545 !important;
+}
+.field-error .input-group-text {
+    border-color: #dc3545 !important;
+}
+.inline-error {
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    display: block;
+}
+</style>
 <div class="content-wrapper">
     <section class="content-header">
         <div class="container-fluid">
@@ -134,8 +149,6 @@
         
         <!-- bisa ganti modal-lg ke modal-sm/modal-xl -->
         <div class="modal-content">
-            <div id="formAlert" class="alert alert-danger d-none" role="alert"></div>
-
             <!-- Header -->
             <div class="modal-header">
                 <h5 class="modal-title" id="modalAddLabel"></h5>
@@ -158,12 +171,14 @@
                                 <option value="<?= $val['ListCompanyID'] ?>" data-subscribe="<?= $val['CompanySubscribe'] ?>" <?= ($this->session->userdata('CompanyID') == $val['ListCompanyID']) ? "selected" : "" ?> <?= ($this->session->userdata('Role') != 1) ?  "disabled" : "" ?> ><?= $val['CompanyName'] ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <span class="inline-error" id="error-company_selected"></span>
                     </div>
                     <div class="form-group">
                         <input type="hidden" id="user_id" name="user_id">
                         <label for="fullname">Fullname</label>
                         <input type="text" class="form-control" id="fullname" name="fullname"
                             placeholder="Enter Full Name">
+                        <span class="inline-error" id="error-fullname"></span>
                     </div>
 
                     <!-- New feature where the riders will have two roles. One is Rider only and one is a viewing user. -Kian -->
@@ -174,11 +189,13 @@
                             <option value="monitor">Monitor</option>
                             <option value="field">Field</option>
                          </select>
+                        <span class="inline-error" id="error-user_role"></span>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" class="form-control" id="email" name="email" placeholder="Enter Email">
+                        <span class="inline-error" id="error-email"></span>
                     </div>
 
                     <div class="form-group">
@@ -196,6 +213,7 @@
                                 placeholder="9XXXXXXXXX" maxlength="13">
 
                         </div>
+                        <span class="inline-error" id="error-phone"></span>
                     </div>
                 </form>
 
@@ -283,6 +301,10 @@ $(document).ready(function() {
         modal.find('#pass').val('');
         modal.find('#phone').val('');
 
+        // Clear validation errors
+        modal.find('.form-group').removeClass('field-error');
+        modal.find('.inline-error').text('');
+
         formUser.attr("action", '<?= base_url('create-user') ?>')
     });
 
@@ -291,6 +313,10 @@ $(document).ready(function() {
         e.preventDefault();
         modal.modal('show');
         modal.find('.container_notes').hide();
+
+        // Clear validation errors
+        modal.find('.form-group').removeClass('field-error');
+        modal.find('.inline-error').text('');
 
         let userID = $(this).data('userid');
 
@@ -562,70 +588,99 @@ $(document).ready(function() {
 <script>
 $(document).ready(function () {
 
+    // Helper: set inline error on a field
+    function setFieldError(fieldId, msg) {
+        var $field = $('#' + fieldId);
+        $field.closest('.form-group').addClass('field-error');
+        $('#error-' + fieldId).text(msg);
+    }
+
+    // Helper: clear inline error on a field
+    function clearFieldError(fieldId) {
+        var $field = $('#' + fieldId);
+        $field.closest('.form-group').removeClass('field-error');
+        $('#error-' + fieldId).text('');
+    }
+
+    // Auto-clear errors on input/change
+    $('#fullname, #email').on('input', function() {
+        clearFieldError(this.id);
+    });
+    $('#phone').on('input', function() {
+        clearFieldError('phone');
+    });
+    $('#company_selected').on('change', function() {
+        clearFieldError('company_selected');
+    });
+    $('#user_role').on('change', function() {
+        clearFieldError('user_role');
+    });
+
     $('#formAddUser').on('submit', function (e) {
         e.preventDefault();
 
-        let errors = [];
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        var hasError = false;
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         // values
-        const company  = $('#company_selected').val();
-        const fullname = $('#fullname').val().trim();
-        const role     = $('#user_role').val();
-        const email    = $('#email').val().trim();
-        const password = $('#pass').val();
-        const phoneRaw = $('#phone').val().trim();
+        var company  = $('#company_selected').val();
+        var fullname = $('#fullname').val().trim();
+        var role     = $('#user_role').val();
+        var email    = $('#email').val().trim();
+        var phoneRaw = $('#phone').val().trim();
 
-        // reset alert
-        $('#formAlert').addClass('d-none').html('');
+        // Reset all errors
+        clearFieldError('company_selected');
+        clearFieldError('fullname');
+        clearFieldError('user_role');
+        clearFieldError('email');
+        clearFieldError('phone');
 
         // company (admin only)
         if ($('#company_selected').is(':visible') && !company) {
-            errors.push('Please select a company.');
+            setFieldError('company_selected', 'Please select a company.');
+            hasError = true;
         }
 
         // fullname
         if (!fullname) {
-            errors.push('Full name is required.');
+            setFieldError('fullname', 'Full name is required.');
+            hasError = true;
         }
 
         // role
         if (!role) {
-            errors.push('Please select a user role.');
+            setFieldError('user_role', 'Please select a user role.');
+            hasError = true;
         }
 
         // email
-        if (!email || !emailRegex.test(email)) {
-            errors.push('Please enter a valid email address.');
+        if (!email) {
+            setFieldError('email', 'Email is required.');
+            hasError = true;
+        } else if (!emailRegex.test(email)) {
+            setFieldError('email', 'Please enter a valid email address.');
+            hasError = true;
         }
 
-        // password
-        // if (!password || password.length < 6) {
-        //     errors.push('Password must be at least 6 characters.');
-        // }
-
         // PH phone validation
-        $('#phone').on('input', function () {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
+        var digits = phoneRaw.replace(/\D/g, '');
 
-        let digits = phoneRaw.replace(/\D/g, '');
-
-        if (
+        if (!phoneRaw) {
+            setFieldError('phone', 'Phone number is required.');
+            hasError = true;
+        } else if (
             !(
                 (digits.length === 11 && digits.startsWith('09')) ||
                 (digits.length === 10 && digits.startsWith('9')) ||
                 (digits.length === 12 && digits.startsWith('63'))
             )
         ) {
-            errors.push('Please enter a valid mobile number.');
+            setFieldError('phone', 'Please enter a valid mobile number.');
+            hasError = true;
         }
 
-        // show errors
-        if (errors.length > 0) {
-            $('#formAlert')
-                .removeClass('d-none')
-                .html('<ul class="mb-0"><li>' + errors.join('</li><li>') + '</li></ul>');
+        if (hasError) {
             return;
         }
 
