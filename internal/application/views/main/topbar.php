@@ -1,10 +1,10 @@
 <!-- Topbar -->
-<header class="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-primary px-4 h-16 lg:ml-64 transition-all duration-300">
-    <!-- Left: Hamburger (mobile only) -->
+<header id="topbar" class="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-primary px-4 h-16 lg:ml-64 transition-all duration-300">
+    <!-- Left: Hamburger -->
     <div class="flex items-center">
         <button type="button"
-                class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-white hover:bg-white/10 transition-colors"
-                data-hs-overlay="#sidebar"
+                class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-white hover:bg-white/10 transition-colors"
+                onclick="toggleSidebar()"
                 aria-label="Toggle sidebar">
             <i class="fa fa-bars text-lg"></i>
         </button>

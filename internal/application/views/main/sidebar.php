@@ -10,12 +10,10 @@
     $reportSegments = ['report-driver','report-job','report-customer'];
 ?>
 <div id="sidebar"
-     class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0
-            -translate-x-full fixed top-0 left-0 z-[60] w-64 h-full
+     class="-translate-x-full fixed top-0 left-0 z-[60] w-64 h-full
             bg-white border-r border-gray-200
             transition-transform duration-300
-            lg:translate-x-0 lg:z-40"
-     role="dialog" tabindex="-1">
+            lg:translate-x-0 lg:z-40">
 
     <!-- Brand Logo -->
     <div class="flex items-center justify-center gap-2 h-16 border-b border-gray-200 bg-white px-4">
@@ -241,3 +239,5 @@
 
     </nav>
 </div>
+<!-- Sidebar Backdrop for Mobile -->
+<div id="sidebar-backdrop" class="hidden fixed inset-0 z-[55] bg-black/50 lg:hidden" onclick="toggleSidebar()"></div>

@@ -10,7 +10,7 @@
             echo $sidebar;
         }
     ?>
-    <main class="<?= !isset($_POST['exportExcel']) ? 'lg:ml-64 pt-16 pb-16' : '' ?> min-h-screen transition-all duration-300" id="content-blur">
+    <main class="<?= !isset($_POST['exportExcel']) ? 'lg:ml-64 pt-16 pb-16' : '' ?> min-h-screen transition-all duration-300" id="content-blur" data-sidebar-content>
         <?php echo $content; ?>
     </main>
     <?php echo $ourjs; ?>

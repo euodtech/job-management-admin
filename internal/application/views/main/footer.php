@@ -1,4 +1,4 @@
-<footer class="lg:ml-64 border-t border-gray-200 bg-white px-6 py-3 text-sm text-gray-500 no-print">
+<footer id="main-footer" class="lg:ml-64 border-t border-gray-200 bg-white px-6 py-3 text-sm text-gray-500 no-print">
     <strong>Copyright &copy; 2026</strong>
     All rights reserved.
     <div class="hidden sm:inline-block float-right">
@@ -754,6 +754,62 @@ $(function() {
                 { data: 'QrCode' }
             ]
         });
+</script>
+
+<!-- Sidebar Toggle -->
+<style>
+    #sidebar.sidebar-mobile-open {
+        transform: translateX(0) !important;
+    }
+    #sidebar.sidebar-desktop-collapsed {
+        transform: translateX(-100%) !important;
+    }
+</style>
+<script>
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var topbar = document.getElementById('topbar');
+    var mainContent = document.querySelector('[data-sidebar-content]');
+    var mainFooter = document.getElementById('main-footer');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var isLg = window.innerWidth >= 1024;
+
+    if (isLg) {
+        var collapsed = sidebar.classList.toggle('sidebar-desktop-collapsed');
+        if (topbar) topbar.classList.toggle('lg:ml-64');
+        if (mainContent) mainContent.classList.toggle('lg:ml-64');
+        if (mainFooter) mainFooter.classList.toggle('lg:ml-64');
+    } else {
+        var opened = sidebar.classList.toggle('sidebar-mobile-open');
+        if (backdrop) backdrop.classList.toggle('hidden');
+    }
+}
+
+// Clean up sidebar state on window resize across breakpoints
+(function() {
+    var wasLg = window.innerWidth >= 1024;
+    window.addEventListener('resize', function() {
+        var isLg = window.innerWidth >= 1024;
+        if (wasLg !== isLg) {
+            var sidebar = document.getElementById('sidebar');
+            var backdrop = document.getElementById('sidebar-backdrop');
+            // Reset mobile state when crossing to desktop
+            sidebar.classList.remove('sidebar-mobile-open');
+            sidebar.classList.remove('sidebar-desktop-collapsed');
+            if (backdrop) backdrop.classList.add('hidden');
+            // Restore margins
+            var topbar = document.getElementById('topbar');
+            var mainContent = document.querySelector('[data-sidebar-content]');
+            var mainFooter = document.getElementById('main-footer');
+            if (isLg) {
+                if (topbar && !topbar.classList.contains('lg:ml-64')) topbar.classList.add('lg:ml-64');
+                if (mainContent && !mainContent.classList.contains('lg:ml-64')) mainContent.classList.add('lg:ml-64');
+                if (mainFooter && !mainFooter.classList.contains('lg:ml-64')) mainFooter.classList.add('lg:ml-64');
+            }
+            wasLg = isLg;
+        }
+    });
+})();
 </script>
 
 <!-- Preline UI v2 -->
