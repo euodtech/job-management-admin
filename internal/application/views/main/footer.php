@@ -9,10 +9,7 @@
 </div>
 <!-- /.min-h-screen -->
 
-<!-- jQuery (FIXED VERSION) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- jQuery UI -->
+<!-- jQuery UI (jQuery already loaded in header.php) -->
 <script src="<?php echo base_url('assets/plugins/jquery-ui/jquery-ui.min.js'); ?>"></script>
 
 <script>
@@ -48,6 +45,26 @@
 
 
 <script type="text/javascript">
+/* === Global DataTables defaults: chevron arrows + auto-hide pagination === */
+$.extend(true, $.fn.dataTable.defaults, {
+    language: {
+        paginate: {
+            previous: '\u2039',
+            next: '\u203A'
+        }
+    }
+});
+$(document).on('draw.dt', function(e, settings) {
+    var api = new $.fn.dataTable.Api(settings);
+    var container = $(api.table().container());
+    var pageInfo = api.page.info();
+    if (pageInfo.pages <= 1) {
+        container.find('.dataTables_paginate').hide();
+    } else {
+        container.find('.dataTables_paginate').show();
+    }
+});
+
 $(document).ready(function() {
 
     countJobInSidebar()
@@ -113,20 +130,8 @@ $("#example1").DataTable({
 
 });
 
-$("#example3").DataTable({
-    "stateSave": true,
-    "paging": true,
-    "autoWidth": true,
-    "responsive": false,
-    "scrollX": true
-});
 
-$(".table_dashboard1").DataTable({
-    "responsive": false,
-    "length" : true,
-    "info" : false,
-    "scrollX": true
-});
+
 
 $('#example2').DataTable({
     "paging": true,
@@ -812,15 +817,196 @@ function toggleSidebar() {
 })();
 </script>
 
+<!-- Paginated Table IIFE -->
+<script>
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var tables = document.querySelectorAll('[data-paginated-table]');
+        tables.forEach(function(table) {
+            initPaginatedTable(table);
+        });
+    });
+
+    function initPaginatedTable(table) {
+        var perPage = parseInt(table.getAttribute('data-per-page')) || 5;
+        var searchable = table.hasAttribute('data-searchable');
+        var tbody = table.querySelector('tbody');
+        if (!tbody) return;
+
+        var allRows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+        var filteredRows = allRows.slice();
+        var currentPage = 1;
+        var searchInput = null;
+
+        // Find the pagination controls container (sibling of overflow-x-auto wrapper)
+        var wrapper = table.closest('.overflow-x-auto');
+        var controlsContainer = wrapper
+            ? wrapper.parentElement.querySelector('[data-pagination-controls]')
+            : null;
+        if (!controlsContainer) return;
+
+        // Search input (opt-in)
+        if (searchable) {
+            searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Search...';
+            searchInput.className = 'mb-3 block w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors';
+            // Insert search before the overflow wrapper
+            if (wrapper && wrapper.parentElement) {
+                wrapper.parentElement.insertBefore(searchInput, wrapper);
+            }
+            searchInput.addEventListener('input', function() {
+                var term = this.value.toLowerCase();
+                filteredRows = allRows.filter(function(row) {
+                    return row.textContent.toLowerCase().indexOf(term) !== -1;
+                });
+                currentPage = 1;
+                render();
+            });
+        }
+
+        function render() {
+            var totalRows = filteredRows.length;
+            var totalPages = Math.ceil(totalRows / perPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            var start = (currentPage - 1) * perPage;
+            var end = start + perPage;
+
+            // Show/hide rows
+            allRows.forEach(function(row) { row.style.display = 'none'; });
+            filteredRows.slice(start, end).forEach(function(row) { row.style.display = ''; });
+
+            // Build controls
+            controlsContainer.innerHTML = '';
+
+            if (totalRows === 0) {
+                controlsContainer.innerHTML = '<p class="text-sm text-gray-500 py-2 text-center">No matching records</p>';
+                return;
+            }
+
+            if (totalPages <= 1) {
+                // Show info text only, no pagination buttons
+                controlsContainer.innerHTML = '<p class="text-sm text-gray-600">Showing 1\u2013' + totalRows + ' of ' + totalRows + '</p>';
+                return;
+            }
+
+            var showStart = start + 1;
+            var showEnd = Math.min(end, totalRows);
+
+            var nav = document.createElement('nav');
+            nav.className = 'flex flex-wrap items-center justify-between gap-2';
+
+            // Info text
+            var info = document.createElement('p');
+            info.className = 'text-sm text-gray-600';
+            info.textContent = 'Showing ' + showStart + '\u2013' + showEnd + ' of ' + totalRows;
+            nav.appendChild(info);
+
+            // Pagination buttons
+            var btnWrap = document.createElement('div');
+            btnWrap.className = 'flex items-center gap-1';
+
+            // Previous button
+            var prevBtn = createNavBtn('\u2039', currentPage <= 1);
+            prevBtn.addEventListener('click', function() {
+                if (currentPage > 1) { currentPage--; render(); }
+            });
+            btnWrap.appendChild(prevBtn);
+
+            // Page buttons with ellipsis
+            var pages = getPageNumbers(currentPage, totalPages);
+            pages.forEach(function(p) {
+                if (p === '...') {
+                    var dots = document.createElement('span');
+                    dots.className = 'px-1 text-sm text-gray-400';
+                    dots.textContent = '...';
+                    btnWrap.appendChild(dots);
+                } else {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = p;
+                    if (p === currentPage) {
+                        btn.className = 'inline-flex items-center justify-center min-w-[2rem] h-8 px-2.5 text-sm font-medium rounded-lg bg-primary text-white';
+                    } else {
+                        btn.className = 'inline-flex items-center justify-center min-w-[2rem] h-8 px-2.5 text-sm font-medium rounded-lg text-gray-800 hover:bg-gray-100';
+                    }
+                    btn.addEventListener('click', (function(page) {
+                        return function() { currentPage = page; render(); };
+                    })(p));
+                    btnWrap.appendChild(btn);
+                }
+            });
+
+            // Next button
+            var nextBtn = createNavBtn('\u203A', currentPage >= totalPages);
+            nextBtn.addEventListener('click', function() {
+                if (currentPage < totalPages) { currentPage++; render(); }
+            });
+            btnWrap.appendChild(nextBtn);
+
+            nav.appendChild(btnWrap);
+            controlsContainer.appendChild(nav);
+        }
+
+        function createNavBtn(text, disabled) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerHTML = text;
+            btn.className = 'inline-flex items-center justify-center min-w-[2rem] h-8 px-2 text-lg font-medium rounded-lg text-gray-800 hover:bg-gray-100';
+            if (disabled) {
+                btn.className += ' opacity-50 cursor-not-allowed';
+                btn.disabled = true;
+            }
+            return btn;
+        }
+
+        function getPageNumbers(current, total) {
+            if (total <= 7) {
+                var arr = [];
+                for (var i = 1; i <= total; i++) arr.push(i);
+                return arr;
+            }
+            var pages = [];
+            pages.push(1);
+            if (current > 3) pages.push('...');
+            var rangeStart = Math.max(2, current - 1);
+            var rangeEnd = Math.min(total - 1, current + 1);
+            for (var j = rangeStart; j <= rangeEnd; j++) pages.push(j);
+            if (current < total - 2) pages.push('...');
+            pages.push(total);
+            return pages;
+        }
+
+        render();
+    }
+})();
+</script>
+
 <!-- Preline UI v2 -->
 <script src="https://cdn.jsdelivr.net/npm/preline@2/dist/preline.min.js"></script>
 
-<!-- Re-init Preline after AJAX/dynamic content -->
+<!-- Re-init Preline + overlay close-button polyfill -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (window.HSStaticMethods) {
         window.HSStaticMethods.autoInit();
     }
+
+    // Polyfill: ensure [data-hs-overlay] close buttons work even if Preline
+    // didn't fully initialize the overlay instances.
+    document.addEventListener('click', function(e) {
+        var trigger = e.target.closest('[data-hs-overlay]');
+        if (!trigger) return;
+        var target = document.querySelector(trigger.getAttribute('data-hs-overlay'));
+        if (!target) return;
+        // If the overlay is currently open, close it
+        if (target.classList.contains('open')) {
+            target.classList.add('hidden');
+            target.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    });
 });
 </script>
 

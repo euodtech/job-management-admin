@@ -1,18 +1,34 @@
 <script type="text/javascript">
 
-    // Modal compatibility helpers (Preline)
+    // Modal helpers (Preline overlay + CSS polyfill guarantee)
     function showModal(selector) {
         const el = document.querySelector(selector);
-        if (el && typeof HSOverlay !== 'undefined') {
-            HSOverlay.open(el);
+        if (!el) return;
+
+        // Try Preline's HSOverlay for extras (focus trap, aria, etc.)
+        if (typeof HSOverlay !== 'undefined') {
+            try { HSOverlay.open(el); } catch (e) { /* CSS polyfill handles it */ }
         }
+
+        // Always ensure the modal is open — classList.add is a no-op if already present
+        el.classList.remove('hidden');
+        el.classList.add('open');
+        document.body.style.overflow = 'hidden';
     }
 
     function hideModal(selector) {
         const el = document.querySelector(selector);
-        if (el && typeof HSOverlay !== 'undefined') {
-            HSOverlay.close(el);
+        if (!el) return;
+
+        // Try Preline's HSOverlay
+        if (typeof HSOverlay !== 'undefined') {
+            try { HSOverlay.close(el); } catch (e) { /* CSS polyfill handles it */ }
         }
+
+        // Always ensure the modal is closed
+        el.classList.add('hidden');
+        el.classList.remove('open');
+        document.body.style.overflow = '';
     }
 
 	function sweatAlertLoader() {
@@ -58,6 +74,11 @@
                     "paging": true
                 });
 
+                // Re-init Preline overlays after dynamic content load
+                if (window.HSStaticMethods) {
+                    window.HSStaticMethods.autoInit();
+                }
+
                 if (typeof callback === 'function') {
                     callback();
                 }
@@ -72,6 +93,12 @@
                     "scrollX": true
 
                 });
+
+                // Re-init Preline overlays after dynamic content load
+                if (window.HSStaticMethods) {
+                    window.HSStaticMethods.autoInit();
+                }
+
                 if (typeof callback === 'function') {
                     callback();
                 }

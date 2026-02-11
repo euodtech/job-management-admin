@@ -77,8 +77,9 @@
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
 
-    <!-- jQuery -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <!-- jQuery (single load, pinned version — must be before any page scripts) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Open Layer -->
@@ -161,25 +162,135 @@
     .alert-warning { @apply rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-800 inline-block; animation: fadeInOut 6s forwards; }
     .alert-info { @apply rounded-lg bg-cyan-50 border border-cyan-200 px-4 py-2 text-sm text-cyan-800 inline-block; animation: fadeInOut 6s forwards; }
 
-    /* === DataTables overrides for Tailwind === */
-    table.dataTable { @apply w-full text-sm; }
-    table.dataTable thead th { @apply bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200; }
-    table.dataTable tbody td { @apply px-4 py-3 border-b border-gray-100; }
-    table.dataTable tbody tr:hover { @apply bg-gray-50; }
-    .dataTables_wrapper .dataTables_length select { @apply rounded-md border-gray-300 text-sm py-1 px-2; }
-    .dataTables_wrapper .dataTables_filter input { @apply rounded-md border-gray-300 text-sm py-1.5 px-3 focus:ring-2 focus:ring-primary/20 focus:border-primary; }
+    /* === DataTables table rows — match dashboard hover & row height === */
+    table.dataTable { width: 100% !important; font-size: 0.875rem !important; border-collapse: collapse !important; border-spacing: 0 !important; }
+    table.dataTable thead th { background-color: #f9fafb !important; padding: 0.75rem 1rem !important; text-align: left !important; font-size: 0.75rem !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; color: #4b5563 !important; border-bottom: 1px solid #e5e7eb !important; border-top: none !important; }
+    div.dataTables_scrollBody > table.dataTable > thead > tr > th,
+    div.dataTables_scrollBody > table.dataTable > thead > tr > td { padding: 0 !important; height: 0 !important; line-height: 0 !important; font-size: 0 !important; border: none !important; border-bottom: none !important; overflow: hidden !important; }
+    table.dataTable tbody td { padding: 0.75rem 1rem !important; border-bottom: 1px solid #f3f4f6 !important; vertical-align: middle !important; }
+    table.dataTable tbody tr:hover { background-color: #f9fafb !important; }
+    .dataTables_wrapper .dataTables_length { @apply flex items-center gap-2 text-sm text-gray-600; }
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border-radius: 0.5rem;
+        border: 1px solid #d1d5db;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: #1f2937;
+        outline: none;
+        transition-property: color, background-color, border-color;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .dataTables_wrapper .dataTables_filter input::placeholder {
+        color: #9ca3af;
+    }
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: #070f26;
+        box-shadow: 0 0 0 2px rgba(7, 15, 38, 0.2);
+        outline: none;
+    }
+    .dataTables_wrapper .dataTables_filter { @apply flex items-center gap-2 text-sm text-gray-600; }
     .dataTables_wrapper .dataTables_info { @apply text-sm text-gray-600 py-3; }
-    .dataTables_wrapper .dataTables_paginate .paginate_button { @apply px-3 py-1.5 text-sm rounded-md mx-0.5; }
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current { @apply bg-primary text-white; }
-    .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) { @apply bg-gray-100; }
-    div.dataTables_wrapper div.dataTables_processing { @apply bg-white/80 rounded-lg; }
+    .dataTables_wrapper .dataTables_paginate { @apply py-3; }
+    div.dataTables_wrapper div.dataTables_processing { @apply bg-white/80 backdrop-blur-sm rounded-lg; }
+    /* === DataTables pagination — match dashboard borderless style === */
+    div.dataTables_wrapper div.dataTables_paginate ul.pagination {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.25rem !important;
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    div.dataTables_wrapper div.dataTables_paginate .page-item {
+        list-style: none !important;
+    }
+    div.dataTables_wrapper div.dataTables_paginate .page-item .page-link {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 2rem !important;
+        height: 2rem !important;
+        padding: 0 0.625rem !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        border-radius: 0.5rem !important;
+        border: none !important;
+        background-color: transparent !important;
+        color: #1f2937 !important;
+        text-decoration: none !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        transition: background-color 0.15s ease, color 0.15s ease !important;
+        box-shadow: none !important;
+    }
+    div.dataTables_wrapper div.dataTables_paginate .page-item .page-link:hover {
+        background-color: #f3f4f6 !important;
+    }
+    div.dataTables_wrapper div.dataTables_paginate .page-item.active .page-link,
+    div.dataTables_wrapper div.dataTables_paginate .page-item.active .page-link:hover {
+        background-color: #070f26 !important;
+        color: #ffffff !important;
+    }
+    div.dataTables_wrapper div.dataTables_paginate .page-item.disabled .page-link {
+        color: #1f2937 !important;
+        background-color: transparent !important;
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+    }
+    div.dataTables_wrapper div.dataTables_paginate .page-item.previous .page-link,
+    div.dataTables_wrapper div.dataTables_paginate .page-item.next .page-link {
+        font-size: 1.125rem !important;
+    }
     .dt-buttons .dt-button { @apply inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors; }
+
+    /* DataTables button group layout */
+    div div.dt-buttons {
+        float: left !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 10px !important;
+        align-items: flex-end;
+    }
+    .btn-group > .btn-group:not(:last-child) > .btn,
+    .btn-group > .btn:not(:last-child):not(.dropdown-toggle) {
+        border-radius: 0.5rem;
+    }
+    .btn-group > .btn-group:not(:first-child) > .btn,
+    .btn-group > .btn:not(:first-child) {
+        border-radius: 0.5rem;
+    }
+
+    /* Neutralize Bootstrap table classes for consistent Tailwind styling */
+    table.table-bordered { border-collapse: collapse; border: none; }
+    table.table-bordered th, table.table-bordered td { border: none; }
+    table.table-striped tbody tr:nth-of-type(odd) { background-color: transparent; }
+    table.table-striped tbody tr:hover { @apply bg-gray-50; }
+
+    /* === Force DataTables scroll containers to fill available width === */
+    .dataTables_wrapper { width: 100% !important; }
+    .dataTables_scroll { width: 100% !important; }
+    .dataTables_scrollHead,
+    .dataTables_scrollBody,
+    .dataTables_scrollFoot { width: 100% !important; overflow-x: auto; }
+    .dataTables_scrollHead table.dataTable,
+    .dataTables_scrollBody table.dataTable,
+    .dataTables_scrollFoot table.dataTable { width: 100% !important; }
 
     /* === DataTables Bootstrap layout compat === */
     .dataTables_wrapper { @apply text-sm; }
     .dataTables_wrapper .row { @apply flex flex-wrap items-center justify-between gap-4; }
     .dataTables_wrapper .col-sm-12 { @apply w-full; }
+    .dataTables_wrapper .col-sm-12.col-md-5 { @apply w-full md:w-5/12; }
     .dataTables_wrapper .col-sm-12.col-md-6 { @apply w-full md:w-1/2; }
+    .dataTables_wrapper .col-sm-12.col-md-7 { @apply w-full md:w-7/12; }
 
     /* === Select2 overrides for Tailwind === */
     .select2-container--bootstrap4 .select2-selection--single { @apply rounded-lg border-gray-300 h-10 flex items-center px-3 text-sm; }
@@ -234,6 +345,25 @@
     @media (max-width: 991.98px) {
         .dataTables_info, .dataTables_paginate { font-size: 12px !important; margin-top: 0.75rem !important; }
         .dataTables_length, .dataTables_filter { font-size: 12px !important; }
+    }
+
+    /* === Preline hs-overlay-open: variant polyfill ===
+       Tailwind CDN play script doesn't include Preline's plugin,
+       so hs-overlay-open:* classes generate no CSS. These rules
+       make them work when the parent .hs-overlay has the .open class. */
+    .hs-overlay.open .hs-overlay-open\:opacity-100 { opacity: 1 !important; }
+    .hs-overlay.open .hs-overlay-open\:mt-7 { margin-top: 1.75rem !important; }
+    .hs-overlay.open .hs-overlay-open\:duration-500 { transition-duration: 500ms !important; }
+
+    /* Overlay backdrop */
+    .hs-overlay { visibility: hidden; }
+    .hs-overlay.open { visibility: visible; }
+    .hs-overlay.open::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: -1;
     }
     </style>
 

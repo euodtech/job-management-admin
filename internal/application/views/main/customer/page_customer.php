@@ -43,40 +43,38 @@
         <!-- Table -->
         <div class="px-5 py-4">
             <div class="overflow-x-auto">
-                <table class="table table-bordered table-striped w-100" id="example3">
-                    <thead>
-                        <tr class="whitespace-nowrap">
-                            <th style="width: 10%; text-align: center;">No</th>
-                            <th>Company</th>
-                            <th>Customer Name</th>
-                            <th>Customer Email</th>
-                            <th>Account Number</th>
-                            <th>Phone Number</th>
-                            <th>Address</th>
-                            <th>Maps</th>
-                            <th style="width: 15%; text-align: center;">Action</th>
+                <table class="w-full text-sm" data-paginated-table data-per-page="10" data-searchable>
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Customer Name</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Customer Email</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Account Number</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Phone Number</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Address</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Maps</th>
+                            <th class="w-[15%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                    $no = 1;
-                    foreach($customer as $val) : ?>
-                        <tr>
-                            <td style="text-align: center; vertical-align: middle;"><?= $no++ ?></td>
-                            <td style="vertical-align: middle; white-space: nowrap;"><?= $val['CompanyName'] ?></td>
-                            <td style="vertical-align: middle; white-space: nowrap;"><?= $val['CustomerName'] ?></td>
-                            <td style="vertical-align: middle; white-space: nowrap;"><?= $val['CustomerEmail'] ?></td>
-                            <td style="vertical-align: middle; white-space: nowrap;"><?= $val['AccountNumber'] ?></td>
-                            <td style="vertical-align: middle; white-space: nowrap;"><?= $val['PhoneNumber'] ?></td>
-                            <td style="vertical-align: middle; white-space: nowrap;"><?= $val['Address'] ?></td>
-                            <td style="white-space: nowrap;">
+                        <?php $no = 1; foreach($customer as $val) : ?>
+                        <tr class="text-center border-b border-gray-100 hover:bg-gray-50">
+                            <td class="px-4 py-3 align-middle"><?= $no++ ?></td>
+                            <td class="px-4 py-3 align-middle whitespace-nowrap"><?= $val['CompanyName'] ?></td>
+                            <td class="px-4 py-3 align-middle whitespace-nowrap"><?= $val['CustomerName'] ?></td>
+                            <td class="px-4 py-3 align-middle whitespace-nowrap"><?= $val['CustomerEmail'] ?></td>
+                            <td class="px-4 py-3 align-middle whitespace-nowrap"><?= $val['AccountNumber'] ?></td>
+                            <td class="px-4 py-3 align-middle whitespace-nowrap"><?= $val['PhoneNumber'] ?></td>
+                            <td class="px-4 py-3 align-middle whitespace-nowrap"><?= $val['Address'] ?></td>
+                            <td class="px-4 py-3 whitespace-nowrap">
                                 <a href="https://www.google.com/maps?q=<?= $val['Latitude'] ?>,<?= $val['Longitude'] ?>"
                                 target="_blank"
                                 class="btn-tw-info">
                                     Open In Maps
                                 </a>
                             </td>
-                            <td style="vertical-align: middle; text-align: center; white-space: nowrap;">
+                            <td class="px-4 py-3 align-middle whitespace-nowrap">
                                 <button data-customer-id="<?= $val['CustomerID'] ?>" type="button"
                                     class="btn-tw-warning buttonEdit">
                                     <i class="fas fa-edit"></i>
@@ -89,10 +87,10 @@
                             </td>
                         </tr>
                         <?php endforeach; ?>
-
                     </tbody>
                 </table>
             </div>
+            <div class="mt-3" data-pagination-controls></div>
         </div>
     </div>
 </div>
@@ -116,7 +114,7 @@
                 <form id="formAddUser" method="post">
                     <div class="form-group mb-4 <?= ($this->session->userdata('Role') != 1) ? 'hidden' : '' ?>">
                         <label for="company_selected" class="block text-sm font-medium text-gray-700 mb-1">Select Company</label>
-                         <select name="company_selected" class="form-control select2For_modal w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="company_selected" required>
+                         <select name="company_selected" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2For_modal" id="company_selected" required>
                             <option value="">---- Select Company ----</option>
                             <?php foreach($list_company as $val): ?>
                                 <option value="<?= $val['ListCompanyID'] ?>" <?= ($this->session->userdata('CompanyID') == $val['ListCompanyID']) ? "selected" : "" ?> <?= ($this->session->userdata('Role') != 1) ?  "disabled" : "" ?> ><?= $val['CompanyName'] ?></option>
@@ -126,19 +124,19 @@
                     <div class="form-group mb-4">
                         <input type="hidden" id="customer_id" name="customer_id" class="form-control">
                         <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-                        <input type="text" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="customer_name" name="customer_name"
+                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_name" name="customer_name"
                             placeholder="Enter Customer Name" required>
                     </div>
 
                     <div class="form-group mb-4">
                         <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
-                        <input type="email" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="customer_email" name="customer_email"
+                        <input type="email" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_email" name="customer_email"
                             placeholder="Enter Customer Email" required>
                     </div>
 
                     <div class="form-group mb-4">
                         <label for="account_number" class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
-                        <input type="text" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="account_number" name="account_number"
+                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="account_number" name="account_number"
                             placeholder="Enter Account Number" required>
                     </div>
 
@@ -146,13 +144,13 @@
                         <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <div class="flex">
                             <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
-                            <input type="text" class="form-control w-full rounded-r-lg rounded-l-none border-gray-300 text-sm focus:border-primary focus:ring-primary" id="phone_number" name="phone_number"
+                            <input type="text" class="tw-input block w-full rounded-r-lg rounded-l-none border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="phone_number" name="phone_number"
                                 placeholder="Enter Phone Number" required>
                         </div>
                     </div>
                     <div class="form-group mb-4">
                         <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                        <textarea name="address" id="address" rows="5" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" required></textarea>
+                        <textarea name="address" id="address" rows="5" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" required></textarea>
                     </div>
                     <div class="form-group mb-4 mt-3">
                         <label for="map" class="block text-sm font-medium text-gray-700 mb-1">Select Location on Map</label>

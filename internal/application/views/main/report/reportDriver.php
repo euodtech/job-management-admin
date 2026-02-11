@@ -1,24 +1,5 @@
 <style>
-    #tableUserPerformance th,
-    #tableUserActivity th,
-    #tableUserWorkloadReport th {
-        text-align: center;
-    }
-
-    /* #tableUserPerformance td
-    #tableUserActivity td,
-    #tableUserWorkloadReport td {
-        text-align: left;
-    }
-
-    #tableUserPerformance td:nth-child(1),
-    #tableUserPerformance td:nth-child(3),
-    #tableUserPerformance td:nth-child(4),
-    #tableUserPerformance td:nth-child(5),
-    #tableUserPerformance td:nth-child(6) {
-        text-align: center !important;
-    } */
-
+    /* Child row styles for DataTables responsive mode */
     #tableUserPerformance tr.child td {
         text-align: left !important;
         background-color: #ffffffff;
@@ -30,41 +11,8 @@
         font-weight: bold;
     }
 
-    div div.dt-buttons {
-        float: left !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        gap: 10px !important;
-        align-items: flex-end;
-    }
-
-    .btn-group>.btn-group:not(:last-child)>.btn, .btn-group>.btn:not(:last-child):not(.dropdown-toggle) {
-        border-radius: 0.5rem;
-    }
-    .btn-group>.btn-group:not(:first-child)>.btn, .btn-group>.btn:not(:first-child) {
-        border-radius: 0.5rem;
-    }
-
     /* Mobile & Tablet (< 992px) */
     @media (max-width: 991.98px) {
-        /*  */
-        #tableUserActivity th{
-            text-align: center;
-        }
-
-        #tableUserActivity td:nth-child(2)
-        #tableUserActivity td:nth-child(3),
-        #tableUserActivity td:nth-child(4) {
-            text-align: center;
-        }
-
-        #tableUserActivity td:nth-child(1),
-        #tableUserActivity td:nth-child(5) {
-            text-align: left !important;
-        }
-
         table.dataTable>tbody>tr.child ul.dtr-details {
             display: flex;
             list-style-type: none;
@@ -86,14 +34,6 @@
             justify-content: flex-start;
             align-items: flex-start;
         }
-
-        table.dataTable tbody tr.child span.dtr-title {
-            display: inline-block;
-            /* min-width: 200px; */
-            font-weight: bold;
-            /* flex: 2; */
-        }
-
 
         table.dataTable>tbody>tr.child span.dtr-data {
             text-align: center !important;
@@ -118,33 +58,32 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                        <input type="date" name="from_UserLoginActivityReport" id="from_UserLoginActivityReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" value="<?= (isset($_GET['from_UserLoginActivityReport'])) ? $_GET['from_UserLoginActivityReport'] : date('Y-m-01') ?>">
+                        <input type="date" name="from_UserLoginActivityReport" id="from_UserLoginActivityReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= (isset($_GET['from_UserLoginActivityReport'])) ? $_GET['from_UserLoginActivityReport'] : date('Y-m-01') ?>">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Until Date</label>
-                        <input type="date" name="until_UserLoginActivityReport" id="until_UserLoginActivityReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" value="<?= (isset($_GET['until_UserLoginActivityReport'])) ? $_GET['until_UserLoginActivityReport'] : date('Y-m-d')?>" >
+                        <input type="date" name="until_UserLoginActivityReport" id="until_UserLoginActivityReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= (isset($_GET['until_UserLoginActivityReport'])) ? $_GET['until_UserLoginActivityReport'] : date('Y-m-d')?>" >
                     </div>
-                    <div class="self-end mt-3">
-                        <!-- <button type="submit" class="btn btn-info">Filter</button> -->
-                        <button type="button" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterUserLoginActivityReport" >Reset</button>
+                    <div class="self-end mt-3 flex items-end gap-2">
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Filter</button>
+                        <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterUserLoginActivityReport">Reset</button>
                     </div>
                 </div>
             </form>
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%" id="tableUserLogin">
-                    <thead>
-                        <tr>
-                        <th>No</th>
-                        <th>Fullname</th>
-                        <th>Email</th>
-                        <th>Cancel Job</th>
-                        <th>Total Job</th>
-                        <th>Complete Job</th>
-                        <th>Ongoing Job</th>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm dt-responsive nowrap" width="100%" id="tableUserLogin">
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Fullname</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Email</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Cancel Job</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Total Job</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Complete Job</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Ongoing Job</th>
                         </tr>
                     </thead>
                 </table>
-
             </div>
 
         </div>
@@ -300,10 +239,10 @@
         });
 
         // Submit Filter
-        // $('#formFilterUserLoginActivityReport').on('submit', function(e){
-        //     e.preventDefault();
-        //     table.ajax.reload();
-        // });
+        $('#formFilterUserLoginActivityReport').on('submit', function(e){
+            e.preventDefault();
+            table.ajax.reload();
+        });
 
         // Reset Filter
         $('#resetFilterUserLoginActivityReport').on('click', function() {

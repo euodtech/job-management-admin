@@ -1,10 +1,13 @@
 <style>
-
-    table.table-striped tbody tr td {
+    table#tableJobRider.dataTable thead th {
+        text-align: center !important;
+    }
+    #tableJobRider tbody tr td {
         vertical-align: middle;
+        text-align: center;
     }
 
-   .content_header {
+    .content_header {
         background-color: #f8f9fa;
         border-radius: 10px;
         padding: 15px 20px;
@@ -52,18 +55,51 @@
         padding: 2px 1rem;
         border-radius: 6px;
     }
-    .ongoing_job {
-        background-color: #ffc107;
-        box-shadow: 2px 2px 8px rgba(255, 193, 7, 0.4);
-        color: white;
+
+    /* Tab styles */
+    .tab-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+        cursor: pointer;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+    .tab-btn:hover {
+        color: #374151;
+    }
+    .tab-btn.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+    .tab-panel {
+        display: none;
+    }
+    .tab-panel.active {
+        display: block;
     }
 
-    .completed_job {
-        background-color: #28a745;
-        box-shadow: 2px 2px 8px rgba(40, 167, 69, 0.4);
-        color: white;
+    /* Type badge */
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        margin-left: 6px;
+        vertical-align: middle;
     }
-
+    .type-badge-li { background-color: #dbeafe; color: #1d4ed8; }
+    .type-badge-rc { background-color: #dcfce7; color: #15803d; }
+    .type-badge-sc { background-color: #fef3c7; color: #b45309; }
+    .type-badge-dc { background-color: #fee2e2; color: #b91c1c; }
 </style>
 
 <!-- Content Header -->
@@ -83,38 +119,18 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-4 border-b border-gray-200">
 
-            <?php
-            $colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6'];
-            $i = 0;
-            ?>
-
-            <!-- <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <?php foreach($customer as $val): ?>
-                    <?php
-                        $color = $colors[$i % count($colors)];
-                        $i++;
-                    ?>
-                    <div class="flex items-center gap-4 rounded-xl p-4 shadow-sm" style="background-color: <?= $color ?>; color: white;">
-                        <div>
-                            <span class="text-lg"><i class="fas fa-user"></i> <?= $val['CustomerName'] ?? "Customer" ?></span>
-                            <span class="block mt-2">Total Complaint : <strong id="complaint_job<?= $val['CustomerID'] ?>"></strong></span>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div> -->
-
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="form-group mb-0">
                     <label for="from_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" name="from_date_job" id="from_date_job">
+                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="from_date_job" id="from_date_job">
                 </div>
                 <div class="form-group mb-0">
                     <label for="until_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date Until</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" name="until_date_job" id="until_date_job">
+                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="until_date_job" id="until_date_job">
                 </div>
                 <div class="form-group mb-0 md:col-span-2">
                     <label for="customer_name_form" class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                    <select name="customer_name_form" class="form-control select2bs4 w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" id="customer_name_form">
+                    <select name="customer_name_form" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2bs4" id="customer_name_form">
                         <option value="all">--- All Customer ---</option>
                         <?php foreach($customer as $val): ?>
                             <option value="<?= $val['CustomerID'] ?>"><?= $val['CustomerName'] ?></option>
@@ -130,21 +146,15 @@
             <div class="overflow-x-auto">
 
                 <input type="hidden" id="type_for_job" value="<?= $type_job ?>">
-                <table class="table table-bordered table-striped" id="tableJobRider">
-                    <thead>
-                        <tr class="whitespace-nowrap">
-                            <th style="width: 10%; text-align: center;">No</th>
-                            <th>Create Job</th>
-                            <th>Job Name</th>
-                            <th>To Customer</th>
-                            <th>Customer Address</th>
-                            <th>User Get The Job</th>
-                            <th>Type Job</th>
-                            <th>Assign Date</th>
-                            <th>History Cancel</th>
-                            <th>History Reschedule</th>
-                            <th>Finish Date</th>
-                            <th>Status Job</th>
+                <table class="w-full text-sm" id="tableJobRider">
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">#</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Date</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Customer</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
                         </tr>
                     </thead>
                 </table>
@@ -153,28 +163,97 @@
     </div>
 </div>
 
-<!-- History Modal (shared for Cancel and Reschedule) -->
-<div id="modal_history_cancel_job" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalHeader">
-    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+<!-- View Job Modal (Unified Tabbed) -->
+<div id="modal_view" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalViewLabel">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-3xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
         <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
 
             <!-- Header -->
             <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
-                <h3 class="font-semibold text-gray-800" id="modalHeader"></h3>
-                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_history_cancel_job">
+                <h3 class="font-semibold text-gray-800" id="modalViewLabel">Job Details</h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_view">
                     <span class="sr-only">Close</span>
                     <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-200 px-4">
+                <button class="tab-btn active" data-tab-target="tab-overview">Overview</button>
+                <button class="tab-btn" data-tab-target="tab-photos">Photos</button>
+                <button class="tab-btn" data-tab-target="tab-history">History</button>
+            </div>
+
             <!-- Body -->
-            <div class="p-4 overflow-y-auto body_detail_history_cancel_job">
+            <div class="p-4 overflow-y-auto" style="max-height: 70vh;">
+
+                <!-- Overview Tab -->
+                <div id="tab-overview" class="tab-panel active">
+                    <div class="content_header">
+                        <div class="row-item">
+                            <div class="label">Date:</div>
+                            <div class="value" id="view_date"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Job Name:</div>
+                            <div class="value" id="view_job_name"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Type:</div>
+                            <div class="value" id="view_type"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Customer:</div>
+                            <div class="value" id="view_customer"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Address:</div>
+                            <div class="value" id="view_address"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Driver:</div>
+                            <div class="value" id="view_driver"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Status:</div>
+                            <div class="value" id="view_status"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Assigned:</div>
+                            <div class="value" id="view_assign_date"></div>
+                        </div>
+                        <div class="row-item">
+                            <div class="label">Finished:</div>
+                            <div class="value" id="view_finish_date"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photos Tab -->
+                <div id="tab-photos" class="tab-panel">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 job-gallery">
+                        <div class="col-span-full flex flex-col items-center justify-center gap-1 text-gray-400 py-8">
+                            <i class="fa-solid fa-image text-sm"></i>
+                            <p class="text-sm">Select the Photos tab to load images</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Tab -->
+                <div id="tab-history" class="tab-panel">
+                    <div class="view-history-content">
+                        <div class="flex flex-col items-center justify-center gap-1 text-gray-400 py-8">
+                            <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+                            <p class="text-sm">Select the History tab to load records</p>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 
             <!-- Footer -->
             <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
-                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_history_cancel_job">Close</button>
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_view">Close</button>
             </div>
         </div>
     </div>
@@ -185,8 +264,6 @@
 var type_job = $('#type_for_job').val();
 
 function refreshCard() {
-
-
     $.ajax({
         url: '<?= base_url('Job/getDataJobForCardJobSummary') ?>',
         method: "post",
@@ -196,7 +273,6 @@ function refreshCard() {
         },
         dataType: 'json',
         success: function(resp) {
-
             resp.forEach(function(item ,index) {
                 $('#complaint_job' + item.CustomerID).text(item.TotalJob);
             });
@@ -207,6 +283,48 @@ function refreshCard() {
     });
 }
 
+function getTypeBadge(typeJob) {
+    var map = {
+        '1': { code: 'LI', cls: 'type-badge-li' },
+        '2': { code: 'RC', cls: 'type-badge-rc' },
+        '3': { code: 'SC', cls: 'type-badge-sc' },
+        '4': { code: 'DC', cls: 'type-badge-dc' }
+    };
+    var t = map[typeJob];
+    if (!t) return '';
+    return '<span class="type-badge ' + t.cls + '">' + t.code + '</span>';
+}
+
+function getTypeLabel(typeJob) {
+    var labels = { '1': 'Line Interrupt', '2': 'Reconnection', '3': 'Short Circuit', '4': 'Disconnection' };
+    return labels[typeJob] || '-';
+}
+
+function getStatusBadge(status) {
+    var badge;
+    if (status == 1) {
+        badge = { dot: 'bg-amber-500', bg: 'bg-amber-50', text: 'text-amber-700', ring: 'ring-amber-600/20', label: 'Ongoing' };
+    } else if (status == 2) {
+        badge = { dot: 'bg-green-500', bg: 'bg-green-50', text: 'text-green-700', ring: 'ring-green-600/20', label: 'Finished' };
+    } else if (status == 3) {
+        badge = { dot: 'bg-blue-500', bg: 'bg-blue-50', text: 'text-blue-700', ring: 'ring-blue-600/20', label: 'Reschedule' };
+    } else {
+        badge = { dot: 'bg-gray-400', bg: 'bg-gray-50', text: 'text-gray-600', ring: 'ring-gray-500/20', label: 'Awaiting' };
+    }
+    return '<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ' + badge.bg + ' ' + badge.text + ' ring-1 ring-inset ' + badge.ring + '"><span class="size-1.5 rounded-full ' + badge.dot + '"></span>' + badge.label + '</span>';
+}
+
+function returnDateFormatDetailJS(value) {
+    if (!value) return '-';
+    const date = new Date(value);
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const dayName = days[date.getDay()];
+    const day = String(date.getDate()).padStart(2, '0');
+    const monthName = months[date.getMonth()];
+    const year = date.getFullYear();
+    return dayName + ', ' + day + ' ' + monthName + ' ' + year;
+}
 
 $(document).ready(function() {
 
@@ -228,60 +346,7 @@ $(document).ready(function() {
         }
     });
 
-
     refreshCard();
-
-    let buttonAdd = $('#addButton');
-    let buttonEdit = $('.buttonEdit');
-    let buttonDetail = $('.buttonDetail');
-    let buttonCamera = $('.buttonCamera');
-    let buttonDelete = $('.buttonDelete');
-    let modal = $('#modal');
-    let modalCamera = $('#modal_camera');
-    let modalDetail = $('#modal_detail');
-    let modalDelete = $('#modal_delete');
-    let textHeaderModal = $("#modalAddLabel");
-    let textHeaderModalDelete = $("#modalDeleteLabel");
-    let formUser = $("#formAddUser");
-    let formUserDelete = $("#formDelete");
-
-    // handle button add
-    buttonAdd.on('click', function(e) {
-        e.preventDefault();
-        showModal('#modal');
-
-        textHeaderModal.text('Add Job');
-        formUser.attr("action", '<?= base_url('create-job') ?>')
-
-        modal.find('#job_id').val('');
-        modal.find('#job_name').val('');
-        modal.find('#job_date').val('');
-        modal.find('#customer_id').val('').trigger('change');
-
-        let type_job_label = '<?= $this->uri->segment(1) ?>';
-        let value_selected;
-
-        switch (type_job_label) {
-            case 'line-interruption-job':
-                value_selected = "1";
-                break;
-            case 'short-circuit-job':
-                value_selected = "3";
-                break;
-            case 'reconnection-job':
-                value_selected = "2";
-                break;
-            case 'disconnection-job':
-                value_selected = "4";
-                break;
-
-            default:
-                value_selected = "1";
-                break;
-        }
-
-        modal.find('#type_job').val(value_selected).trigger('change');
-    });
 
     var table = $('#tableJobRider').DataTable({
         processing: false,
@@ -300,149 +365,46 @@ $(document).ready(function() {
             { data: "no", className: "text-center" },
             {
                 data: "JobDate",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
+                className: "whitespace-nowrap",
+                render: function(data) {
+                    return data ? moment(data).format('DD MMM YYYY') : '-';
                 }
             },
-            { data: "JobName" },
+            {
+                data: "JobName",
+                render: function(data, type, row) {
+                    return '<span>' + data + '</span>' + getTypeBadge(row.TypeJob);
+                }
+            },
             {
                 data: "CustomerName",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
-                }
-            },
-            {
-                data: "Address"
-
-             },
-            {
-                data: "Fullname",
-                render: function(data, type, row) {
-
-                    let userDriver;
-
-                    if (data === null) {
-
-                        userDriver = `<span class="text-red-600">Not Assign User</span>`;
-                    } else {
-
-                        userDriver = ` <span style="white-space: nowrap;">Driver Name : <strong>${data}</strong></span>`;
-                    }
-
-                    return userDriver;
-
-                }
-            },
-            {
-                data: "TypeJob",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
-                },
-                render : function(data , type, row) {
-
-                    let labelTypeJob;
-                    if(data == 1) {
-                        labelTypeJob = "Line Interrupt";
-                    } else if(data ==2) {
-                        labelTypeJob = "Reconnection";
-                    } else if(data  == 3) {
-                        labelTypeJob = "Short Circuit";
-                    } else if(data  == 4) {
-                        labelTypeJob = "Disconnection";
-                    }
-
-                    return labelTypeJob;
-
-                }
-            },
-            {
-                data: "AssignWhen",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
-                },
-                render : function(data , type, row) {
-
-                    return data;
-
-                }
-            },
-            {
-                data : 'StatusCancelJob',
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('text-align', 'center');
-                },
-                render : function(data,type, row) {
-
-                    let htmlReturn;
-
-                    if(data.length > 0) {
-                        htmlReturn = `<button class="btn-tw-primary btn_cancel_job" data-job-id="${row.JobID}"><i class="fas fa-eye"></i></button>`;
-                    } else {
-
-                        htmlReturn = `-`;
-
-                    }
-                    return htmlReturn;
-                }
-            },
-            {
-                data : 'StatusReschedule',
-                 createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('text-align', 'center');
-                },
-                render : function(data,type, row) {
-                    let htmlReturn;
-
-                    if(data.length > 0) {
-                        htmlReturn = `<button class="btn-tw-primary btn_reschedule" data-job-id="${row.JobID}"><i class="fas fa-eye"></i></button>`;
-                    } else {
-
-                        htmlReturn = `-`;
-
-                    }
-                    return htmlReturn;
-                }
-            },
-            {
-                data: "FinishWhen",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
-                },
-                render : function(data , type, row) {
-
-                    return data;
-
-                }
+                className: "whitespace-nowrap"
             },
             {
                 data: "Status",
-                render: function(data, type, row) {
-
-                    let labelStatusJob;
-                    if(data == 1) {
-
-                        labelStatusJob = `<span class='ongoing_job'>Ongoing Job</span>`;
-
-                    } else if(data ==2) {
-
-                        labelStatusJob = `<span class='finished_job'>Finished Job</span>`;
-                    } else {
-                        labelStatusJob = `<span class='awaiting_job'>Awaiting Driver</span>`;
-
-                    }
-
-                    return labelStatusJob;
-
+                className: "text-center",
+                render: function(data) {
+                    return getStatusBadge(data);
                 }
-            }
+            },
+            {
+                data: "JobID",
+                className: "text-center whitespace-nowrap",
+                orderable: false,
+                render: function(data, type, row) {
+                    return '<div class="inline-flex items-center justify-center gap-1.5">' +
+                        '<button data-jobid="' + data + '" type="button" class="btn-tw-success buttonView" title="View Job"><i class="fas fa-eye"></i></button>' +
+                        '</div>';
+                }
+            },
         ],
         responsive: false,
         pageLength: 10,
         lengthMenu: [10, 25, 50, 100],
-        order: [[0, 'desc']],
         paging: true,
-        autoWidth: true,
-        scrollX: true,
+        autoWidth: false,
+        scrollX: false,
+        order: [[1, 'desc']],
     });
 
     setInterval(function() {
@@ -457,23 +419,164 @@ $('#customer_name_form, #from_date_job, #until_date_job').on('change', function(
     refreshCard();
 });
 
-// HANDLE BUTTON HISTORY CANCEL JOB
-$(document).on('click', '.btn_cancel_job', function() {
+// ===================== UNIFIED VIEW MODAL =====================
 
-    let jobID = $(this).data('job-id');
+var currentViewJobID = null;
+var loadedTabs = {};
 
-    showModal('#modal_history_cancel_job');
-    $('#modal_history_cancel_job #modalHeader').text('Detail Cancel Job');
-    $('#modal_history_cancel_job .body_detail_history_cancel_job').load('<?= base_url('Job/historyCancelJob?jobID=') ?>' + jobID);
+// Tab switching
+$(document).on('click', '.tab-btn', function() {
+    var target = $(this).data('tab-target');
+
+    // Update active tab button
+    $('.tab-btn').removeClass('active');
+    $(this).addClass('active');
+
+    // Update active panel
+    $('.tab-panel').removeClass('active');
+    $('#' + target).addClass('active');
+
+    // Lazy-load tab content
+    if (target === 'tab-photos' && !loadedTabs['photos']) {
+        loadPhotosTab(currentViewJobID);
+    }
+    if (target === 'tab-history' && !loadedTabs['history']) {
+        loadHistoryTab(currentViewJobID);
+    }
 });
 
-$(document).on('click', '.btn_reschedule', function() {
+// Handle View button click
+$(document).on('click', '.buttonView', function(e) {
+    e.preventDefault();
 
-    let jobID = $(this).data('job-id');
+    var jobID = $(this).data('jobid');
+    currentViewJobID = jobID;
+    loadedTabs = {};
 
-    showModal('#modal_history_cancel_job');
-    $('#modal_history_cancel_job #modalHeader').text('Detail Reschedule Job');
-    $('#modal_history_cancel_job .body_detail_history_cancel_job').load('<?= base_url('Job/historyReschedule?jobID=') ?>' + jobID);
+    // Reset tabs to Overview
+    $('.tab-btn').removeClass('active');
+    $('.tab-btn[data-tab-target="tab-overview"]').addClass('active');
+    $('.tab-panel').removeClass('active');
+    $('#tab-overview').addClass('active');
+
+    // Reset content
+    $('.job-gallery').html('<div class="col-span-full flex flex-col items-center justify-center gap-1 text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin text-sm"></i><p class="text-sm">Loading...</p></div>');
+    $('.view-history-content').html('<div class="flex flex-col items-center justify-center gap-1 text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin text-sm"></i><p class="text-sm">Loading...</p></div>');
+
+    showModal('#modal_view');
+
+    // Populate Overview from AJAX
+    $.ajax({
+        url: '<?= base_url('Job/getJobDetail') ?>',
+        method: 'post',
+        data: { jobID: jobID },
+        dataType: 'json',
+        success: function(response) {
+            if (!response) {
+                $('#tab-overview .content_header').html('<p class="text-center text-gray-500 py-4">No details found.</p>');
+                return;
+            }
+
+            var jobDate = response.JobDate ? returnDateFormatDetailJS(response.JobDate) : '-';
+            $('#view_date').text(jobDate);
+            $('#view_job_name').text(response.JobName || '-');
+            $('#view_type').text(getTypeLabel(response.TypeJob));
+            $('#view_customer').text(response.CustomerName || '-');
+            $('#view_address').text(response.Address || '-');
+            $('#view_driver').text(response.Fullname || 'Unassigned');
+            $('#view_status').html(getStatusBadge(response.Status));
+            $('#view_assign_date').text(response.AssignWhen ? returnDateFormatDetailJS(response.AssignWhen) : '-');
+            $('#view_finish_date').text(response.FinishWhen ? returnDateFormatDetailJS(response.FinishWhen) : '-');
+
+            $('#modalViewLabel').text('Job Details - ' + (response.JobName || ''));
+        }
+    });
 });
+
+function loadPhotosTab(jobID) {
+    loadedTabs['photos'] = true;
+    var galleryContainer = $('.job-gallery');
+    galleryContainer.html('<div class="col-span-full flex flex-col items-center justify-center gap-1 text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin text-sm"></i><p class="text-sm">Loading photos...</p></div>');
+
+    $.ajax({
+        url: '<?= base_url('Job/getDetailPhoto') ?>',
+        method: 'POST',
+        data: { jobID: jobID },
+        dataType: 'json',
+        success: function(response) {
+            galleryContainer.empty();
+            if (response && response.length > 0) {
+                response.forEach(function(item, index) {
+                    galleryContainer.append('<div><img src="' + item.Photo + '" alt="Job Photo ' + (index + 1) + '" class="rounded-lg shadow-sm"></div>');
+                });
+            } else {
+                galleryContainer.html('<div class="col-span-full flex flex-col items-center justify-center gap-1 text-gray-500 py-8"><i class="fa-solid fa-image text-sm"></i><p class="text-sm">No photos available</p></div>');
+            }
+        },
+        error: function() {
+            galleryContainer.html('<div class="col-span-full text-center text-red-500 py-8">Failed to load photos.</div>');
+        }
+    });
+}
+
+function loadHistoryTab(jobID) {
+    loadedTabs['history'] = true;
+    var container = $('.view-history-content');
+    container.html('<div class="flex flex-col items-center justify-center gap-1 text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin text-sm"></i><p class="text-sm">Loading history...</p></div>');
+
+    var cancelHtml = '';
+    var rescheduleHtml = '';
+    var completed = 0;
+
+    // Load cancel history
+    $.ajax({
+        url: '<?= base_url('Job/historyCancelJob?jobID=') ?>' + jobID,
+        method: 'GET',
+        success: function(response) {
+            cancelHtml = response;
+        },
+        complete: function() {
+            completed++;
+            if (completed === 2) renderHistory(container, cancelHtml, rescheduleHtml);
+        }
+    });
+
+    // Load reschedule history
+    $.ajax({
+        url: '<?= base_url('Job/historyReschedule?jobID=') ?>' + jobID,
+        method: 'GET',
+        success: function(response) {
+            rescheduleHtml = response;
+        },
+        complete: function() {
+            completed++;
+            if (completed === 2) renderHistory(container, cancelHtml, rescheduleHtml);
+        }
+    });
+}
+
+function renderHistory(container, cancelHtml, rescheduleHtml) {
+    var html = '';
+
+    var hasCancelContent = cancelHtml && $(cancelHtml).find('tbody tr').length > 0;
+    var hasRescheduleContent = rescheduleHtml && $(rescheduleHtml).find('tbody tr').length > 0;
+
+    if (hasCancelContent) {
+        html += '<h4 class="text-sm font-semibold text-gray-700 mb-2">Cancel History</h4>';
+        html += cancelHtml;
+    }
+
+    if (hasRescheduleContent) {
+        if (hasCancelContent) html += '<div class="my-4 border-t border-gray-200"></div>';
+        html += '<h4 class="text-sm font-semibold text-gray-700 mb-2">Reschedule History</h4>';
+        html += rescheduleHtml;
+    }
+
+    if (!hasCancelContent && !hasRescheduleContent) {
+        html = '<div class="flex flex-col items-center justify-center gap-1 text-gray-500 py-8"><i class="fa-solid fa-clock-rotate-left text-sm"></i><p class="text-sm">No history records found</p></div>';
+    }
+
+    container.html(html);
+}
 
 </script>

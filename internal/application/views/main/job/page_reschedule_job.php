@@ -1,6 +1,11 @@
 <style>
 
-    table.table-striped tbody tr td {
+    #tableJobRider_wrapper .dataTables_scrollHead table.dataTable thead th,
+    table#tableJobRider.dataTable thead th {
+        text-align: center !important;
+    }
+
+    #tableJobRider tbody tr td {
         vertical-align: middle;
     }
 
@@ -52,17 +57,6 @@
         padding: 2px 1rem;
         border-radius: 6px;
     }
-    .ongoing_job {
-        background-color: #ffc107;
-        box-shadow: 2px 2px 8px rgba(255, 193, 7, 0.4);
-        color: white;
-    }
-
-    .completed_job {
-        background-color: #28a745;
-        box-shadow: 2px 2px 8px rgba(40, 167, 69, 0.4);
-        color: white;
-    }
 
 </style>
 
@@ -86,11 +80,11 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="form-group mb-0">
                     <label for="from_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" name="from_date_job" id="from_date_job">
+                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="from_date_job" id="from_date_job">
                 </div>
                 <div class="form-group mb-0">
                     <label for="until_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date Until</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" name="until_date_job" id="until_date_job">
+                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="until_date_job" id="until_date_job">
                 </div>
             </div>
 
@@ -101,17 +95,17 @@
             <div class="overflow-x-auto">
 
                 <input type="hidden" id="type_for_job" value="<?= $type_job ?>">
-                <table class="table table-bordered table-striped w-100" id="tableJobRider">
-                    <thead>
-                        <tr class="whitespace-nowrap">
-                            <th style="width: 10%; text-align: center;">No</th>
-                            <th>Create Job</th>
-                            <th>Reschedule Job</th>
-                            <th>Rider</th>
-                            <th>Job Name</th>
-                            <th>Reason</th>
-                            <th>Status Request</th>
-                            <th>Action</th>
+                <table class="w-full text-sm" id="tableJobRider">
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">#</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Created</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Reschedule</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Driver</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Reason</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                            <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
                         </tr>
                     </thead>
                 </table>
@@ -140,7 +134,7 @@
                     <div class="form-group mb-4">
                         <input type="hidden" id="reschedule_id" name="reschedule_id">
                         <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                        <textarea name="reason" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" rows="5" placeholder="Input The Reason" required></textarea>
+                        <textarea name="reason" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" rows="5" placeholder="Input The Reason" required></textarea>
                     </div>
                 </form>
             </div>
@@ -193,51 +187,43 @@ $(document).ready(function() {
             { data: "no", className: "text-center" },
             {
                 data: "JobDate",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
+                className: "text-center whitespace-nowrap",
+                render: function(data) {
+                    return data ? moment(data).format('DD MMM YYYY') : '-';
                 }
             },
             {
                 data: "RequestDateJob",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
+                className: "text-center whitespace-nowrap",
+                render: function(data) {
+                    return data ? moment(data).format('DD MMM YYYY') : '-';
                 }
              },
             {
                 data: "Fullname",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
-                },
-
+                className: "text-center whitespace-nowrap",
              },
             {
-                data: "JobName"
+                data: "JobName",
+                className: "text-center"
             },
             {
                 data: "Reason",
-                createdCell: function(td, cellData, rowData, row, col) {
-                    $(td).css('white-space', 'nowrap');
-                },
+                className: "text-center whitespace-nowrap",
             },
             {
                 data: "StatusApproved",
                 className: "text-center",
-                render: function(data, type, row) {
-
-                    let labelStatusJob;
-                    if(data == 1) {
-                        labelStatusJob = `<span class='ongoing_job'>Pending</span>`;
-
-                    } else if(data ==2) {
-
-                        labelStatusJob = `<span class='finished_job'>Approve</span>`;
+                render: function(data) {
+                    var badge = { dot: '', bg: '', text: '', ring: '', label: '' };
+                    if (data == 1) {
+                        badge = { dot: 'bg-amber-500', bg: 'bg-amber-50', text: 'text-amber-700', ring: 'ring-amber-600/20', label: 'Pending' };
+                    } else if (data == 2) {
+                        badge = { dot: 'bg-green-500', bg: 'bg-green-50', text: 'text-green-700', ring: 'ring-green-600/20', label: 'Approved' };
                     } else {
-                        labelStatusJob = `<span class='awaiting_job'>Reject</span>`;
-
+                        badge = { dot: 'bg-red-500', bg: 'bg-red-50', text: 'text-red-700', ring: 'ring-red-600/20', label: 'Rejected' };
                     }
-
-                    return labelStatusJob;
-
+                    return `<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.bg} ${badge.text} ring-1 ring-inset ${badge.ring}"><span class="size-1.5 rounded-full ${badge.dot}"></span>${badge.label}</span>`;
                 }
             },
             {

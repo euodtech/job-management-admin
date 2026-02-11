@@ -37,7 +37,7 @@
         <!-- Card Body -->
         <div class="px-5 py-4">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm" id="example3">
+                <table class="w-full text-sm" data-paginated-table data-per-page="10" data-searchable>
                     <thead class="bg-gray-50">
                         <tr class="text-center whitespace-nowrap">
                             <th class="w-[10%] text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
@@ -85,6 +85,7 @@
                     </tbody>
                 </table>
             </div>
+            <div class="mt-3" data-pagination-controls></div>
         </div>
     </div>
 </div>

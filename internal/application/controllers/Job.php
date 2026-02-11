@@ -271,6 +271,15 @@ class Job extends MY_Controller
         $this->db->where('ListJobID', $jobID);
         $data = $this->db->get()->result_array();
 
+        // Prefix photo paths with API base URL
+        $apiBase = str_replace('/internal/', '/api/', base_url());
+        foreach ($data as &$row) {
+            if (!empty($row['Photo']) && strpos($row['Photo'], 'http') !== 0) {
+                $row['Photo'] = $apiBase . $row['Photo'];
+            }
+        }
+        unset($row);
+
         // Return JSON
         echo json_encode($data ?: []);
     }
@@ -449,9 +458,8 @@ class Job extends MY_Controller
         $this->db->from('ListJob');
         $this->db->join('Customer', 'ListJob.CustomerID = Customer.CustomerID', 'left');
         $this->db->join('ListUser', 'ListJob.UserID = ListUser.UserID', 'left');
-        $this->db->join('RescheduledJob', 'ListJob.JobID = RescheduledJob.JobID', 'left');
+        $this->db->join('RescheduledJob', 'ListJob.JobID = RescheduledJob.JobID AND RescheduledJob.StatusApproved = 2', 'left');
         $this->db->where('ListJob.JobID', $jobID);
-        $this->db->where('RescheduledJob.StatusApproved', 2);
 
         $dataReturn = $this->db->get()->row_array();
 

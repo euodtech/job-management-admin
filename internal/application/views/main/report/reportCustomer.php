@@ -15,7 +15,7 @@
                     <!-- Customer Name -->
                     <div class="my-3">
                         <label for="customerSelectCustomerRetentionReport" class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                        <select id="customerSelectCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                        <select id="customerSelectCustomerRetentionReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors">
                             <option value="">-- All Customers --</option>
                         </select>
                     </div>
@@ -23,30 +23,30 @@
                     <!-- Total job -->
                     <div class="my-3">
                         <label for="totalJobInputCustomerRetentionReport" class="block text-sm font-medium text-gray-700 mb-1">Total Job (Min)</label>
-                        <input type="number" id="totalJobInputCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" placeholder="e.g. 60" min="0" >
+                        <input type="number" id="totalJobInputCustomerRetentionReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" placeholder="e.g. 60" min="0" >
                     </div>
 
                     <!-- First Job -->
                     <div class="my-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">First Job</label>
-                        <input type="date" name="fromCustomerRetentionReport" id="fromCustomerRetentionReport" value="<?= $this->input->get('fromCustomerRetentionReport') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                        <input type="date" name="fromCustomerRetentionReport" id="fromCustomerRetentionReport" value="<?= $this->input->get('fromCustomerRetentionReport') ?>" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors">
                     </div>
 
                     <!-- Last Job -->
                     <div class="my-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Last Job</label>
-                        <input type="date" name="untilCustomerRetentionReport" id="untilCustomerRetentionReport" value="<?= $this->input->get('untilCustomerRetentionReport') ?>" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                        <input type="date" name="untilCustomerRetentionReport" id="untilCustomerRetentionReport" value="<?= $this->input->get('untilCustomerRetentionReport') ?>" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors">
                     </div>
 
                     <div class="my-3">
                         <label for="retentionDaysInputCustomerRetentionReport" class="block text-sm font-medium text-gray-700 mb-1">Retention Days (Min)</label>
-                        <input type="number" id="retentionDaysInputCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" placeholder="e.g. 60" min="0">
+                        <input type="number" id="retentionDaysInputCustomerRetentionReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" placeholder="e.g. 60" min="0">
                     </div>
 
                     <!-- Status Customer -->
                     <div class="my-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status Customer</label>
-                        <select name="statusCustomerRetentionReport" id="statusCustomerRetentionReport" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                        <select name="statusCustomerRetentionReport" id="statusCustomerRetentionReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors">
                             <option value="">-- All Status Customers --</option>
                             <option value="Active" <?= $this->input->get('statusCustomerRetentionReport')=='Active'?'selected':'' ?>>Active</option>
                             <option value="Inactive" <?= $this->input->get('statusCustomerRetentionReport')=='Inactive'?'selected':'' ?>>Inactive</option>
@@ -55,24 +55,24 @@
 
                     <!-- Button -->
                     <div class="my-3 flex items-end">
-                        <button type="submit" class="rounded-lg bg-cyan-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-cyan-700 transition-colors mr-2">Filter</button>
-                        <button type="button" id="resetFilterCustomerRetentionReport" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Reset</button>
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors mr-2"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Filter</button>
+                        <button type="button" id="resetFilterCustomerRetentionReport" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Reset</button>
                     </div>
                 </div>
             </form>
 
-            <table class="table table-striped table-bordered" cellspacing="0" width="100%" id="tableCustomerRetentionReport">
-                <thead>
-                    <tr>
-                        <th style="width:5%; text-align:center;">No</th>
-                        <th>Customer</th>
-                        <th>Company</th>
-                        <th style="white-space: nowrap !important; ">Total Job</th>
-                        <th>First Job</th>
-                        <th>Last Job</th>
-                        <th style="white-space: nowrap !important; ">Retention Days</th>
-                        <th style="white-space: nowrap !important; ">Status Customer</th>
-                        <th>Action</th>
+            <table class="w-full text-sm" width="100%" id="tableCustomerRetentionReport">
+                <thead class="bg-gray-50">
+                    <tr class="text-center whitespace-nowrap">
+                        <th class="w-[5%] px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Customer</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Total Job</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">First Job</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Last Job</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Retention Days</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status Customer</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
                     </tr>
                 </thead>
             </table>
@@ -91,18 +91,18 @@
                     </button>
                 </div>
                 <div class="p-4 overflow-y-auto">
-                    <table id="customerDetailTable" class="table table-striped table-striped table-bordered dt-responsive display responsive wrap" cellspacing="0" width="100%">
-                    <thead>
-                        <tr>
-                        <th>No</th>
-                        <th>Job Name</th>
-                        <th>Job Date</th>
-                        <th>Type Job</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th>Handled By</th>
-                        <th>Company Name</th>
-                        <th>Cancel Reason</th>
+                    <table id="customerDetailTable" class="w-full text-sm dt-responsive" width="100%">
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Name</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Date</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Type Job</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Notes</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Handled By</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company Name</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Cancel Reason</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -162,26 +162,10 @@
 </div>
 
 <style>
-    #tableCustomerRetentionReport th {
-        text-align: center;
-    }
-
-    #tableCustomerRetentionReport td {
-        text-align: left;
-    }
-
-    #tableCustomerRetentionReport td:nth-child(1),
-    #tableCustomerRetentionReport td:nth-child(3),
-    #tableCustomerRetentionReport td:nth-child(6) {
-        text-align: center !important;
-    }
-
+    /* Child row styles for DataTables responsive mode */
     #tableCustomerRetentionReport tr.child td {
         text-align: left !important;
         background-color: #ffffffff;
-    }
-
-    #tableCustomerRetentionReport tr.child td {
         white-space: nowrap;
     }
 
@@ -191,43 +175,8 @@
         font-weight: bold;
     }
 
-    /* .dt-buttons {
-        display: flex;
-        gap: 8px;
-    } */
-    div div.dt-buttons {
-        float: left !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        gap: 10px !important;
-        align-items: flex-end;
-    }
-
-    .btn-group>.btn-group:not(:last-child)>.btn, .btn-group>.btn:not(:last-child):not(.dropdown-toggle) {
-        border-radius: 0.5rem;
-    }
-    .btn-group>.btn-group:not(:first-child)>.btn, .btn-group>.btn:not(:first-child) {
-        border-radius: 0.5rem;
-    }
-
     /* Mobile & Tablet (< 992px) */
     @media (max-width: 991.98px) {
-        #tableCustomerRetentionReport th {
-            text-align: center;
-        }
-
-        #tableCustomerRetentionReport td:nth-child(1),
-        #tableCustomerRetentionReport td:nth-child(3),
-        #tableCustomerRetentionReport td:nth-child(6) {
-            text-align: center;
-        }
-
-        #tableCustomerRetentionReport td:not(:nth-child(1)):not(:nth-child(3)):not(:nth-child(6)) {
-            text-align: left !important;
-        }
-
         table.dataTable>tbody>tr.child span.dtr-title {
             display: inline-block;
             min-width: 240px;
@@ -237,12 +186,7 @@
         table.dataTable>tbody>tr.child span.dtr-data {
             text-align: center !important;
         }
-
-
     }
-
-
-
 </style>
 
 
@@ -286,134 +230,33 @@
                 }
             },
             columns: [
-                {
-                    data: "No", className: "text-center",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    }
-                },
-                {
-                    data: "CustomerName",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    }
-                },
-                {
-                    data: "CompanyName",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    }
-                },
-                {
-                    data: "TotalJob",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    }
-                },
+                { data: "No", className: "text-center whitespace-nowrap align-middle" },
+                { data: "CustomerName", className: "text-center whitespace-nowrap align-middle" },
+                { data: "CompanyName", className: "text-center whitespace-nowrap align-middle" },
+                { data: "TotalJob", className: "text-center whitespace-nowrap align-middle" },
                 {
                     data: "FirstJob",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    },
+                    className: "text-center whitespace-nowrap align-middle",
                     render: function(data, type, row) {
-
                         if (!data || data === '-') return '-';
-
                         const date = new Date(data);
-                        const options = {
-                            weekday: 'long',   // Nama hari
-                            day: '2-digit',
-                            month: 'long',     // Nama bulan lengkap
-                            year: 'numeric'
-                        };
-
-                        // Format seperti: Monday, 03 November 2025
-                        const formattedDate = date.toLocaleDateString('en-US', options);
-
-                        // Tambahkan style agar tidak wrap
-                         return '<span style="white-space: nowrap;">' + formattedDate + '</span>';
-
+                        const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+                        return date.toLocaleDateString('en-US', options);
                     }
                 },
                 {
                     data: "LastJob",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    },
+                    className: "text-center whitespace-nowrap align-middle",
                     render: function(data, type, row) {
-
                         if (!data || data === '-') return '-';
-
                         const date = new Date(data);
-                        const options = {
-                            weekday: 'long',   // Nama hari
-                            day: '2-digit',
-                            month: 'long',     // Nama bulan lengkap
-                            year: 'numeric'
-                        };
-
-                        // Format seperti: Monday, 03 November 2025
-                        const formattedDate = date.toLocaleDateString('en-US', options);
-
-                        // Tambahkan style agar tidak wrap
-                         return '<span style="white-space: nowrap;">' + formattedDate + '</span>';
-
+                        const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+                        return date.toLocaleDateString('en-US', options);
                     }
                 },
-                {
-                    data: "RetentionDays",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    }
-                },
-                {
-                    data: "StatusCustomer",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    }
-                },
-                {
-                    data: "Action",
-                    createdCell: function(td, cellData, rowData, row, col) {
-                        $(td).css({
-                            'white-space': 'nowrap',
-                            'text-align': 'center',
-                            'vertical-align': 'middle'
-                        });
-                    }
-                }
+                { data: "RetentionDays", className: "text-center whitespace-nowrap align-middle" },
+                { data: "StatusCustomer", className: "text-center whitespace-nowrap align-middle" },
+                { data: "Action", className: "text-center whitespace-nowrap align-middle" }
             ],
             responsive: false,
             pageLength: 10,

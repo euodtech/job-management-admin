@@ -1,7 +1,3 @@
-<style>
-    .table_dashboard1 { font-size: 13px !important; }
-</style>
-
 <!-- Content Header -->
 <div class="px-4 sm:px-6 lg:px-8 py-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -19,7 +15,7 @@
     <!-- Info Boxes Row 1 (Drivers) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-dark">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-dark">
                 <i class="fa-solid fa-user text-white text-lg"></i>
             </div>
             <div>
@@ -28,7 +24,7 @@
             </div>
         </div>
         <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-dark">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-dark">
                 <i class="fa-solid fa-users-gear text-white text-lg"></i>
             </div>
             <div>
@@ -37,7 +33,7 @@
             </div>
         </div>
         <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-dark">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-dark">
                 <i class="fa-solid fa-users-line text-white text-lg"></i>
             </div>
             <div>
@@ -50,7 +46,7 @@
     <!-- Info Boxes Row 2 (Jobs) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
         <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-dark">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-dark">
                 <i class="fa-solid fa-briefcase text-white text-lg"></i>
             </div>
             <div>
@@ -59,7 +55,7 @@
             </div>
         </div>
         <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-dark">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-dark">
                 <i class="fa-solid fa-hourglass-half text-white text-lg"></i>
             </div>
             <div>
@@ -68,7 +64,7 @@
             </div>
         </div>
         <div class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm border border-gray-100">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-dark">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-dark">
                 <i class="fa-solid fa-check text-white text-lg"></i>
             </div>
             <div>
@@ -84,14 +80,14 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-gray-800">Driver On Duty</h3>
-                <button type="button" data-hs-collapse="#card-body-on-duty" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <button type="button" onclick="toggleCard(this, 'card-body-on-duty')" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <i class="fas fa-minus"></i>
                 </button>
             </div>
-            <div id="card-body-on-duty" class="hs-collapse open transition-all duration-300">
+            <div id="card-body-on-duty" class="transition-all duration-300 overflow-hidden">
                 <div class="px-5 py-4">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm table_dashboard1">
+                        <table class="w-full text-[13px]" data-paginated-table data-per-page="5">
                             <thead class="bg-gray-50">
                                 <tr class="whitespace-nowrap">
                                     <th class="w-[10%] text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
@@ -112,6 +108,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="mt-3" data-pagination-controls></div>
                 </div>
             </div>
         </div>
@@ -120,14 +117,14 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-gray-800">Driver Off Duty</h3>
-                <button type="button" data-hs-collapse="#card-body-off-duty" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <button type="button" onclick="toggleCard(this, 'card-body-off-duty')" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <i class="fas fa-minus"></i>
                 </button>
             </div>
-            <div id="card-body-off-duty" class="hs-collapse open transition-all duration-300">
+            <div id="card-body-off-duty" class="transition-all duration-300 overflow-hidden">
                 <div class="px-5 py-4">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm table_dashboard1">
+                        <table class="w-full text-[13px]" data-paginated-table data-per-page="5">
                             <thead class="bg-gray-50">
                                 <tr class="whitespace-nowrap">
                                     <th class="w-[10%] text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
@@ -148,6 +145,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="mt-3" data-pagination-controls></div>
                 </div>
             </div>
         </div>
@@ -159,14 +157,14 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-gray-800">Ongoing Job</h3>
-                <button type="button" data-hs-collapse="#card-body-ongoing" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <button type="button" onclick="toggleCard(this, 'card-body-ongoing')" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <i class="fas fa-minus"></i>
                 </button>
             </div>
-            <div id="card-body-ongoing" class="hs-collapse open transition-all duration-300">
+            <div id="card-body-ongoing" class="transition-all duration-300 overflow-hidden">
                 <div class="px-5 py-4">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm table_dashboard1">
+                        <table class="w-full text-[13px]" data-paginated-table data-per-page="5">
                             <thead class="bg-gray-50">
                                 <tr class="whitespace-nowrap">
                                     <th class="w-[10%] text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
@@ -187,6 +185,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="mt-3" data-pagination-controls></div>
                 </div>
             </div>
         </div>
@@ -195,14 +194,14 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-gray-800">Finished Job</h3>
-                <button type="button" data-hs-collapse="#card-body-finished" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <button type="button" onclick="toggleCard(this, 'card-body-finished')" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <i class="fas fa-minus"></i>
                 </button>
             </div>
-            <div id="card-body-finished" class="hs-collapse open transition-all duration-300">
+            <div id="card-body-finished" class="transition-all duration-300 overflow-hidden">
                 <div class="px-5 py-4">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm table_dashboard1">
+                        <table class="w-full text-[13px]" data-paginated-table data-per-page="5">
                             <thead class="bg-gray-50">
                                 <tr class="whitespace-nowrap">
                                     <th class="w-[10%] text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
@@ -223,12 +222,31 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="mt-3" data-pagination-controls></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+function toggleCard(btn, targetId) {
+    var body = document.getElementById(targetId);
+    var icon = btn.querySelector('i');
+    var header = btn.parentElement;
+    var card = header.parentElement;
+    if (body.style.display === 'none') {
+        body.style.display = '';
+        icon.className = 'fas fa-minus';
+        header.classList.add('border-b');
+        card.classList.remove('self-start');
+    } else {
+        body.style.display = 'none';
+        icon.className = 'fas fa-plus';
+        header.classList.remove('border-b');
+        card.classList.add('self-start');
+    }
+}
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
-    integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>

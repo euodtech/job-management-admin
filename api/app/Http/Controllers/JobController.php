@@ -352,7 +352,7 @@ class JobController extends Controller {
 
         foreach ($savedFiles as $val) {
             // $fullUrl = url('storage/app/finished_jobs/' . $val); // old
-            $fullUrl = 'storage/app/finished_jobs/' . $fileName;
+            $fullUrl = 'storage/app/finished_jobs/' . $val;
             
             $data_insert_job_detail = [
                 "ListJobID" => $jobId,

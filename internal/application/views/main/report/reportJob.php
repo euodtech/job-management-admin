@@ -1,71 +1,7 @@
 <style>
-
 .btn_custom {
     padding: 3px 5px !important;
     font-size: 12px !important;
-}
-.ongoing_job {
-    background-color: #fff3cd;       /* kuning lembut */
-    color: #856404;                  /* teks coklat gelap */
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    display: inline-block;
-}
-
-.finished_job {
-    background-color: #d4edda;       /* hijau lembut */
-    color: #155724;                  /* teks hijau tua */
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    display: inline-block;
-}
-
-.awaiting_job {
-    background-color: #f8d7da;       /* merah muda lembut */
-    color: #721c24;                  /* teks merah gelap */
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    display: inline-block;
-}
-
-#tableJobCustomer th,
-#tableJobCustomer td,
-#tableJobCompliance th,
-#tableJobCompliance td {
-    text-align: center;
-}
-
-div div.dt-buttons {
-    float: left !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 10px !important;
-    align-items: flex-end;
-}
-
-.btn-group>.btn-group:not(:last-child)>.btn, .btn-group>.btn:not(:last-child):not(.dropdown-toggle) {
-    border-radius: 0.5rem;
-}
-.btn-group>.btn-group:not(:first-child)>.btn, .btn-group>.btn:not(:first-child) {
-    border-radius: 0.5rem;
-}
-
-/* Mobile & Tablet (< 992px) */
-@media (max-width: 991.98px) {
-    #tableJobCustomer th,
-    #tableJobCustomer td,
-    #tableJobCompliance th,
-    #tableJobCompliance td {
-        text-align: left !important;
-    }
 }
 </style>
 
@@ -85,18 +21,18 @@ div div.dt-buttons {
                     <!-- Customers -->
                     <div class="my-1">
                         <label for="filterFromDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">From Date:</label>
-                         <input class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" type="date" id="filterFromDateJobReportperCustomer" name="from_date" value="<?= (isset($_GET['from_date'])) ?  $_GET['from_date'] : date('Y-m-d') ?>">
+                         <input class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" type="date" id="filterFromDateJobReportperCustomer" name="from_date" value="<?= (isset($_GET['from_date'])) ?  $_GET['from_date'] : date('Y-m-d') ?>">
                     </div>
 
                     <div class="my-1">
                         <label for="filterUntilDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">Until Date:</label>
-                         <input class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary" type="date" id="filterUntilDateJobReportperCustomer" name="until_date" value="<?= (isset($_GET['until_date'])) ?  $_GET['until_date'] : date('Y-m-d') ?>">
+                         <input class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" type="date" id="filterUntilDateJobReportperCustomer" name="until_date" value="<?= (isset($_GET['until_date'])) ?  $_GET['until_date'] : date('Y-m-d') ?>">
                     </div>
 
                     <!-- Jobs -->
                     <div class="my-1">
                         <label for="filterStatusJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">Status Job:</label>
-                        <select id="filterStatusJobReportperCustomer" class="form-control w-full rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary">
+                        <select id="filterStatusJobReportperCustomer" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors">
                             <option value="all_status">-- All Status --</option>
                             <option value="awaiting_job">Awaiting Driver</option>
                             <option value="ongoing_job">Ongoing Job</option>
@@ -106,22 +42,22 @@ div div.dt-buttons {
 
                     <!-- Button -->
                     <div class="self-end my-1">
-                        <button type="submit" class="rounded-lg bg-cyan-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-cyan-700 transition-colors"> Filter</button>
-                        <button type="button" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterJobReportperCustomer">Reset</button>
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Filter</button>
+                        <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterJobReportperCustomer">Reset</button>
                     </div>
                 </div>
             </form>
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered dt-responsive display responsive nowrap" cellspacing="0" width="100%" id="tableJobCustomer">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Job Date</th>
-                            <th>Job Name</th>
-                            <th>Customer</th>
-                            <th>Driver</th>
-                            <th>Status Job</th>
-                            <th>Detail</th>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm dt-responsive nowrap" width="100%" id="tableJobCustomer">
+                    <thead class="bg-gray-50">
+                        <tr class="text-center whitespace-nowrap">
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Date</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Name</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Customer</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Driver</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status Job</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Detail</th>
                         </tr>
                     </thead>
                 </table>
