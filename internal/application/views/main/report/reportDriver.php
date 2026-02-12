@@ -67,7 +67,12 @@
 <div class="px-4 sm:px-6 lg:px-8 pb-6">
     <div class="bg-white rounded-xl shadow-sm border border-cyan-200">
         <div class="px-5 py-4 border-b border-cyan-200">
-            <h5 class="text-base font-semibold text-gray-800">📌 Rider Report</h5>
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+                <h5 class="text-base font-semibold text-gray-800">Rider Report</h5>
+                <button type="button" id="btn_export_driver_report" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <i class="fa fa-file-excel text-green-600"></i> Export Excel
+                </button>
+            </div>
         </div>
         <div class="px-5 py-4">
             <form id="formFilterUserLoginActivityReport" method="GET" action="">
@@ -221,32 +226,33 @@
             scrollX: true ,
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
+            dom: '<"d-flex justify-content-between align-items-center mb-2"f>rtip',
             buttons: [
                 {
                     extend: 'excelHtml5',
                     text: 'Excel',
                     title: `Rider Report (${today.getDate().toString().padStart(2, '0')}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn-tw-primary',
                     customize: function (xlsx) {
                         try {
                             var sheet = xlsx.xl.worksheets['sheet1.xml'];
-
-                            // Tambahkan padding via spasi agar tidak dempet
                             $('row c t', sheet).each(function () {
                                 var text = $(this).text();
                                 $(this).text('  ' + text + '  ');
                             });
-
-                            // Lebarkan kolom (default 25 karakter)
                             $('col', sheet).attr('width', 25);
                         } catch (e) {
-                            console.warn('⚠️ Failed to modify Excel XML:', e.message);
+                            console.warn('Failed to modify Excel XML:', e.message);
                         }
                     },
                 },
             ],
             searching: true,
+        });
+
+        // Export Excel
+        $('#btn_export_driver_report').on('click', function() {
+            table.button(0).trigger();
         });
 
         // Reload Otomatic

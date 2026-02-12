@@ -29,7 +29,12 @@
     <!-- Job Report per Customer -->
     <div class="bg-white rounded-xl shadow-sm border border-cyan-200">
         <div class="px-5 py-4 border-b border-cyan-200">
-            <h5 class="text-base font-semibold text-gray-800">Job Report</h5>
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+                <h5 class="text-base font-semibold text-gray-800">Job Report</h5>
+                <button type="button" id="btn_export_job_report" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <i class="fa fa-file-excel text-green-600"></i> Export Excel
+                </button>
+            </div>
         </div>
         <div class="px-5 py-4">
             <form id="formFilterJobReportperCustomer" method="GET" action="">
@@ -608,50 +613,7 @@
             pageLength: 10,
             rowReorder: { selector: 'td:nth-child(2)' },
             lengthMenu: [10, 25, 50, 100],
-            dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-            buttons: [
-                {
-                    text: 'Job Report Excel',
-                    className: 'btn btn-sm btn-primary btn_custom',
-                    action: function (e, dt, node, config) {
-
-                        // Bisa kirim filter juga kalau mau (misal tanggal)
-                        const fromDate = $('#filterFromDateJobReportperCustomer').val();
-                        const untilDate = $('#filterUntilDateJobReportperCustomer').val();
-
-                        Swal.fire({
-                            title: 'Generating Excel...',
-                            text: 'Please wait a moment',
-                            didOpen: () => Swal.showLoading(),
-                            allowOutsideClick: false
-                        });
-
-                        $.ajax({
-                            url: '<?= base_url('ReportJob/export_job_report') ?>',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                from_date: fromDate,
-                                until_date: untilDate
-                            },
-                            success: function (res) {
-                                Swal.close();
-
-                                if (res.status === true && res.file_url) {
-                                    // langsung download
-                                    window.location.href = res.file_url;
-                                } else {
-                                    Swal.fire('Failed', 'Could not generate file', 'error');
-                                }
-                            },
-                            error: function () {
-                                Swal.close();
-                                Swal.fire('Error', 'Server error while generating file', 'error');
-                            }
-                        });
-                    }
-                }
-            ],
+            dom: '<"d-flex justify-content-between align-items-center mb-2"f>rtip',
 
             ordering: true,
             searching: true,
@@ -659,6 +621,42 @@
                 search: "Search:"
             },
             order: [[3, "desc"]]
+        });
+
+        // Export Excel
+        $('#btn_export_job_report').on('click', function() {
+            const fromDate = $('#filterFromDateJobReportperCustomer').val();
+            const untilDate = $('#filterUntilDateJobReportperCustomer').val();
+
+            Swal.fire({
+                title: 'Generating Excel...',
+                text: 'Please wait a moment',
+                didOpen: () => Swal.showLoading(),
+                allowOutsideClick: false
+            });
+
+            $.ajax({
+                url: '<?= base_url('ReportJob/export_job_report') ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    from_date: fromDate,
+                    until_date: untilDate
+                },
+                success: function (res) {
+                    Swal.close();
+
+                    if (res.status === true && res.file_url) {
+                        window.location.href = res.file_url;
+                    } else {
+                        Swal.fire('Failed', res.message || 'Could not generate file', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.close();
+                    Swal.fire('Error', 'Server error while generating file', 'error');
+                }
+            });
         });
 
         // Reload Otomatic
@@ -767,14 +765,14 @@
             buttons: [
                 {
                     extend: 'pageLength',
-                    className: 'btn btn-secondary me-2'
+                    className: ''
                 },
                 {
                     extend: 'excelHtml5',
-                    text: 'Excel',
+                    text: '<i class="fa fa-file-excel text-green-600"></i> Excel',
                     title: `Job Compliance Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn btn-success me-2',
+                    className: '',
                     exportOptions: {
                         // Cara 1: manual, ekspor kolom ke-0 s.d ke-5
                         columns: [0, 1, 2, 3, 4, 5]
@@ -940,14 +938,14 @@
             buttons: [
                 {
                     extend: 'pageLength',
-                    className: 'btn btn-secondary me-2'
+                    className: ''
                 },
                 {
                     extend: 'excelHtml5',
-                    text: 'Excel',
+                    text: '<i class="fa fa-file-excel text-green-600"></i> Excel',
                     title: `Job Assignment Efficiency Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn btn-success me-2',
+                    className: '',
                     customize: function (xlsx) {
                         try {
                             var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -1094,14 +1092,14 @@
             buttons: [
                 {
                     extend: 'pageLength',
-                    className: 'btn btn-secondary me-2'
+                    className: ''
                 },
                 {
                     extend: 'excelHtml5',
-                    text: 'Excel',
+                    text: '<i class="fa fa-file-excel text-green-600"></i> Excel',
                     title: `Job Completion Status Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn btn-success me-2',
+                    className: '',
                     customize: function (xlsx) {
                         try {
                             var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -1175,14 +1173,14 @@
             buttons: [
                 {
                     extend: 'pageLength',
-                    className: 'btn btn-secondary me-2'
+                    className: ''
                 },
                 {
                     extend: 'excelHtml5',
-                    text: 'Excel',
+                    text: '<i class="fa fa-file-excel text-green-600"></i> Excel',
                     title: `Job Timeline Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn btn-success me-2',
+                    className: '',
                     customize: function (xlsx) {
                         try {
                             var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -1366,14 +1364,14 @@
             buttons: [
                 {
                     extend: 'pageLength',
-                    className: 'btn btn-secondary me-2'
+                    className: ''
                 },
                 {
                     extend: 'excelHtml5',
-                    text: 'Excel',
+                    text: '<i class="fa fa-file-excel text-green-600"></i> Excel',
                     title: `Job Evidence Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn btn-success me-2',
+                    className: '',
                     exportOptions: {
                         // columns: ':visible',
                         columns: [0, 1, 2, 3, 4],

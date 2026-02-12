@@ -836,18 +836,17 @@ class ReportJob extends MY_Controller
                 throw new Exception('Filter tanggal belum diisi.');
             }
 
+            $where_company = "";
             if($role != 1) {
-
                 $where_company = " AND ListJob.CompanyID = " . $companyID;
-
             }
 
             // --- Ambil data dari database ---
             $query = "
-                SELECT * FROM ListJob 
-                LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID 
-                LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID 
-                WHERE DATE(JobDate) >= '$from_date' AND DATE(JobDate) <= '$until_date' AND ListJob.Status = 2 
+                SELECT * FROM ListJob
+                LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID
+                LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID
+                WHERE DATE(JobDate) >= '$from_date' AND DATE(JobDate) <= '$until_date' AND ListJob.Status = 2
             " . $where_company;
 
             $jobs = $this->M_Global->globalquery($query)->result_array();
@@ -855,7 +854,7 @@ class ReportJob extends MY_Controller
             // $jobs = $this->db->query($query, [$from_date, $until_date])->result_array();
 
             if (count($jobs) == 0) {
-                throw new Exception('No data found for the given date range.');
+                throw new Exception('No finished jobs found between ' . date('M d, Y', strtotime($from_date)) . ' and ' . date('M d, Y', strtotime($until_date)) . '.');
             }
 
             // --- Load library Excel ---

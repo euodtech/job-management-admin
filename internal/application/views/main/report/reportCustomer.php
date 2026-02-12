@@ -23,7 +23,12 @@
     <!-- Customer Retention Report -->
     <div class="bg-white rounded-xl shadow-sm border border-cyan-200">
         <div class="px-5 py-4 border-b border-cyan-200">
-            <h5 class="text-base font-semibold text-gray-800">📌 Customer Retention Report</h5>
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+                <h5 class="text-base font-semibold text-gray-800">Customer Retention Report</h5>
+                <button type="button" id="btn_export_customer_retention" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <i class="fa fa-file-excel text-green-600"></i> Export Excel
+                </button>
+            </div>
         </div>
         <div class="px-5 py-4">
             <form id="filterFormCustomerRetentionReport" method="get" action="" class="mb-3">
@@ -279,41 +284,28 @@
             rowReorder: {
                 selector: 'td:nth-child(2)'
             },
-            dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: 'Excel',
-                    title: `Customer Retention Report (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
-                    filename: fileName,
-                    className: 'btn btn-success me-2',
-                    exportOptions: {
-                        columns: ':not(:last-child)'
-                    },
-                    action: function (e, dt, button, config) {
-                        let params = {
-                            customerIDCustomerRetentionReport: $('#customerSelectCustomerRetentionReport').val(),
-                            totalJobCustomerRetentionReport: $('#totalJobInputCustomerRetentionReport').val(),
-                            fromCustomerRetentionReport: $('input[name="fromCustomerRetentionReport"]').val(),
-                            untilCustomerRetentionReport: $('input[name="untilCustomerRetentionReport"]').val(),
-                            retentionDaysCustomerRetentionReport: $('#retentionDaysInputCustomerRetentionReport').val(),
-                            statusCustomerRetentionReport: $('select[name="statusCustomerRetentionReport"]').val()
-                        };
-
-                        // Ubah object jadi query string
-                        let query = $.param(params);
-
-                        // Redirect ke controller export dengan filter yang sama
-                        window.location.href = "<?= base_url('ReportCustomer/exportCustomerRetentionExcel?') ?>" + query;
-                    }
-                },
-            ],
+            dom: '<"d-flex justify-content-between align-items-center mb-2"f>rtip',
             ordering: true,
             searching: true,
             language: {
                 search: "Search:",
             },
             order: [[4, "desc"]],
+        });
+
+        // Export Excel
+        $('#btn_export_customer_retention').on('click', function() {
+            let params = {
+                customerIDCustomerRetentionReport: $('#customerSelectCustomerRetentionReport').val(),
+                totalJobCustomerRetentionReport: $('#totalJobInputCustomerRetentionReport').val(),
+                fromCustomerRetentionReport: $('input[name="fromCustomerRetentionReport"]').val(),
+                untilCustomerRetentionReport: $('input[name="untilCustomerRetentionReport"]').val(),
+                retentionDaysCustomerRetentionReport: $('#retentionDaysInputCustomerRetentionReport').val(),
+                statusCustomerRetentionReport: $('select[name="statusCustomerRetentionReport"]').val()
+            };
+
+            let query = $.param(params);
+            window.location.href = "<?= base_url('ReportCustomer/exportCustomerRetentionExcel?') ?>" + query;
         });
 
         // Reload Otomatic
@@ -453,14 +445,14 @@
             buttons: [
                 {
                     extend: 'pageLength',
-                    className: 'btn btn-secondary me-2'
+                    className: ''
                 },
                 {
                     extend: 'excelHtml5',
-                    text: '📘 Excel',
+                    text: '<i class="fa fa-file-excel text-green-600"></i> Excel',
                     title: `Customer Engagement (${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    className: 'btn btn-success me-2',
+                    className: '',
                     customize: function (xlsx) {
                         try {
                             var sheet = xlsx.xl.worksheets['sheet1.xml'];

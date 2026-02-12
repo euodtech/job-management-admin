@@ -52,27 +52,24 @@
             </form>
             <?php endif; ?>
 
-            <!-- Row 2: Excel + Add buttons -->
-            <div class="flex justify-between items-center">
-                <div class="flex gap-2.5">
-                    <!-- Import Excel -->
-                    <form id="import_excel_form" enctype="multipart/form-data">
-                        <label for="import_excel" class="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 transition-colors cursor-pointer">
-                            <i class="fa fa-file-excel"></i> Import Excel
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+                <div class="flex items-center gap-2.5">
+                    <form id="import_excel_form" enctype="multipart/form-data" class="flex">
+                        <label for="import_excel" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer mb-0! mt-3.5">
+                            <i class="fa fa-file-excel text-green-600"></i> Import
                         </label>
                         <input type="file" id="import_excel" name="import_excel" accept=".xls,.xlsx" hidden>
                     </form>
 
-                    <!-- Download Example -->
                     <a href="<?= base_url('assets/dist/Example Excel Upload Rider.xlsx') ?>"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors" download>
-                        <i class="fa fa-download"></i> Download Example Excel
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" download>
+                        <i class="fa fa-download text-primary"></i> Template
                     </a>
                 </div>
 
-                <!-- Button Add -->
                 <button class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors" id="add_user" type="button">
-                    Add User
+                    <i class="fa fa-plus"></i> Add Rider
                 </button>
             </div>
         </div>

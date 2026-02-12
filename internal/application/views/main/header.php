@@ -247,7 +247,7 @@
     div.dataTables_wrapper div.dataTables_paginate .page-item.next .page-link {
         font-size: 1.125rem !important;
     }
-    .dt-buttons .dt-button { @apply inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors; }
+    .dt-buttons .dt-button { @apply inline-flex items-center gap-1.5 rounded-lg border !border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors; }
 
     /* DataTables button group layout */
     div div.dt-buttons {

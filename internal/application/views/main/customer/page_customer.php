@@ -25,24 +25,26 @@
 <div class="px-4 sm:px-6 lg:px-8 pb-6">
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-4 border-b border-gray-200">
-            <div class="flex items-center gap-2.5 mb-3">
-                <form id="import_excel_form" enctype="multipart/form-data" class="mb-0">
-                    <label for="import_excel" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 transition-colors cursor-pointer">
-                        <i class="fa fa-file-excel"></i> Import Excel
-                    </label>
-                    <input type="file" id="import_excel" name="import_excel" accept=".xls,.xlsx" hidden>
-                </form>
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+                <div class="flex items-center gap-2.5">
+                    <form id="import_excel_form" enctype="multipart/form-data" class="flex">
+                        <label for="import_excel" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer mb-0!">
+                            <i class="fa fa-file-excel text-green-600"></i> Import
+                        </label>
+                        <input type="file" id="import_excel" name="import_excel" accept=".xls,.xlsx" hidden>
+                    </form>
 
-                <a href="<?= base_url('assets/dist/Example Excel Upload Customer.xlsx') ?>"
-                class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-                download>
-                    <i class="fa fa-download"></i> Download Example Excel
-                </a>
-            </div>
-            <div class="flex items-center justify-between">
-                <button class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors" id="addButton" type="button">
-                    Add Customer
+                    <a href="<?= base_url('assets/dist/Example Excel Upload Customer.xlsx') ?>"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" download>
+                        <i class="fa fa-download text-primary"></i> Template
+                    </a>
+                </div>
+
+                <button class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors" id="addButton" type="button">
+                    <i class="fa fa-plus"></i> Add Customer
                 </button>
+            </div>
+            <div class="flex items-center justify-between mt-3">
                 <?php if($this->session->flashdata('message')): ?>
                 <?= $this->session->flashdata('message'); ?>
                 <?php endif; ?>
