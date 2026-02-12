@@ -18,7 +18,7 @@ class Map extends MY_Controller
 
     public function geozones()
     {
-        $data['title'] = "Efms | Maps";
+        $data['title'] = "Live Map";
 
         // echo base_url('v1/api/traxroot/objectsMerge');
         // die;

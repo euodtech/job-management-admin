@@ -51,7 +51,7 @@
                           <?= $segment == 'map' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100' ?>
                           transition-colors">
                     <i class="fa-solid fa-map-pin w-5 text-center"></i>
-                    Maps
+                    Map
                 </a>
             </li>
             <?php endif; ?>

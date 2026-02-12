@@ -20,6 +20,8 @@ class MY_Controller extends CI_Controller
 
 	function render_page($content, $data = NULL)
 	{
+		$data['breadcrumbs'] = $this->_generate_breadcrumbs();
+
 		$data['header']			= $this->load->view('main/header', $data, TRUE);
 		$data['topbar']			= $this->load->view('main/topbar', $data, TRUE);
 		$data['sidebar']		= $this->load->view('main/sidebar', $data, TRUE);
@@ -28,6 +30,39 @@ class MY_Controller extends CI_Controller
 		$data['footer'] 		= $this->load->view('main/footer', $data, TRUE);
 
 		$this->load->view('main/index', $data);
+	}
+
+	private function _generate_breadcrumbs()
+	{
+		$labels = array(
+			'home'                  => 'Dashboard',
+			'user-list'             => 'Rider',
+			'company-list'          => 'Company',
+			'customer-list'         => 'Customer',
+			'line-interruption-job' => 'Line Interruption',
+			'reconnection-job'      => 'Reconnection',
+			'short-circuit-job'     => 'Short Circuit',
+			'disconnection-job'     => 'Disconnection',
+			'reschedule-job'        => 'Reschedule Job',
+			'job-summary'           => 'Job Summary',
+			'report-driver'         => 'Rider Report',
+			'report-job'            => 'Job Report',
+			'report-customer'       => 'Customer Report',
+			'map'                   => 'Maps',
+			'vehicle'               => 'Vehicle',
+		);
+
+		$segment = $this->uri->segment(1);
+		$breadcrumbs = array();
+
+		if ($segment === 'home' || !isset($labels[$segment])) {
+			$breadcrumbs[] = array('label' => 'Dashboard', 'url' => '');
+		} else {
+			$breadcrumbs[] = array('label' => 'Dashboard', 'url' => base_url('home'));
+			$breadcrumbs[] = array('label' => $labels[$segment], 'url' => '');
+		}
+
+		return $breadcrumbs;
 	}
 
 	function render_page_cashier($content, $data = NULL)

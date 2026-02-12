@@ -1,7 +1,23 @@
 
 <!-- Content Header -->
 <div class="px-4 sm:px-6 lg:px-8 py-4">
-    <h4 class="text-xl font-bold text-gray-800"><?= $title ?></h4>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <h1 class="text-xl font-bold text-gray-800"><?= $title ?></h1>
+        <nav class="flex">
+            <ol class="flex items-center gap-1.5 text-sm">
+                <?php foreach ($breadcrumbs as $i => $crumb): ?>
+                    <?php if ($i > 0): ?>
+                        <li class="text-gray-400">/</li>
+                    <?php endif; ?>
+                    <?php if ($crumb['url']): ?>
+                        <li><a href="<?= $crumb['url'] ?>" class="text-primary hover:underline"><?= $crumb['label'] ?></a></li>
+                    <?php else: ?>
+                        <li class="text-gray-500"><?= $crumb['label'] ?></li>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </ol>
+        </nav>
+    </div>
 </div>
 
 <!-- Content -->

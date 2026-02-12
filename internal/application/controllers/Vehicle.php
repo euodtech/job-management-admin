@@ -21,7 +21,7 @@ class Vehicle extends ApiToken
 
     public function index()
     {
-        $data['title'] = "Efms | Vehicle";
+        $data['title'] = "Vehicle";
         
         $this->render_page('main/vehicle/vehicle', $data);
     }

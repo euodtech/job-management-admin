@@ -66,7 +66,16 @@
         <h1 class="text-xl font-bold text-gray-800">Reschedule Job</h1>
         <nav class="flex">
             <ol class="flex items-center gap-1.5 text-sm">
-                <li><a href="<?= base_url('home') ?>" class="text-primary hover:underline">Dashboard</a></li>
+                <?php foreach ($breadcrumbs as $i => $crumb): ?>
+                    <?php if ($i > 0): ?>
+                        <li class="text-gray-400">/</li>
+                    <?php endif; ?>
+                    <?php if ($crumb['url']): ?>
+                        <li><a href="<?= $crumb['url'] ?>" class="text-primary hover:underline"><?= $crumb['label'] ?></a></li>
+                    <?php else: ?>
+                        <li class="text-gray-500"><?= $crumb['label'] ?></li>
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </ol>
         </nav>
     </div>
