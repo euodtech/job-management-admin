@@ -51,7 +51,7 @@
 <div class="px-4 sm:px-6 lg:px-8 pb-6">
     <div class="bg-white rounded-xl shadow-sm border border-cyan-200">
         <div class="px-5 py-4 border-b border-cyan-200">
-            <h5 class="text-base font-semibold text-gray-800">📌 Report Rider</h5>
+            <h5 class="text-base font-semibold text-gray-800">📌 Rider Report</h5>
         </div>
         <div class="px-5 py-4">
             <form id="formFilterUserLoginActivityReport" method="GET" action="">
@@ -209,7 +209,7 @@
                 {
                     extend: 'excelHtml5',
                     text: 'Excel',
-                    title: `Report Rider (${today.getDate().toString().padStart(2, '0')}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getFullYear()})`,
+                    title: `Rider Report (${today.getDate().toString().padStart(2, '0')}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
                     className: 'btn-tw-primary',
                     customize: function (xlsx) {

@@ -6,7 +6,7 @@
 </style>
 
 <div class="px-4 sm:px-6 lg:px-8 py-4">
-    <h4 class="text-xl font-bold text-gray-800">Efms | Report Job</h4>
+    <h4 class="text-xl font-bold text-gray-800">Efms | Job Report</h4>
 </div>
 
 <div class="px-4 sm:px-6 lg:px-8 pb-6">

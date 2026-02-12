@@ -19,7 +19,7 @@ class ReportDriver extends MY_Controller
 
     public function index()
     {
-        $data['title'] = "Efms | Report Rider";
+        $data['title'] = "Efms | Rider Report";
 
         // Mengirim data ke view
         $this->render_page('main/report/reportDriver', $data);

@@ -18,7 +18,7 @@
     <!-- Brand Logo -->
     <div class="flex items-center justify-center gap-2 h-16 border-b border-gray-200 bg-white px-4">
         <img src="<?= $brandLogo ?>" class="h-8 object-contain" alt="Logo">
-        <span class="text-sm font-extrabold text-gray-800 truncate">fms | Administrator</span>
+        <span class="text-sm font-extrabold text-gray-800 truncate">FMS | Administrator</span>
     </div>
 
     <!-- User Panel -->
@@ -213,7 +213,7 @@
                                class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm
                                       <?= ($segment == 'report-driver') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-gray-900' ?>">
                                 <span class="w-1.5 h-1.5 rounded-full <?= ($segment == 'report-driver') ? 'bg-primary' : 'bg-gray-400' ?>"></span>
-                                Report Rider
+                                Rider Report
                             </a>
                         </li>
                         <li>
@@ -221,7 +221,7 @@
                                class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm
                                       <?= ($segment == 'report-job') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-gray-900' ?>">
                                 <span class="w-1.5 h-1.5 rounded-full <?= ($segment == 'report-job') ? 'bg-primary' : 'bg-gray-400' ?>"></span>
-                                Report Job
+                                Job Report
                             </a>
                         </li>
                         <li>
@@ -229,7 +229,7 @@
                                class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm
                                       <?= ($segment == 'report-customer') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-gray-900' ?>">
                                 <span class="w-1.5 h-1.5 rounded-full <?= ($segment == 'report-customer') ? 'bg-primary' : 'bg-gray-400' ?>"></span>
-                                Report Customer
+                                Customer Report
                             </a>
                         </li>
                     </ul>
