@@ -21,7 +21,7 @@
 
 <!-- Content -->
 <div class="px-4 sm:px-6 lg:px-8 pb-6">
-    <div id="map" style="width: 100%; height: 82%; position: relative;">
+    <div id="map" style="width: 100%; height: 82%; position: relative; z-index: 0;">
         <div id="map-loader" class="map-loader">
           <div class="spinner"></div>
           <span id="loader-text">Loading map data...</span>

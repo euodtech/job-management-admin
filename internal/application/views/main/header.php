@@ -195,7 +195,7 @@
     .dataTables_wrapper .dataTables_filter { @apply flex items-center gap-2 text-sm text-gray-600; }
     .dataTables_wrapper .dataTables_info { @apply text-sm text-gray-600 py-3; }
     .dataTables_wrapper .dataTables_paginate { @apply py-3; }
-    div.dataTables_wrapper div.dataTables_processing { @apply bg-white/80 backdrop-blur-sm rounded-lg; }
+    div.dataTables_wrapper div.dataTables_processing { display: none !important; }
     /* === DataTables pagination — match dashboard borderless style === */
     div.dataTables_wrapper div.dataTables_paginate ul.pagination {
         display: flex !important;

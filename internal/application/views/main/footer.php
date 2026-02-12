@@ -9,6 +9,14 @@
 </div>
 <!-- /.min-h-screen -->
 
+<!-- DataTables screen overlay -->
+<div id="dt-screen-overlay" class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/40 backdrop-blur-[2px] opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="inline-flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-2xl border border-gray-100">
+        <div class="animate-spin rounded-full h-6 w-6 border-[2.5px] border-gray-200 border-t-primary"></div>
+        <span class="text-sm font-medium text-gray-600">Loading data...</span>
+    </div>
+</div>
+
 <!-- jQuery UI (jQuery already loaded in header.php) -->
 <script src="<?php echo base_url('assets/plugins/jquery-ui/jquery-ui.min.js'); ?>"></script>
 
@@ -51,7 +59,19 @@ $.extend(true, $.fn.dataTable.defaults, {
         paginate: {
             previous: '\u2039',
             next: '\u203A'
-        }
+        },
+    }
+});
+/* === Screen overlay for DataTables processing === */
+$(document).on('processing.dt', function(e, settings, processing) {
+    var overlay = document.getElementById('dt-screen-overlay');
+    if (!overlay) return;
+    if (processing) {
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
+        overlay.classList.add('opacity-100', 'pointer-events-auto');
+    } else {
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+        overlay.classList.remove('opacity-100', 'pointer-events-auto');
     }
 });
 $(document).on('draw.dt', function(e, settings) {

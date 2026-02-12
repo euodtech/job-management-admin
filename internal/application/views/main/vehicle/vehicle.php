@@ -27,11 +27,7 @@
             <h5 class="text-base font-semibold text-gray-800">Vehicle</h5>
         </div>
         <div class="px-5 py-4">
-          <div id="vehicleLoading" class="text-center py-5">
-            <div class="animate-spin rounded-full h-12 w-12 border-4 border-cyan-200 border-t-cyan-600 mx-auto"></div>
-            <p class="mt-3 text-gray-500">Loading vehicles...</p>
-          </div>
-          <table id="vehicleTable" class="table table-striped table-bordered dt-responsive display responsive wrap" cellspacing="0" width="100%" style="display:none;">
+          <table id="vehicleTable" class="table table-striped table-bordered dt-responsive display responsive wrap" cellspacing="0" width="100%">
             <thead>
                 <tr>
                     <th>No</th>
@@ -49,9 +45,15 @@
     </div>
 </div>
 
+<style>
+  #vehicleTable_wrapper .dataTables_scrollHead table.dataTable thead th,
+  table#vehicleTable.dataTable thead th { text-align: center !important; }
+  table#vehicleTable.dataTable tbody td { text-align: center !important; }
+</style>
+
 <script>
 $(document).ready(function() {
-  $('#vehicleTable').DataTable({
+  var table = $('#vehicleTable').DataTable({
     scrollX: true,
     processing: true,
     serverSide: true,
@@ -59,18 +61,8 @@ $(document).ready(function() {
     ajax: {
       url: "<?= base_url('Vehicle/traxrootVehicle') ?>",
       type: "GET",
-      dataSrc: function(json) {
-        $('#vehicleLoading').hide();
-        $('#vehicleTable').show();
-        return json.data;
-      },
       error: function(xhr, error, thrown) {
-        $('#vehicleLoading').html(
-          '<div class="text-center py-5">' +
-            '<i class="fas fa-exclamation-triangle text-amber-500" style="font-size: 2.5rem;"></i>' +
-            '<p class="mt-3 text-gray-500">Failed to load vehicle data. Please try again later.</p>' +
-          '</div>'
-        );
+        console.error('Vehicle data load failed:', error, thrown);
       }
     },
     columns: [
@@ -94,7 +86,8 @@ $(document).ready(function() {
           let url = `https://www.google.com/maps?q=${lat},${lng}`;
 
           if (type === "display") {
-              return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-tw-primary" style="color:white;text-decoration:none;">
+              return `<a href="${url}" target="_blank" rel="noopener noreferrer"
+                        style="display:inline-flex;align-items:center;justify-content:center;border-radius:0.5rem;background-color:#0891b2;padding:0.25rem 0.5rem;font-size:0.75rem;color:#ffffff;text-decoration:none;">
                         ${lat}, ${lng}
                       </a>`;
           }
@@ -114,9 +107,6 @@ $(document).ready(function() {
     },
     order: [[1, "ASC"]]
   });
-
-  $('#vehicleLoading').show();
-  $('#vehicleTable').hide();
 });
 
 </script>
