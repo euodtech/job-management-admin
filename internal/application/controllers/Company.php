@@ -134,7 +134,7 @@ class Company extends MY_Controller
 
     public function index()
     {
-        $data['title'] = "Efms | Company";
+        $data['title'] = "Company";
 
         // Use Query Builder for safer DB access
         $data['company'] = $this->db

@@ -56,7 +56,7 @@ class Job extends MY_Controller
 
     public function index($type_job = 1)
     {
-        $data['title'] = "Efms | Job";
+        $data['title'] = "Job";
 
         $companyID = $this->session->userdata('CompanyID');
 
@@ -468,7 +468,7 @@ class Job extends MY_Controller
 
     public function reschedule_job()
     {
-        $data['title'] = "Efms | Job";
+        $data['title'] = "Job";
 
         $companyID = $this->session->userdata('CompanyID');
 
@@ -477,7 +477,7 @@ class Job extends MY_Controller
 
     public function summary($type_job = 1)
     {
-        $data['title'] = "Efms | Job";
+        $data['title'] = "Job";
 
         $companyID = (int) $this->session->userdata('CompanyID');
         $type_job  = (int) $type_job;

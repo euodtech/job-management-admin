@@ -1,4 +1,4 @@
-<style>
+<style type="text/tailwindcss">
 .field-error input { @apply !border-red-500; }
 .field-error .input-icon-box { @apply !border-red-500; }
 .inline-error { @apply text-red-500 text-xs mt-1 block; }

@@ -252,9 +252,7 @@ $(document).ready(function() {
         modal.find('#pass').val('');
         modal.find('#phone').val('');
 
-        // Clear validation errors
-        modal.find('.form-group').removeClass('field-error');
-        modal.find('.inline-error').text('');
+        clearAllFieldErrors('#modal');
 
         formUser.attr("action", '<?= base_url('create-user') ?>')
     });
@@ -265,9 +263,7 @@ $(document).ready(function() {
         showModal('#modal');
         modal.find('.container_notes').hide();
 
-        // Clear validation errors
-        modal.find('.form-group').removeClass('field-error');
-        modal.find('.inline-error').text('');
+        clearAllFieldErrors('#modal');
 
         let userID = $(this).data('userid');
 
@@ -378,7 +374,7 @@ $(document).ready(function() {
             let forcedRole = (targetRole === 'field') ? 'monitor' : targetRole;
             setRoleOptions(optionsMonitorOnly, forcedRole);
         } else {
-            $badge.text('Package: Pro').removeClass('bg-amber-100 text-amber-800 bg-gray-100 text-gray-800').addClass('bg-green-100 text-green-800');
+            $badge.text('Package: Pro').removeClass('bg-amber-100 text-amber-800 bg-gray-100 text-gray-800').addClass('bg-green-100 text-green-800 mb-3');
             setRoleOptions(optionsAll, targetRole);
         }
     }
@@ -470,34 +466,6 @@ $(document).ready(function() {
 <script>
 $(document).ready(function () {
 
-    // Helper: set inline error on a field
-    function setFieldError(fieldId, msg) {
-        var $field = $('#' + fieldId);
-        $field.closest('.form-group').addClass('field-error');
-        $('#error-' + fieldId).text(msg);
-    }
-
-    // Helper: clear inline error on a field
-    function clearFieldError(fieldId) {
-        var $field = $('#' + fieldId);
-        $field.closest('.form-group').removeClass('field-error');
-        $('#error-' + fieldId).text('');
-    }
-
-    // Auto-clear errors on input/change
-    $('#fullname, #email').on('input', function() {
-        clearFieldError(this.id);
-    });
-    $('#phone').on('input', function() {
-        clearFieldError('phone');
-    });
-    $('#company_selected').on('change', function() {
-        clearFieldError('company_selected');
-    });
-    $('#user_role').on('change', function() {
-        clearFieldError('user_role');
-    });
-
     $('#formAddUser').on('submit', function (e) {
         e.preventDefault();
 
@@ -510,11 +478,7 @@ $(document).ready(function () {
         var email    = $('#email').val().trim();
         var phoneRaw = $('#phone').val().trim();
 
-        clearFieldError('company_selected');
-        clearFieldError('fullname');
-        clearFieldError('user_role');
-        clearFieldError('email');
-        clearFieldError('phone');
+        clearAllFieldErrors('#modal');
 
         if ($('#company_selected').is(':visible') && !company) {
             setFieldError('company_selected', 'Please select a company.');

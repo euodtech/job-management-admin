@@ -777,7 +777,7 @@ document.querySelector('#modal').addEventListener('open.hs.overlay', fn);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Efms | Administrator</title>
+    <title>EFMS | Administrator</title>
 
     <link rel="icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />
     <link rel="shortcut icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />

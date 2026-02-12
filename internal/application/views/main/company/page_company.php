@@ -352,9 +352,7 @@ $(document).ready(function() {
         modal.find('input[name="package"]').prop('checked', false);
         modal.find('#preview_logo').attr('src', "https://tse2.mm.bing.net/th/id/OIP.IZWJ479vW3ZlLf2HS18k6wHaEa?pid=Api&P=0&h=180");
 
-        // Clear validation errors
-        modal.find('.form-group').removeClass('field-error');
-        modal.find('.inline-error').text('');
+        clearAllFieldErrors('#modal');
 
         formUser.attr("action", '<?= base_url('create-company') ?>')
     });
@@ -364,9 +362,7 @@ $(document).ready(function() {
         e.preventDefault();
         showModal('#modal');
 
-        // Clear validation errors
-        modal.find('.form-group').removeClass('field-error');
-        modal.find('.inline-error').text('');
+        clearAllFieldErrors('#modal');
 
         let companyID = $(this).data('company-id');
         textHeaderModal.text('Edit Company');
@@ -399,34 +395,6 @@ $(document).ready(function() {
     });
 
 
-    // Helper: set inline error on a field
-    function setFieldError(fieldId, msg) {
-        var $field = $('#' + fieldId);
-        $field.closest('.form-group').addClass('field-error');
-        $('#error-' + fieldId).text(msg);
-    }
-
-    // Helper: clear inline error on a field
-    function clearFieldError(fieldId) {
-        var $field = $('#' + fieldId);
-        $field.closest('.form-group').removeClass('field-error');
-        $('#error-' + fieldId).text('');
-    }
-
-    // Auto-clear errors on input/change
-    $('#company_name, #company_email').on('input', function() {
-        clearFieldError(this.id);
-    });
-    $('#company_phone').on('input', function() {
-        clearFieldError('company_phone');
-    });
-    $('input[name="package"]').on('change', function() {
-        clearFieldError('package');
-    });
-    $('#company_logo').on('change', function() {
-        clearFieldError('company_logo');
-    });
-
     formUser.on('submit', function(e) {
         e.preventDefault();
 
@@ -436,11 +404,7 @@ $(document).ready(function() {
         var companyEmail = $('#company_email').val().trim();
         var packageSelected = $('input[name="package"]:checked').val();
 
-        clearFieldError('company_name');
-        clearFieldError('company_phone');
-        clearFieldError('company_email');
-        clearFieldError('package');
-        clearFieldError('company_logo');
+        clearAllFieldErrors('#modal');
 
         if (companyName === '') {
             setFieldError('company_name', 'Please enter Company Name.');

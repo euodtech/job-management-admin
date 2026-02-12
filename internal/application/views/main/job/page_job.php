@@ -237,6 +237,7 @@
                         <label for="job_name" class="block text-sm font-medium text-gray-700 mb-1">Job Name</label>
                         <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="job_name" name="job_name"
                             placeholder="Enter Job Name">
+                        <span class="inline-error" id="error-job_name"></span>
                     </div>
                     <div class="form-group mb-4">
                         <label for="type_job" class="block text-sm font-medium text-gray-700 mb-1">Type Job</label>
@@ -249,11 +250,13 @@
                         </select>
 
                         <input type="hidden" name="type_job_input" id="type_job_input">
+                        <span class="inline-error" id="error-type_job"></span>
                     </div>
                     <div class="form-group mb-4">
                         <label for="job_date" class="block text-sm font-medium text-gray-700 mb-1">Date Job</label>
                         <input type="date" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="job_date" name="job_date" value="<?= date('Y-m-d') ?>"
                             placeholder="Enter Job Date">
+                        <span class="inline-error" id="error-job_date"></span>
                     </div>
 
                     <hr class="my-3 border-gray-200">
@@ -264,23 +267,27 @@
                         <input type="hidden" class="form-control" id="customer_id" name="customer_id">
                         <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_name" name="customer_name"
                             placeholder="Enter Customer Name">
+                        <span class="inline-error" id="error-customer_name"></span>
                     </div>
                     <div class="form-group mb-4">
                         <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
                         <input type="email" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_email" name="customer_email"
                             placeholder="Enter Customer Email">
+                        <span class="inline-error" id="error-customer_email"></span>
                     </div>
                     <div class="form-group mb-4">
                         <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <div class="flex">
-                            <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
+                            <span class="input-group-text-tw inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
                             <input type="text" class="tw-input block w-full rounded-r-lg rounded-l-none border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="phone_number" name="phone_number"
                                 placeholder="Enter Phone Number">
                         </div>
+                        <span class="inline-error" id="error-phone_number"></span>
                     </div>
                     <div class="form-group mb-4">
                         <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
                         <textarea name="address" id="address" rows="5" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"></textarea>
+                        <span class="inline-error" id="error-address"></span>
                     </div>
                     <div class="form-group mb-4 mt-3">
                         <label for="map" class="block text-sm font-medium text-gray-700 mb-1">Select Location on Map</label>
@@ -573,10 +580,15 @@ $(document).ready(function() {
     let textHeaderModal = $("#modalAddLabel");
     let formUser = $("#formAddUser");
 
+    $('#phone_number').on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+
     // handle button add
     buttonAdd.on('click', function(e) {
         e.preventDefault();
         showModal('#modal');
+        clearAllFieldErrors('#modal');
 
         textHeaderModal.text('Add Job');
         formUser.attr("action", '<?= base_url('create-job') ?>')
@@ -689,6 +701,7 @@ $(document).on('click', '.buttonEdit', function(e) {
 
     e.preventDefault();
     showModal('#modal');
+    clearAllFieldErrors('#modal');
 
     let jobID = $(this).data('jobid');
     $('#modalAddLabel').text('Edit Job');
@@ -908,5 +921,75 @@ function renderHistory(container, cancelHtml, rescheduleHtml) {
 
     container.html(html);
 }
+
+// Form validation for Add/Edit Job
+$('#formAddUser').on('submit', function(e) {
+    e.preventDefault();
+
+    var hasError = false;
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    var jobName       = $('#job_name').val().trim();
+    var typeJob       = $('#type_job_input').val();
+    var jobDate       = $('#job_date').val().trim();
+    var customerName  = $('#customer_name').val().trim();
+    var customerEmail = $('#customer_email').val().trim();
+    var phoneRaw      = $('#phone_number').val().trim();
+    var address       = $('#address').val().trim();
+
+    clearAllFieldErrors('#modal');
+
+    if (!jobName) {
+        setFieldError('job_name', 'Job name is required.');
+        hasError = true;
+    }
+
+    if (!typeJob) {
+        setFieldError('type_job', 'Job type is required.');
+        hasError = true;
+    }
+
+    if (!jobDate) {
+        setFieldError('job_date', 'Job date is required.');
+        hasError = true;
+    }
+
+    if (!customerName) {
+        setFieldError('customer_name', 'Customer name is required.');
+        hasError = true;
+    }
+
+    if (!customerEmail) {
+        setFieldError('customer_email', 'Email is required.');
+        hasError = true;
+    } else if (!emailRegex.test(customerEmail)) {
+        setFieldError('customer_email', 'Please enter a valid email address.');
+        hasError = true;
+    }
+
+    var digits = phoneRaw.replace(/\D/g, '');
+
+    if (!phoneRaw) {
+        setFieldError('phone_number', 'Phone number is required.');
+        hasError = true;
+    } else if (
+        !(
+            (digits.length === 11 && digits.startsWith('09')) ||
+            (digits.length === 10 && digits.startsWith('9')) ||
+            (digits.length === 12 && digits.startsWith('63'))
+        )
+    ) {
+        setFieldError('phone_number', 'Please enter a valid mobile number.');
+        hasError = true;
+    }
+
+    if (!address) {
+        setFieldError('address', 'Address is required.');
+        hasError = true;
+    }
+
+    if (hasError) return;
+    this.submit();
+});
 
 </script>

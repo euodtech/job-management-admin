@@ -97,7 +97,7 @@
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="<?php echo base_url('assets/css/map.min.css'); ?>">
 
-    <style type="text/css">
+    <style type="text/tailwindcss">
     :root {
         --color-primary: #070f26;
         --color-primary-dark: #0a1431;

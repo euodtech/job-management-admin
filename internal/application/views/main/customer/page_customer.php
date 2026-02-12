@@ -131,37 +131,43 @@
                                 <option value="<?= $val['ListCompanyID'] ?>" <?= ($this->session->userdata('CompanyID') == $val['ListCompanyID']) ? "selected" : "" ?> <?= ($this->session->userdata('Role') != 1) ?  "disabled" : "" ?> ><?= $val['CompanyName'] ?></option>
                             <?php endforeach; ?>
                          </select>
+                        <span class="inline-error" id="error-company_selected"></span>
                     </div>
                     <div class="form-group mb-4">
                         <input type="hidden" id="customer_id" name="customer_id" class="form-control">
                         <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
                         <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_name" name="customer_name"
                             placeholder="Enter Customer Name" required>
+                        <span class="inline-error" id="error-customer_name"></span>
                     </div>
 
                     <div class="form-group mb-4">
                         <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
                         <input type="email" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_email" name="customer_email"
                             placeholder="Enter Customer Email" required>
+                        <span class="inline-error" id="error-customer_email"></span>
                     </div>
 
                     <div class="form-group mb-4">
                         <label for="account_number" class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
                         <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="account_number" name="account_number"
                             placeholder="Enter Account Number" required>
+                        <span class="inline-error" id="error-account_number"></span>
                     </div>
 
                     <div class="form-group mb-4">
                         <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <div class="flex">
-                            <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
+                            <span class="input-group-text-tw inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
                             <input type="text" class="tw-input block w-full rounded-r-lg rounded-l-none border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="phone_number" name="phone_number"
                                 placeholder="Enter Phone Number" required>
                         </div>
+                        <span class="inline-error" id="error-phone_number"></span>
                     </div>
                     <div class="form-group mb-4">
                         <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
                         <textarea name="address" id="address" rows="5" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" required></textarea>
+                        <span class="inline-error" id="error-address"></span>
                     </div>
                     <div class="form-group mb-4 mt-3">
                         <label for="map" class="block text-sm font-medium text-gray-700 mb-1">Select Location on Map</label>
@@ -308,8 +314,15 @@ $(document).ready(function() {
     buttonAdd.on('click', function(e) {
         e.preventDefault();
         showModal('#modal');
+        clearAllFieldErrors('#modal');
 
         textHeaderModal.text('Add Customer');
+        modal.find('#customer_id').val('');
+        modal.find('#customer_name').val('');
+        modal.find('#customer_email').val('');
+        modal.find('#account_number').val('');
+        modal.find('#phone_number').val('');
+        modal.find('#address').val('');
         formUser.attr("action", '<?= base_url('create-customer') ?>')
 
         var defaultLat = 14.5995;
@@ -324,6 +337,7 @@ $(document).ready(function() {
     buttonEdit.on('click', function(e) {
         e.preventDefault();
         showModal('#modal');
+        clearAllFieldErrors('#modal');
 
         let customerID = $(this).data('customer-id');
         textHeaderModal.text('Edit Customer');
@@ -367,6 +381,70 @@ $(document).ready(function() {
         let customerName = $(this).data('customer-name');
         modalDelete.find('#customer_id').val(customerID);
         modalDelete.find('#customer_name').text(customerName);
+    });
+
+    // Form validation
+    formUser.on('submit', function(e) {
+        e.preventDefault();
+
+        var hasError = false;
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        var company      = $('#company_selected').val();
+        var customerName  = $('#customer_name').val().trim();
+        var customerEmail = $('#customer_email').val().trim();
+        var accountNumber = $('#account_number').val().trim();
+        var phoneRaw      = $('#phone_number').val().trim();
+        var address       = $('#address').val().trim();
+
+        clearAllFieldErrors('#modal');
+
+        if ($('#company_selected').is(':visible') && !company) {
+            setFieldError('company_selected', 'Please select a company.');
+            hasError = true;
+        }
+
+        if (!customerName) {
+            setFieldError('customer_name', 'Customer name is required.');
+            hasError = true;
+        }
+
+        if (!customerEmail) {
+            setFieldError('customer_email', 'Email is required.');
+            hasError = true;
+        } else if (!emailRegex.test(customerEmail)) {
+            setFieldError('customer_email', 'Please enter a valid email address.');
+            hasError = true;
+        }
+
+        if (!accountNumber) {
+            setFieldError('account_number', 'Account number is required.');
+            hasError = true;
+        }
+
+        var digits = phoneRaw.replace(/\D/g, '');
+
+        if (!phoneRaw) {
+            setFieldError('phone_number', 'Phone number is required.');
+            hasError = true;
+        } else if (
+            !(
+                (digits.length === 11 && digits.startsWith('09')) ||
+                (digits.length === 10 && digits.startsWith('9')) ||
+                (digits.length === 12 && digits.startsWith('63'))
+            )
+        ) {
+            setFieldError('phone_number', 'Please enter a valid mobile number.');
+            hasError = true;
+        }
+
+        if (!address) {
+            setFieldError('address', 'Address is required.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+        this.submit();
     });
 
     $('#import_excel').on('change', function() {

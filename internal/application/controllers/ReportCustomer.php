@@ -20,7 +20,7 @@ class ReportCustomer extends MY_Controller
 
     public function index()
     {
-        $data['title'] = "Efms | Customer Report";
+        $data['title'] = "Customer Report";
 
         // Mengirim data ke view
         $this->render_page('main/report/reportCustomer', $data);

@@ -20,7 +20,7 @@ class Customer extends MY_Controller
 
     public function index()
     {
-        $data['title'] = "Efms | Customer";
+        $data['title'] = "Customer";
 
         $role = $this->session->userdata('Role');
         $companyID = $this->session->userdata('CompanyID');

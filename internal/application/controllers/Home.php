@@ -20,7 +20,7 @@ class Home extends MY_Controller
 
     public function index()
     {
-        $data['title'] = "Efms | Dashboard";
+        $data['title'] = "Dashboard";
         $from_date = $this->input->post('from_date');
         $until_date = $this->input->post('until_date');
 

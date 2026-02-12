@@ -51,7 +51,7 @@ class User extends MY_Controller
 
     public function index()
     {
-        $data['title'] = "Efms | User";
+        $data['title'] = "User";
 
         // Get and sanitize session data
         $dataRole  = (int) $this->session->userdata('Role');

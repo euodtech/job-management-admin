@@ -1,5 +1,36 @@
 <script type="text/javascript">
 
+    // ── Global form-validation helpers ──────────────────────────────
+    function setFieldError(fieldId, msg) {
+        var $field = $('#' + fieldId);
+        $field.closest('.form-group').addClass('field-error');
+        $('#error-' + fieldId).text(msg);
+    }
+
+    function clearFieldError(fieldId) {
+        var $field = $('#' + fieldId);
+        $field.closest('.form-group').removeClass('field-error');
+        $('#error-' + fieldId).text('');
+    }
+
+    function clearAllFieldErrors(container) {
+        var $c = $(container);
+        $c.find('.form-group').removeClass('field-error');
+        $c.find('.inline-error').text('');
+    }
+
+    // Auto-clear errors when user types / selects
+    $(document).on('input', '.form-group input, .form-group textarea', function () {
+        var $fg = $(this).closest('.form-group');
+        $fg.removeClass('field-error');
+        $fg.find('.inline-error').text('');
+    });
+    $(document).on('change', '.form-group select, .form-group input[type="radio"], .form-group input[type="file"]', function () {
+        var $fg = $(this).closest('.form-group');
+        $fg.removeClass('field-error');
+        $fg.find('.inline-error').text('');
+    });
+
     // Modal helpers (Preline overlay + CSS polyfill guarantee)
     function showModal(selector) {
         const el = document.querySelector(selector);

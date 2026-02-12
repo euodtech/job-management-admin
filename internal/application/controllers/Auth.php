@@ -22,7 +22,7 @@ class Auth extends MY_Controller
         return;
     }
 
-    $data['title'] = "Efms | Login"; // define $data
+    $data['title'] = "Login"; // define $data
 
     // Check if form submitted
     if ($this->input->server('REQUEST_METHOD') === 'POST') {

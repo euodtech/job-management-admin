@@ -7,7 +7,7 @@
 
 <div class="px-4 sm:px-6 lg:px-8 py-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-        <h1 class="text-xl font-bold text-gray-800">Efms | Job Report</h1>
+        <h1 class="text-xl font-bold text-gray-800">Job Report</h1>
         <nav class="flex">
             <ol class="flex items-center gap-1.5 text-sm">
                 <?php foreach ($breadcrumbs as $i => $crumb): ?>

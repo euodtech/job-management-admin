@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Efms | Administrator</title>
+    <title>EFMS | Administrator</title>
 
     <link rel="icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />
     <link rel="shortcut icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />
@@ -34,7 +34,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-    <style>
+    <style type="text/tailwindcss">
     /* Flash message backward-compat */
     .alert-success { @apply rounded-lg bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-800 inline-block; }
     .alert-danger { @apply rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-800 inline-block; }
