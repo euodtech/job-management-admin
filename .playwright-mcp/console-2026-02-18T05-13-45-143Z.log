@@ -37,3 +37,51 @@ Error
     at http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:18:470
     at b.fnGetData (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:12:231)
     at B (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:17:177) @ https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:0
+[ 4029284ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[ 4029722ms] [WARNING] Deprecation warning: value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.
+Arguments: 
+[0] _isAMomentObject: true, _isUTC: false, _useUTC: false, _l: undefined, _i: Wednesday, February 4, 2026, _f: undefined, _strict: undefined, _locale: [object Object]
+Error
+    at f.createFromInputFallback (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:3274)
+    at https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:21836
+    at bt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:21887)
+    at xt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:22453)
+    at Tt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:22535)
+    at f (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:209)
+    at render (http://localhost:8080/be-fms/internal/line-interruption-job:1258:35)
+    at http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:18:470
+    at b.fnGetData (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:12:231)
+    at B (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:17:177) @ https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:0
+[ 4104664ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[ 4105067ms] [WARNING] Deprecation warning: value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.
+Arguments: 
+[0] _isAMomentObject: true, _isUTC: false, _useUTC: false, _l: undefined, _i: Wednesday, February 4, 2026, _f: undefined, _strict: undefined, _locale: [object Object]
+Error
+    at f.createFromInputFallback (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:3274)
+    at https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:21836
+    at bt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:21887)
+    at xt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:22453)
+    at Tt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:22535)
+    at f (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:209)
+    at render (http://localhost:8080/be-fms/internal/line-interruption-job:1258:35)
+    at http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:18:470
+    at b.fnGetData (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:12:231)
+    at B (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:17:177) @ https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:0
+[ 6426125ms] [ERROR] AJAX Error:  @ http://localhost:8080/be-fms/internal/line-interruption-job:1135
+[ 6426125ms] [ERROR] Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES @ http://localhost:8080/be-fms/internal/Job/getDataJobForCard/1:0
+[ 7590445ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[ 7594066ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[ 7594391ms] [WARNING] Deprecation warning: value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.
+Arguments: 
+[0] _isAMomentObject: true, _isUTC: false, _useUTC: false, _l: undefined, _i: Wednesday, February 4, 2026, _f: undefined, _strict: undefined, _locale: [object Object]
+Error
+    at f.createFromInputFallback (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:3274)
+    at https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:21836
+    at bt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:21887)
+    at xt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:22453)
+    at Tt (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:22535)
+    at f (https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:1:209)
+    at render (http://localhost:8080/be-fms/internal/line-interruption-job:1258:35)
+    at http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:18:470
+    at b.fnGetData (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:12:231)
+    at B (http://localhost:8080/be-fms/internal/assets/plugins/datatables/jquery.dataTables.min.js:17:177) @ https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js:0
