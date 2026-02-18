@@ -1,9 +1,11 @@
 <!-- Sidebar Overlay for Mobile -->
 <?php
     $companyLogo = $this->session->userdata('CompanyLogo');
-    $brandLogo = ($companyLogo && $this->session->userdata('Role') != 1)
-        ? base_url('assets/dist/img/company_logo/' . $companyLogo)
-        : base_url('assets/dist/logo_efms.jpg');
+    if ($companyLogo && file_exists(FCPATH . 'assets/dist/img/company_logo/' . $companyLogo)) {
+        $brandLogo = base_url('assets/dist/img/company_logo/' . $companyLogo);
+    } else {
+        $brandLogo = base_url('assets/dist/img/company_logo/default-company-logo.png');
+    }
     $segment = $this->uri->segment('1');
     $current_url = current_url();
     $jobSegments = ['line-interruption-job','short-circuit-job','disconnection-job','reconnection-job'];
@@ -108,7 +110,7 @@
                     <span class="flex items-center gap-3">
                         <i class="fa-solid fa-briefcase w-5 text-center"></i>
                         Job List
-                        <span class="text-xs font-bold count_notif_sidebar"></span>
+                        <span class="count_notif_sidebar hidden min-w-[20px] px-1.5 py-0.5 text-[10px] font-bold leading-none text-center rounded-full bg-red-500 text-white hs-accordion-active:bg-white hs-accordion-active:text-red-500"></span>
                     </span>
                     <svg class="hs-accordion-active:rotate-180 w-4 h-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -124,7 +126,7 @@
                                       <?= ($segment == 'line-interruption-job') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-gray-900' ?>">
                                 <span class="w-1.5 h-1.5 rounded-full <?= ($segment == 'line-interruption-job') ? 'bg-primary' : 'bg-gray-400' ?>"></span>
                                 Line Interruption
-                                <span class="text-xs font-bold count_line"></span>
+                                <span class="count_line hidden ml-auto min-w-[18px] px-1.5 py-0.5 text-[10px] font-bold leading-none text-center rounded-full bg-red-100 text-red-600"></span>
                             </a>
                         </li>
                         <li>
@@ -133,7 +135,7 @@
                                       <?= ($segment == 'short-circuit-job') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-gray-900' ?>">
                                 <span class="w-1.5 h-1.5 rounded-full <?= ($segment == 'short-circuit-job') ? 'bg-primary' : 'bg-gray-400' ?>"></span>
                                 Short Circuit
-                                <span class="text-xs font-bold count_short"></span>
+                                <span class="count_short hidden ml-auto min-w-[18px] px-1.5 py-0.5 text-[10px] font-bold leading-none text-center rounded-full bg-red-100 text-red-600"></span>
                             </a>
                         </li>
                         <li>
@@ -142,7 +144,7 @@
                                       <?= ($segment == 'disconnection-job') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-gray-900' ?>">
                                 <span class="w-1.5 h-1.5 rounded-full <?= ($segment == 'disconnection-job') ? 'bg-primary' : 'bg-gray-400' ?>"></span>
                                 Disconnection
-                                <span class="text-xs font-bold count_disconnection"></span>
+                                <span class="count_disconnection hidden ml-auto min-w-[18px] px-1.5 py-0.5 text-[10px] font-bold leading-none text-center rounded-full bg-red-100 text-red-600"></span>
                             </a>
                         </li>
                         <li>
@@ -151,7 +153,7 @@
                                       <?= ($segment == 'reconnection-job') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-gray-900' ?>">
                                 <span class="w-1.5 h-1.5 rounded-full <?= ($segment == 'reconnection-job') ? 'bg-primary' : 'bg-gray-400' ?>"></span>
                                 Reconnection
-                                <span class="text-xs font-bold count_reconnect"></span>
+                                <span class="count_reconnect hidden ml-auto min-w-[18px] px-1.5 py-0.5 text-[10px] font-bold leading-none text-center rounded-full bg-red-100 text-red-600"></span>
                             </a>
                         </li>
                     </ul>
@@ -168,7 +170,7 @@
                           transition-colors">
                     <i class="fa-solid fa-calendar-check w-5 text-center"></i>
                     Reschedule Job
-                    <span class="text-xs font-bold count_reschedule"></span>
+                    <span class="count_reschedule ml-auto"></span>
                 </a>
             </li>
         </ul>

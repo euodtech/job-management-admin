@@ -278,18 +278,29 @@ $('.custom-file-input').on('change', function() {
             dataType : 'json',
             success: function(response) {
 
-                $(".count_notif_sidebar").text(response.CountAllType);
-                $(".count_line").text(response.CountLine);
-                $(".count_short").text(response.CountShort);
-                $(".count_disconnection").text(response.CountDc);
-                $(".count_reconnect").text(response.CountReconnect);
+                // Helper to show/hide badge based on count
+                function setBadge(selector, count) {
+                    var $el = $(selector);
+                    if (count > 0) {
+                        $el.text(count).removeClass('hidden');
+                    } else {
+                        $el.text('').addClass('hidden');
+                    }
+                }
+
+                setBadge(".count_notif_sidebar", response.CountAllType);
+                setBadge(".count_line", response.CountLine);
+                setBadge(".count_short", response.CountShort);
+                setBadge(".count_disconnection", response.CountDc);
+                setBadge(".count_reconnect", response.CountReconnect);
 
                 let count_reschedule = response.CountReschedule;
 
                 if(count_reschedule > 0 ) {
-
                     playNotificationSound();
                     $(".count_reschedule").html('<i class="fa-solid fa-bell bell-shake text-red-600" style="font-size: 13px !important;"></i>');
+                } else {
+                    $(".count_reschedule").html('');
                 }
             }
         });

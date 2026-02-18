@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Redirect favicon.ico to default company logo (prevents 404 → XAMPP favicon fallback)
+    RewriteRule ^favicon\.ico$ assets/dist/img/company_logo/default-company-logo.png [L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

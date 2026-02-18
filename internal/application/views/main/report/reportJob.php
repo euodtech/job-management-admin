@@ -62,7 +62,7 @@
                     </div>
 
                     <!-- Button -->
-                    <div class="self-end my-1">
+                    <div class="self-end my-1 d-flex">
                         <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Filter</button>
                         <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterJobReportperCustomer">Reset</button>
                     </div>
@@ -215,7 +215,7 @@
                                 <input type="date" id="toAssignAtJobAssignmentEfficiencyReport" name="toAssignAtJobAssignmentEfficiencyReport" class="form-control">
                             </div>
 
-                            <div class="col-md-3 align-self-end mt-3">
+                            <div class="col-md-3 align-self-end my-1">
                                 <button type="submit" class="btn btn-info">🔍 Filter</button>
                                 <button type="button" class="btn btn-secondary" id="resetFilterJobAssignmentEfficiencyReport">🔄 Reset</button>
                             </div>
@@ -620,7 +620,7 @@
             language: {
                 search: "Search:"
             },
-            order: [[3, "desc"]]
+            order: [[1, "desc"]]
         });
 
         // Export Excel

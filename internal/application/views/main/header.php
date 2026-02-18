@@ -6,12 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php
         $companyLogo = $this->session->userdata('CompanyLogo');
-        $faviconUrl = ($companyLogo && $this->session->userdata('Role') != 1)
-            ? base_url('assets/dist/img/company_logo/' . $companyLogo)
-            : base_url('assets/dist/logo_efms.jpg');
+        if ($companyLogo && file_exists(FCPATH . 'assets/dist/img/company_logo/' . $companyLogo)) {
+            $faviconUrl = base_url('assets/dist/img/company_logo/' . $companyLogo);
+            $faviconType = 'image/png';
+        } else {
+            $faviconUrl = base_url('assets/dist/img/company_logo/default-company-logo.png');
+            $faviconType = 'image/png';
+        }
     ?>
-    <link rel="icon" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
-    <link rel="shortcut icon" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
+    <link rel="icon" type="<?= $faviconType ?>" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
+    <link rel="shortcut icon" type="<?= $faviconType ?>" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
 
     <title><?php echo $title; ?></title>
 
@@ -290,7 +294,7 @@
     .dataTables_wrapper .col-sm-12 { @apply w-full; }
     .dataTables_wrapper .col-sm-12.col-md-5 { @apply w-full md:w-5/12; }
     .dataTables_wrapper .col-sm-12.col-md-6 { @apply w-full md:w-1/2; }
-    .dataTables_wrapper .col-sm-12.col-md-7 { @apply w-full md:w-7/12; }
+    .dataTables_wrapper .col-sm-12.col-md-7 { @apply w-full; }
 
     /* === Select2 overrides for Tailwind === */
     .select2-container--bootstrap4 .select2-selection--single { @apply rounded-lg border-gray-300 h-10 flex items-center px-3 text-sm; }
@@ -370,13 +374,16 @@
     <script>
     (function() {
         var faviconUrl = "<?= $faviconUrl ?>";
-        var link = document.querySelector("link[rel~='icon']");
-        if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-        }
+        // Remove any existing favicon links (they may be outside <head> due to template structure)
+        document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']").forEach(function(el) {
+            el.parentNode.removeChild(el);
+        });
+        // Create fresh favicon link inside document.head so the browser recognizes it
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = '<?= $faviconType ?>';
         link.href = faviconUrl + '?v=' + Date.now();
+        document.head.appendChild(link);
     })();
     </script>
 

@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>EFMS | Administrator</title>
 
-    <link rel="icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />
-    <link rel="shortcut icon" type="image/jpeg" href="<?= base_url('assets/dist/logo_efms.jpg') ?>?v=2" />
+    <link rel="icon" type="image/png" href="<?= base_url('assets/dist/img/company_logo/default-company-logo.png') ?>?v=<?= time() ?>" />
+    <link rel="shortcut icon" type="image/png" href="<?= base_url('assets/dist/img/company_logo/default-company-logo.png') ?>?v=<?= time() ?>" />
 
     <!-- Tailwind CSS v3 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>

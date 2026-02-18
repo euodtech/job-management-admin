@@ -274,10 +274,14 @@ $(document).ready(function() {
         scrollX: true,
     });
 
+    // Track whether the DataTable is currently processing a request.
+    var isProcessing = false;
+
     // Intercept the processing event on this specific table.
     // When silentReload is true, stop propagation so the global overlay handler
     // in footer.php never fires. This keeps background refreshes seamless.
     $('#tableJobRider').on('processing.dt', function(e, settings, processing) {
+        isProcessing = processing;
         if (silentReload) {
             e.stopPropagation();
             if (!processing) {
@@ -287,6 +291,7 @@ $(document).ready(function() {
     });
 
     setInterval(function() {
+        if (isProcessing) return;
         silentReload = true;
         table.ajax.reload(null, false);
     }, 10000);

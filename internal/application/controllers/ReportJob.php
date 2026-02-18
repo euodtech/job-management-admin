@@ -62,10 +62,8 @@ class ReportJob extends MY_Controller
         
         $dnow = date("Y-m-d");
 
-        $data = $this->M_Global->globalquery("SELECT * FROM ListJob WHERE DATE(JobDate) = '$dnow' ")->result_array();
-
-        // echo json_encode($data);
-        // die;
+        $data['title'] = "Job Report";
+        $data['jobs'] = $this->M_Global->globalquery("SELECT * FROM ListJob WHERE DATE(JobDate) = '$dnow' ")->result_array();
 
         // Mengirim data ke view
         $this->render_page('main/report/reportJob', $data);
