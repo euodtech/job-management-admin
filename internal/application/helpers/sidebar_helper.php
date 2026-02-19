@@ -76,34 +76,30 @@ if (!function_exists('get_total_job')) {
 
     function get_total_job($type="all")
     {
-
 		$CI =& get_instance();
 		$role = $CI->session->userdata('Role');
         $companyID = $CI->session->userdata('CompanyID');
-
-    	$CI =& get_instance();
 	    $CI->load->model('M_Global');
 
 	    if (!$CI->M_Global) {
-	        return "Gagal memuat model M_Global";
+	        return 0;
 	    }
 
-
-	    $getAdmin = "SELECT * FROM ListJob where  (Status IS NULL OR Status = 1 OR Status = 3) ";
+	    $sql = "SELECT COUNT(*) AS cnt FROM ListJob WHERE (Status IS NULL OR Status = 1 OR Status = 3)";
+	    $binds = array();
 
 		if($role != '1') {
-
-			$getAdmin .= " AND CompanyID =  '$companyID' ";
-
+			$sql .= " AND CompanyID = ?";
+			$binds[] = $companyID;
 		}
 
 		if($type != 'all') {
-			$getAdmin .= " AND TypeJob = '$type' ";
+			$sql .= " AND TypeJob = ?";
+			$binds[] = $type;
 		}
 
-		$countJob = $CI->M_Global->globalquery($getAdmin)->result_array();
-
-	    return count($countJob);
+		$result = $CI->M_Global->globalquery($sql, $binds)->row();
+	    return $result ? (int) $result->cnt : 0;
     }
 }
 
@@ -111,30 +107,25 @@ if (!function_exists('get_total_reschedule')) {
 
     function get_total_reschedule()
     {
-
 		$CI =& get_instance();
 		$role = $CI->session->userdata('Role');
         $companyID = $CI->session->userdata('CompanyID');
-
-    	$CI =& get_instance();
 	    $CI->load->model('M_Global');
 
 	    if (!$CI->M_Global) {
-	        return "Gagal memuat model M_Global";
+	        return 0;
 	    }
 
-
-	    $getAdmin = "SELECT * FROM RescheduledJob LEFT JOIN ListJob ON RescheduledJob.JobID = ListJob.JobID WHERE DATE(RescheduledJob.created_at) = CURRENT_DATE AND StatusApproved = 1 ";
+	    $sql = "SELECT COUNT(*) AS cnt FROM RescheduledJob LEFT JOIN ListJob ON RescheduledJob.JobID = ListJob.JobID WHERE DATE(RescheduledJob.created_at) = CURRENT_DATE AND StatusApproved = 1";
+	    $binds = array();
 
 		if($role != '1') {
-
-			$getAdmin .= " AND ListJob.CompanyID =  '$companyID' ";
-
+			$sql .= " AND ListJob.CompanyID = ?";
+			$binds[] = $companyID;
 		}
 
-		$countJob = $CI->M_Global->globalquery($getAdmin)->result_array();
-
-	    return count($countJob);
+		$result = $CI->M_Global->globalquery($sql, $binds)->row();
+	    return $result ? (int) $result->cnt : 0;
     }
 }
 

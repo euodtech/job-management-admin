@@ -21,27 +21,75 @@ class ObjectsMerge extends ApiToken
             return $this->_badRequest('Tidak ada API token, silakan login Auth dulu.');
         }
 
-        // Ambil dari API eksternal
-        $objects  = $this->requestCurl('https://connect.traxroot.com/api/Objects', 'GET');
-        $status   = $this->requestCurl('https://connect.traxroot.com/api/ObjectsStatus', 'GET');
-        $geozones = $this->requestCurl('https://connect.traxroot.com/api/Geozones', 'GET');
-        $drivers  = $this->requestCurl('https://connect.traxroot.com/api/Drivers', 'GET');
-        $icons    = $this->requestCurl('https://connect.traxroot.com/api/Objects/Icons', 'GET');
-        $profile  = $this->requestCurl('https://connect.traxroot.com/api/Profile', 'GET');
+        $TTL_SHORT  = 60;   // Objects, Drivers: 60 seconds
+        $TTL_MEDIUM = 300;  // Geozones, Icons, Profile: 5 minutes
 
-        // Decode semua JSON
-        $objectsJson  = json_decode($objects['body'], true)  ?? [];
-        $statusJson   = json_decode($status['body'], true);
-        $geozonesJson = json_decode($geozones['body'], true) ?? [];
-        $driversJson  = json_decode($drivers['body'], true)  ?? [];
-        $iconsJson    = json_decode($icons['body'], true)    ?? [];
-        $profileJson  = json_decode($profile['body'], true)  ?? [];
+        // Cacheable resources with their TTLs
+        $cacheable = array(
+            'objects'  => array('url' => 'https://connect.traxroot.com/api/Objects',       'ttl' => $TTL_SHORT),
+            'drivers'  => array('url' => 'https://connect.traxroot.com/api/Drivers',       'ttl' => $TTL_SHORT),
+            'geozones' => array('url' => 'https://connect.traxroot.com/api/Geozones',      'ttl' => $TTL_MEDIUM),
+            'icons'    => array('url' => 'https://connect.traxroot.com/api/Objects/Icons',  'ttl' => $TTL_MEDIUM),
+            'profile'  => array('url' => 'https://connect.traxroot.com/api/Profile',        'ttl' => $TTL_MEDIUM),
+        );
 
-        // Special case: Status dari Traxroot terkadang double-encoded
+        $bodies = array();
+        $urlsToFetch = array();
+
+        // Check cache for each resource
+        foreach ($cacheable as $key => $cfg) {
+            $cacheFile = $this->_getCacheDir() . $key . '.json';
+            if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cfg['ttl']) {
+                $bodies[$key] = file_get_contents($cacheFile);
+            } else {
+                $urlsToFetch[$key] = $cfg['url'];
+            }
+        }
+
+        // Always fetch ObjectsStatus live
+        $urlsToFetch['status'] = 'https://connect.traxroot.com/api/ObjectsStatus';
+
+        // Fetch all needed URLs in parallel
+        if (!empty($urlsToFetch)) {
+            $responses = $this->requestCurlMulti($urlsToFetch);
+            foreach ($responses as $key => $resp) {
+                $bodies[$key] = $resp['body'];
+                // Write to cache (but NOT status)
+                if ($key !== 'status' && $resp['success'] && $resp['body']) {
+                    $cacheFile = $this->_getCacheDir() . $key . '.json';
+                    $tmpFile = $cacheFile . '.tmp';
+                    file_put_contents($tmpFile, $resp['body']);
+                    // Windows rename() fails if destination exists; delete first
+                    if (file_exists($cacheFile)) {
+                        @unlink($cacheFile);
+                    }
+                    @rename($tmpFile, $cacheFile);
+                }
+            }
+        }
+
+        // Fall back to stale cache for any failed fetches
+        foreach ($cacheable as $key => $cfg) {
+            if (empty($bodies[$key])) {
+                $cacheFile = $this->_getCacheDir() . $key . '.json';
+                if (file_exists($cacheFile)) {
+                    $bodies[$key] = file_get_contents($cacheFile);
+                }
+            }
+        }
+
+        // Decode all JSON
+        $objectsJson  = json_decode($bodies['objects'] ?? '', true)  ?? [];
+        $statusJson   = json_decode($bodies['status'] ?? '', true);
+        $geozonesJson = json_decode($bodies['geozones'] ?? '', true) ?? [];
+        $driversJson  = json_decode($bodies['drivers'] ?? '', true)  ?? [];
+        $iconsJson    = json_decode($bodies['icons'] ?? '', true)    ?? [];
+        $profileJson  = json_decode($bodies['profile'] ?? '', true)  ?? [];
+
+        // Handle double-encoded strings
         if (is_string($statusJson)) {
             $statusJson = json_decode($statusJson, true) ?? [];
         }
-
         if (is_string($profileJson)) {
             $profileJson = json_decode($profileJson, true) ?? [];
         }
@@ -55,29 +103,18 @@ class ObjectsMerge extends ApiToken
             'profile'  => $profileJson
         ];
 
-        // Output JSON valid
         return $this->_respondRaw(json_encode($merged));
+    }
 
-        // // Ambil semua data dari route internal
-        // $objects  = $this->_curlRequest($this->apiBase . 'objects');
-        // $status   = $this->_curlRequest($this->apiBase . 'objectsStatus');
-        // $geozones = $this->_curlRequest($this->apiBase . 'geozones');
-        // $drivers  = $this->_curlRequest($this->apiBase . 'getDrivers');
-        // $icons    = $this->_curlRequest($this->apiBase . 'objects/icons');
-        // $profile  = $this->_curlRequest($this->apiBase . 'profile');
-
-        // $mergedJson = '{'
-        //     . '"objects":'  . $this->_safeBody($objects['body'], '[]')   . ','
-        //     . '"status":'   . $this->_safeBody($status['body'], '{}')    . ','
-        //     . '"geozones":' . $this->_safeBody($geozones['body'], '[]')  . ','
-        //     . '"drivers":'  . $this->_safeBody($drivers['body'], '[]')   . ','
-        //     . '"icons":'    . $this->_safeBody($icons['body'], '[]')     . ','
-        //     . '"profile":'  . $this->_safeBody($profile['body'], '{}')
-        //     . '}';
-
-
-        // // Encode ulang biar valid
-        // $this->_respondRaw($mergedJson);
+    private function _getCacheDir()
+    {
+        $username = $this->session->userdata('traxroot_username') ?: 'default';
+        $safeUser = preg_replace('/[^a-zA-Z0-9_-]/', '_', $username);
+        $dir = APPPATH . 'cache' . DIRECTORY_SEPARATOR . 'traxroot' . DIRECTORY_SEPARATOR . $safeUser . DIRECTORY_SEPARATOR;
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        return $dir;
     }
 
     private function _curlRequest($url)

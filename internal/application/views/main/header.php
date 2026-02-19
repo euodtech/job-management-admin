@@ -13,9 +13,11 @@
             $faviconUrl = base_url('assets/dist/img/company_logo/default-company-logo.png');
             $faviconType = 'image/png';
         }
+        $faviconPath = FCPATH . 'assets/dist/img/company_logo/' . ($companyLogo ?: 'default-company-logo.png');
+        $faviconVersion = file_exists($faviconPath) ? filemtime($faviconPath) : '1';
     ?>
-    <link rel="icon" type="<?= $faviconType ?>" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
-    <link rel="shortcut icon" type="<?= $faviconType ?>" href="<?= $faviconUrl ?>?v=<?= time() ?>" />
+    <link rel="icon" type="<?= $faviconType ?>" href="<?= $faviconUrl ?>?v=<?= $faviconVersion ?>" />
+    <link rel="shortcut icon" type="<?= $faviconType ?>" href="<?= $faviconUrl ?>?v=<?= $faviconVersion ?>" />
 
     <title><?php echo $title; ?></title>
 
@@ -75,9 +77,6 @@
     <link rel="stylesheet"
         href="<?php echo base_url('assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css'); ?>">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
-
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
 
@@ -90,12 +89,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/10.6.1/ol.min.css" integrity="sha512-oVyisN6T8O7H9DnBc1w/IipxzLhNvJERKa0Rx9fKEtaodE7UXQAypIHamYzQPAqVxp0pVl25e4spVQWIVfu6eA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/10.6.1/dist/ol.min.js" integrity="sha512-NEUbbO7KI1OYn+IHcF70vm3ON0obczJz9PJFwxHkfPCsT14UqDD4roG7rF5WpwkXRTPvysFb6Wvw/Tjh5tfv8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <!-- Font Awesome 7 (full set) -->
+    <!-- Font Awesome 7 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/brands.min.css" integrity="sha512-WxpJXPm/Is1a/dzEdhdaoajpgizHQimaLGL/QqUIAjIihlQqlPQb1V9vkGs9+VzXD7rgI6O+UsSKl4u5K36Ydw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/fontawesome.min.css" integrity="sha512-M5Kq4YVQrjg5c2wsZSn27Dkfm/2ALfxmun0vUE3mPiJyK53hQBHYCVAtvMYEC7ZXmYLg8DVG4tF8gD27WmDbsg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/regular.min.css" integrity="sha512-x3gns+l9p4mIK7vYLOCUoFS2P1gavFvnO9Its8sr0AkUk46bgf9R51D8xeRUwCSk+W93YbXWi19BYzXDNBH5SA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/solid.min.css" integrity="sha512-EHa6vH03/Ty92WahM0/tet1Qicl76zihDCkBnFhN3kFGQkC+mc86d7V+6y2ypiLbk3h0beZAGdUpzfMcb06cMg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
@@ -382,7 +377,7 @@
         var link = document.createElement('link');
         link.rel = 'icon';
         link.type = '<?= $faviconType ?>';
-        link.href = faviconUrl + '?v=' + Date.now();
+        link.href = faviconUrl + '?v=<?= $faviconVersion ?>';
         document.head.appendChild(link);
     })();
     </script>

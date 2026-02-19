@@ -147,7 +147,9 @@ class Job extends MY_Controller
             "rescheduleJob" => $rescheduleJob
         ];
 
-        echo json_encode($return);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($return));
     }
 
     public function getDataAllJob($type_job = 1)
@@ -247,12 +249,14 @@ class Job extends MY_Controller
             ];
         }
 
-        echo json_encode([
-            "draw" => $draw,
-            "recordsTotal" => $recordsFiltered,
-            "recordsFiltered" => $recordsFiltered,
-            "data" => $data
-        ]);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                "draw" => $draw,
+                "recordsTotal" => $recordsFiltered,
+                "recordsFiltered" => $recordsFiltered,
+                "data" => $data
+            ]));
     }
 
 
@@ -263,7 +267,7 @@ class Job extends MY_Controller
 
         // Validate input
         if ($jobID <= 0) {
-            echo json_encode([]);
+            $this->output->set_content_type('application/json')->set_output(json_encode([]));
             return;
         }
 
@@ -282,7 +286,7 @@ class Job extends MY_Controller
         unset($row);
 
         // Return JSON
-        echo json_encode($data ?: []);
+        $this->output->set_content_type('application/json')->set_output(json_encode($data ?: []));
     }
 
 
@@ -464,7 +468,9 @@ class Job extends MY_Controller
 
         $dataReturn = $this->db->get()->row_array();
 
-        echo json_encode($dataReturn);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($dataReturn));
     }
 
     public function reschedule_job()
@@ -603,12 +609,14 @@ class Job extends MY_Controller
             ];
         }
 
-        echo json_encode([
-            "draw" => $draw,
-            "recordsTotal" => $recordsFiltered,
-            "recordsFiltered" => $recordsFiltered,
-            "data" => $data
-        ]);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                "draw" => $draw,
+                "recordsTotal" => $recordsFiltered,
+                "recordsFiltered" => $recordsFiltered,
+                "data" => $data
+            ]));
     }
 
 
@@ -702,12 +710,14 @@ class Job extends MY_Controller
             ];
         }
 
-        echo json_encode([
-            "draw" => $draw,
-            "recordsTotal" => $recordsFiltered,
-            "recordsFiltered" => $recordsFiltered,
-            "data" => $data
-        ]);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                "draw" => $draw,
+                "recordsTotal" => $recordsFiltered,
+                "recordsFiltered" => $recordsFiltered,
+                "data" => $data
+            ]));
     }
 
 

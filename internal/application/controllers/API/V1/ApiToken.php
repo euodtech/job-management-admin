@@ -135,4 +135,65 @@ class ApiToken extends MY_Controller
             'error' => $curlErr
         );
     }
+
+    /**
+     * Execute multiple cURL GET requests in parallel.
+     * @param array $urls Associative array: ['key' => 'https://...']
+     * @return array Associative array: ['key' => ['success'=>bool, 'httpCode'=>int, 'body'=>string, 'error'=>string|null]]
+     */
+    protected function requestCurlMulti(array $urls)
+    {
+        $token = $this->getApiToken();
+        if (!$token) {
+            $fail = array('success' => false, 'httpCode' => null, 'body' => null, 'error' => 'No API token');
+            $results = array();
+            foreach ($urls as $key => $url) {
+                $results[$key] = $fail;
+            }
+            return $results;
+        }
+
+        $mh = curl_multi_init();
+        $handles = array();
+
+        foreach ($urls as $key => $url) {
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Authorization: Bearer ' . $token,
+                'Accept: application/json'
+            ));
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_multi_add_handle($mh, $ch);
+            $handles[$key] = $ch;
+        }
+
+        $running = null;
+        do {
+            curl_multi_exec($mh, $running);
+            if ($running > 0) {
+                curl_multi_select($mh, 1.0);
+            }
+        } while ($running > 0);
+
+        $results = array();
+        foreach ($handles as $key => $ch) {
+            $body = curl_multi_getcontent($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlErr = curl_error($ch);
+            $results[$key] = array(
+                'success' => $body !== false && empty($curlErr),
+                'httpCode' => $httpCode,
+                'body' => $body,
+                'error' => $curlErr ?: null
+            );
+            curl_multi_remove_handle($mh, $ch);
+            curl_close($ch);
+        }
+
+        curl_multi_close($mh);
+        return $results;
+    }
 }

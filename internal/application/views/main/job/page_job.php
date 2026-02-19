@@ -638,7 +638,7 @@ function refreshCard() {
         url: '<?= base_url('Job/getDataJobForCard/') ?>' + type_job,
         dataType: 'json',
         success: function(resp) {
-            $('#today_job_count').text(resp.todalJob);
+            $('#today_job_count').text(resp.todayJob);
             $('#ongoing_job_count').text(resp.ongoingJob);
             $('#upcoming_job_count').text(resp.onComingJob);
             $('#reschedule_job_count').text(resp.rescheduleJob);
@@ -753,12 +753,27 @@ $(document).ready(function() {
     // Silent reload flag: suppresses the loading overlay during background auto-refresh
     var silentReload = false;
 
+    // Suppress default DataTables alert for JSON errors; handle via ajax.error instead
+    $.fn.dataTable.ext.errMode = 'none';
+
     var table = $('#tableJobRider').DataTable({
         processing: false,
         serverSide: true,
         ajax: {
             url: "<?= base_url('Job/getDataAllJob/') ?>" + type_job,
             type: "GET",
+            error: function(xhr, error, thrown) {
+                // Session expired → server returned HTML redirect instead of JSON
+                if (xhr.status === 200 || xhr.status === 307 || xhr.status === 302) {
+                    try { JSON.parse(xhr.responseText); } catch (e) {
+                        window.location.href = '<?= base_url('auth') ?>';
+                        return;
+                    }
+                }
+                if (!silentReload) {
+                    console.error('DataTable AJAX error:', error, thrown);
+                }
+            },
         },
         columns: [
             { data: "no", className: "text-center" },

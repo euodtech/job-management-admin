@@ -340,7 +340,7 @@ $('.custom-file-input').on('change', function() {
 
         setInterval(function () {
             countJobInSidebar();
-        }, 5000);
+        }, 30000);
 
         $('.select2For_modal').each(function() {
             $(this).select2({

@@ -316,13 +316,32 @@ class Home extends MY_Controller
 
     public function get_total_job_ajax()
     {
+        $role = $this->session->userdata('Role');
+        $companyID = $this->session->userdata('CompanyID');
+
+        $sql = "SELECT
+                    COUNT(*) AS CountAllType,
+                    SUM(CASE WHEN TypeJob = 1 THEN 1 ELSE 0 END) AS CountLine,
+                    SUM(CASE WHEN TypeJob = 2 THEN 1 ELSE 0 END) AS CountReconnect,
+                    SUM(CASE WHEN TypeJob = 3 THEN 1 ELSE 0 END) AS CountShort,
+                    SUM(CASE WHEN TypeJob = 4 THEN 1 ELSE 0 END) AS CountDc
+                FROM ListJob
+                WHERE (Status IS NULL OR Status = 1 OR Status = 3)";
+        $binds = array();
+
+        if ($role != '1') {
+            $sql .= " AND CompanyID = ?";
+            $binds[] = $companyID;
+        }
+
+        $counts = $this->M_Global->globalquery($sql, $binds)->row();
 
         $dataReturn = [
-            "CountAllType" => get_total_job(),
-            "CountLine" => get_total_job(1),
-            "CountShort" => get_total_job(3),
-            "CountDc" => get_total_job(4),
-            "CountReconnect" => get_total_job(2) ,
+            "CountAllType"   => (int) $counts->CountAllType,
+            "CountLine"      => (int) $counts->CountLine,
+            "CountShort"     => (int) $counts->CountShort,
+            "CountDc"        => (int) $counts->CountDc,
+            "CountReconnect" => (int) $counts->CountReconnect,
             "CountReschedule" => get_total_reschedule()
         ];
 
