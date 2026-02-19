@@ -96,6 +96,15 @@
         </table>
     </div>
 </div>
+<?php if(!empty($detail[0]['Notes'])): ?>
+<hr class="border-gray-200">
+<div class="p-4">
+    <h6 class="font-bold text-gray-800 mb-3">Rider Notes :</h6>
+    <div class="bg-gray-50 rounded-lg border border-gray-200 px-4 py-3">
+        <p class="text-sm text-gray-700 whitespace-pre-line"><?= htmlspecialchars($detail[0]['Notes']) ?></p>
+    </div>
+</div>
+<?php endif; ?>
 <hr class="border-gray-200">
 <div class="p-4">
     <h6 class="font-bold text-gray-800 mb-3">Assets Job :</h6>

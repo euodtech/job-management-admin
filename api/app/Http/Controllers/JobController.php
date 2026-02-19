@@ -116,51 +116,67 @@ class JobController extends Controller {
 
         $dataLogin = DriverModel::where('UserID', $userID)->first();
 
-        // cek apakah job ya sudah ada yangambil atau belum
-        $cek_data_job = JobModel::where('JobID', $jobID)->first();
+        DB::beginTransaction();
+        try {
+            // Lock the job row to prevent concurrent assignment
+            $cek_data_job = JobModel::where('JobID', $jobID)->lockForUpdate()->first();
 
-        if($cek_data_job->UserID != null && $cek_data_job->Status != null) {
-
-            return response()->json([
-                "Success" => false,
-                "Message" => "Failed Get Job"
-            ], 400);
-
-        }
-
-
-    //    cek apakah ada job yang masih nyangkut
-        $data_all_job_by_user = JobModel::where('UserID', $userID)->where("Status", 1)->get();
-
-        if(count($data_all_job_by_user) == 0) {
-
-            $dataJob = JobModel::where("JobID", $jobID)->first();
-
-            if($dataLogin->ListCompanyID == $dataJob->CompanyID) {
-                $dataJob->update([
-                    "UserID" => $userID,
-                    "AssignWhen" => date('Y-m-d H:i:s'),
-                    "Status" => 1
-                ]);
-
-                $success = true;
-                $message = "Success Driver Get The Job";
-                $code = 200;
-            } else {
-
-                $success = false;
-                $message = "Failed To get Job, because this job not for you";
-                $code = 400;
-
+            if (!$cek_data_job) {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "Job Not Found"
+                ], 404);
             }
 
-        } else {
-            $success = false;
-            $message = "Failed to get job, because this driver already has an active job.";
-            $code = 400;
-        }
+            if ($cek_data_job->UserID != null && $cek_data_job->Status != null) {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "Failed Get Job"
+                ], 400);
+            }
 
-        
+            // Check if driver already has an active job (lock to prevent double-assign)
+            $data_all_job_by_user = JobModel::where('UserID', $userID)
+                ->where("Status", 1)
+                ->lockForUpdate()
+                ->get();
+
+            if (count($data_all_job_by_user) == 0) {
+
+                if ($dataLogin->ListCompanyID == $cek_data_job->CompanyID) {
+                    $cek_data_job->update([
+                        "UserID" => $userID,
+                        "AssignWhen" => date('Y-m-d H:i:s'),
+                        "Status" => 1
+                    ]);
+
+                    DB::commit();
+                    $success = true;
+                    $message = "Success Driver Get The Job";
+                    $code = 200;
+                } else {
+                    DB::rollBack();
+                    $success = false;
+                    $message = "Failed To get Job, because this job not for you";
+                    $code = 400;
+                }
+
+            } else {
+                DB::rollBack();
+                $success = false;
+                $message = "Failed to get job, because this driver already has an active job.";
+                $code = 400;
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('driver_get_job Error: ' . $e->getMessage());
+            return response()->json([
+                "Success" => false,
+                "Message" => "An error occurred while getting the job"
+            ], 500);
+        }
 
        return response()->json([
             "Success" => $success,
@@ -210,45 +226,64 @@ class JobController extends Controller {
     }
 
     public function reschedule_job(Request $request, $jobID)
-    { 
+    {
 
         $this->validate($request, [
             'notes' => 'required',
             'new_date' => 'required'
         ]);
 
-        $dataJob = JobModel::where('JobID', $jobID)->first();
+        DB::beginTransaction();
+        try {
+            $dataJob = JobModel::where('JobID', $jobID)->lockForUpdate()->first();
 
-        if($request->input('new_date') <= $dataJob->JobDate) {
+            if (!$dataJob) {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "Job Not Found"
+                ], 404);
+            }
 
+            if ($request->input('new_date') <= $dataJob->JobDate) {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "Request Date must be greater than the current job date."
+                ]);
+            }
+
+            $dataCreateReschedule = [
+                "JobID" => $jobID,
+                "CurrentDateJob" => $dataJob->JobDate,
+                "RescheduledDateJob" => $request->input('new_date'),
+                "Reason" => $request->input('notes'),
+                "StatusApproved" => 1,
+                "created_at" => date('Y-m-d H:i:s')
+            ];
+
+            $createdData = RescheduleJobModel::create($dataCreateReschedule);
+
+            if ($createdData) {
+                DB::commit();
+                return response()->json([
+                    "Success" => true,
+                    "Message" => "Success Request Reschedule Job"
+                ]);
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "Failed Request !"
+                ]);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('reschedule_job Error: ' . $e->getMessage());
             return response()->json([
                 "Success" => false,
-                "Message" => "Request Date must be greater than the current job date."
-            ]);
-        }
-
-        $dataCreateReschedule = [
-            "JobID" => $jobID,
-            "CurrentDateJob" => $dataJob->JobDate,
-            "RescheduledDateJob" => $request->input('new_date'),
-            "Reason" => $request->input('notes'),
-            "StatusApproved" => 1,
-            "created_at" => date('Y-m-d H:i:s')
-        ];
-
-        $createdData = RescheduleJobModel::create($dataCreateReschedule);
-
-        if($createdData) {
-
-            return response()->json([
-                "Success" => true,
-                "Message" => "Success Request Reschedule Job"
-            ]);
-        } else {
-            return response()->json([
-                "Success" => false,
-                "Message" => "Failed Request !"
-            ]);
+                "Message" => "An error occurred while rescheduling the job"
+            ], 500);
         }
     }
 
@@ -291,7 +326,7 @@ class JobController extends Controller {
                 // Clean the base64 string
                 $base64Image = str_replace(' ', '+', $base64Image);
                 $base64Image = preg_replace('/[^A-Za-z0-9\+\/=]/', '', $base64Image);
-                
+
                 // Decode
                 $imageData = base64_decode($base64Image, true);
 
@@ -306,7 +341,7 @@ class JobController extends Controller {
                 // Validate it's actually an image
                 $finfo = new \finfo(FILEINFO_MIME_TYPE);
                 $mimeType = $finfo->buffer($imageData);
-                
+
                 if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/jpg'])) {
                     return response()->json([
                         'success' => false,
@@ -314,18 +349,19 @@ class JobController extends Controller {
                     ], 400);
                 }
 
-                $fileName = 'job_'.$jobId.'_'.time().'_'.$index.'.'.$ext;
+                // Use uniqid to prevent filename collision under concurrent requests
+                $fileName = 'job_'.$jobId.'_'.uniqid('', true).'_'.$index.'.'.$ext;
                 $filePath = storage_path('app/finished_jobs/'.$fileName);
 
-                // Ensure directory exists
+                // Ensure directory exists (suppress error if concurrent request creates it)
                 $directory = dirname($filePath);
-                if (!file_exists($directory)) {
-                    mkdir($directory, 0755, true);
+                if (!is_dir($directory)) {
+                    @mkdir($directory, 0755, true);
                 }
 
-                file_put_contents($filePath, $imageData);
+                file_put_contents($filePath, $imageData, LOCK_EX);
                 $savedFiles[] = $fileName;
-                
+
             } catch (\Exception $e) {
                 \Log::error("Error processing image $index: " . $e->getMessage());
                 return response()->json([
@@ -335,32 +371,44 @@ class JobController extends Controller {
             }
         }
 
-        $dataJob = JobModel::where("JobID", $jobId)->first();
+        DB::beginTransaction();
+        try {
+            $dataJob = JobModel::where("JobID", $jobId)->lockForUpdate()->first();
 
-        if (!$dataJob) {
+            if (!$dataJob) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job not found'
+                ], 404);
+            }
+
+            $dataJob->update([
+                "Status" => 2,
+                "Notes" => $notes,
+                "FinishWhen" => date('Y-m-d H:i:s')
+            ]);
+
+            foreach ($savedFiles as $val) {
+                $fullUrl = 'storage/app/finished_jobs/' . $val;
+
+                $data_insert_job_detail = [
+                    "ListJobID" => $jobId,
+                    "Photo" => $fullUrl,
+                    "created_at" => date("Y-m-d H:i:s")
+                ];
+
+                JobDetailModel::create($data_insert_job_detail);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('finished_job Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Job not found'
-            ], 404);
-        }
-
-        $dataJob->update([
-            "Status" => 2,
-            "Notes" => $notes,
-            "FinishWhen" => date('Y-m-d H:i:s')
-        ]);
-
-        foreach ($savedFiles as $val) {
-            // $fullUrl = url('storage/app/finished_jobs/' . $val); // old
-            $fullUrl = 'storage/app/finished_jobs/' . $val;
-            
-            $data_insert_job_detail = [
-                "ListJobID" => $jobId,
-                "Photo" => $fullUrl,
-                "created_at" => date("Y-m-d H:i:s")
-            ];
-
-            JobDetailModel::create($data_insert_job_detail);
+                'message' => 'An error occurred while finishing the job'
+            ], 500);
         }
 
         return response()->json([
@@ -369,42 +417,51 @@ class JobController extends Controller {
         ]);
     }
 
-    public function cancel_job(Request $request,$jobID)
+    public function cancel_job(Request $request, $jobID)
     {
+        DB::beginTransaction();
+        try {
+            $data = JobModel::where("JobID", $jobID)->lockForUpdate()->first();
 
-        $data = JobModel::where("JobID" , $jobID)->first();
+            if ($data != null) {
 
-        if($data != null) {
+                $dataCreateHistory = [
+                    "JobID" => $data->JobID,
+                    "UserBefore" => $data->UserID,
+                    "Reason" => $request->reason,
+                    "created_at" => date('Y-m-d H:i:s')
+                ];
 
-            $dataCreateHistory = [
-                "JobID" => $data->JobID,
-                "UserBefore" => $data->UserID,
-                "Reason" => $request->reason,
-                "created_at" => date('Y-m-d H:i:s')
-            ];
+                HistoryCancelJobModel::create($dataCreateHistory);
 
-            HistoryCancelJobModel::create($dataCreateHistory);
+                $data->update([
+                    "Status" => null,
+                    "UserID" => null,
+                    "AssignWhen" => null,
+                ]);
 
-            $data->update([
-                "Status" => null,
-                "UserID" => null,
-                "AssignWhen" => null,
-            ]);
+                DB::commit();
 
-            return response()->json([
-                "Success" => true,
-                "Message" => "Success Cancel Job"
-            ], 200);
+                return response()->json([
+                    "Success" => true,
+                    "Message" => "Success Cancel Job"
+                ], 200);
 
-        } else {
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "Job Not Found!!"
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('cancel_job Error: ' . $e->getMessage());
             return response()->json([
                 "Success" => false,
-                "Message" => "Job Not Found!!"
-            ], 404);
+                "Message" => "An error occurred while cancelling the job"
+            ], 500);
         }
-
-
-        
     }
 
 }

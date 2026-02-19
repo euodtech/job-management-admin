@@ -19,6 +19,9 @@
             <?php echo $this->session->flashdata('message'); ?>
 
             <form id="loginForm" action="<?php echo base_url('auth/login'); ?>" method="post" novalidate>
+                <?php if (config_item('csrf_protection')): ?>
+                <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
+                <?php endif; ?>
                 <!-- Email -->
                 <div class="mb-4" id="email-wrapper">
                     <div class="flex" id="email-group">

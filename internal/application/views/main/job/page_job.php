@@ -402,6 +402,11 @@
                             <div class="value" id="view_reschedule_date"></div>
                         </div>
                     </div>
+                    <!-- Rider Notes -->
+                    <div class="mt-3 bg-gray-50 rounded-lg border border-gray-200 p-3">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Rider Notes</div>
+                        <div id="view_notes" class="text-sm text-gray-700 whitespace-pre-line" style="min-height: 24px;"></div>
+                    </div>
                 </div>
 
                 <!-- Photos Tab -->
@@ -1266,6 +1271,14 @@ $(document).on('click', '.buttonView', function(e) {
                 $('#view_reschedule_date').text(returnDateFormatDetailJS(response.RescheduledDateJob));
             } else {
                 $('.view_reschedule').addClass('hidden');
+            }
+
+            // Rider Notes
+            $('#view_notes').text(response.Notes || '-');
+            if (response.Notes) {
+                $('#view_notes').removeClass('italic text-gray-400').addClass('text-gray-700');
+            } else {
+                $('#view_notes').removeClass('text-gray-700').addClass('italic text-gray-400');
             }
 
             $('#modalViewLabel').text('Job Details - ' + (response.JobName || ''));

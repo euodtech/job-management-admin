@@ -33,6 +33,9 @@
         <!-- Body -->
         <div class="p-5 text-center">
             <form action="<?= base_url('User/submit_new_password') ?>" method="post" class="max-w-sm mx-auto p-5 bg-white border border-gray-200 rounded-lg shadow-sm text-left">
+                <?php if (config_item('csrf_protection')): ?>
+                <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
+                <?php endif; ?>
                 <div class="mb-4">
                     <label for="new_password" class="block font-semibold text-gray-700 mb-1.5">New Password</label>
                     <input type="password" name="new_password" id="new_password" placeholder="Enter new password" required

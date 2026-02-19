@@ -4,6 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php if (config_item('csrf_protection')): ?>
+    <meta name="csrf-token" content="<?= $this->security->get_csrf_hash(); ?>">
+    <meta name="csrf-name" content="<?= $this->security->get_csrf_token_name(); ?>">
+    <?php endif; ?>
     <?php
         $companyLogo = $this->session->userdata('CompanyLogo');
         if ($companyLogo && file_exists(FCPATH . 'assets/dist/img/company_logo/' . $companyLogo)) {

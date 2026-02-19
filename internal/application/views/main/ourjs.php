@@ -1,5 +1,36 @@
 <script type="text/javascript">
 
+    // ── Global CSRF token injection for all AJAX requests and forms ──
+    (function() {
+        var csrfName = $('meta[name="csrf-name"]').attr('content');
+        var csrfHash = $('meta[name="csrf-token"]').attr('content');
+        if (csrfName && csrfHash) {
+            // Inject CSRF into all AJAX POST/PUT/DELETE requests
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (settings.type && settings.type.toUpperCase() !== 'GET') {
+                        if (typeof settings.data === 'string') {
+                            settings.data += '&' + csrfName + '=' + encodeURIComponent(csrfHash);
+                        } else if (settings.data instanceof FormData) {
+                            settings.data.append(csrfName, csrfHash);
+                        } else if (typeof settings.data === 'object' && settings.data !== null) {
+                            settings.data[csrfName] = csrfHash;
+                        } else {
+                            settings.data = csrfName + '=' + encodeURIComponent(csrfHash);
+                        }
+                    }
+                }
+            });
+
+            // Inject CSRF hidden field into all POST forms that don't already have it
+            $('form[method="post"], form[method="POST"]').each(function() {
+                if (!$(this).find('input[name="' + csrfName + '"]').length) {
+                    $(this).prepend('<input type="hidden" name="' + csrfName + '" value="' + csrfHash + '">');
+                }
+            });
+        }
+    })();
+
     // ── Global form-validation helpers ──────────────────────────────
     function setFieldError(fieldId, msg) {
         var $field = $('#' + fieldId);

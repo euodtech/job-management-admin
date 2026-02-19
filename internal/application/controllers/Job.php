@@ -458,7 +458,8 @@ class Job extends MY_Controller
             Customer.*,
             Customer.PhoneNumber AS CustPhoneNumber,
             ListUser.*,
-            RescheduledJob.*
+            RescheduledJob.*,
+            ListJob.JobID AS JobID
         ');
         $this->db->from('ListJob');
         $this->db->join('Customer', 'ListJob.CustomerID = Customer.CustomerID', 'left');
@@ -727,25 +728,31 @@ class Job extends MY_Controller
 
             $reschedule_id = (int) $reschedule_id;
 
-            $data_reschedule = $this->db
-                ->select('JobID')
-                ->from('RescheduledJob')
-                ->where('RescheduledID', $reschedule_id)
-                ->get()
-                ->row_array();
+            $this->db->trans_begin();
+
+            $data_reschedule = $this->db->query(
+                'SELECT JobID FROM RescheduledJob WHERE RescheduledID = ? FOR UPDATE',
+                [$reschedule_id]
+            )->row_array();
 
             if (empty($data_reschedule)) {
+                $this->db->trans_rollback();
                 redirect(base_url('reschedule-job'));
                 return;
             }
 
             $jobID = (int) $data_reschedule['JobID'];
 
+            // Also lock the job row
+            $this->db->query('SELECT JobID FROM ListJob WHERE JobID = ? FOR UPDATE', [$jobID]);
+
             $this->db->where('RescheduledID', $reschedule_id)
                     ->update('RescheduledJob', ['StatusApproved' => 2]);
 
             $this->db->where('JobID', $jobID)
                     ->update('ListJob', ['Status' => 3]);
+
+            $this->db->trans_commit();
 
             redirect(base_url('reschedule-job'));
 
@@ -754,19 +761,23 @@ class Job extends MY_Controller
             $reschedule_id = (int) $this->input->post('reschedule_id');
             $reasonReject  = trim($this->input->post('reason', true));
 
-            $data_reschedule = $this->db
-                ->select('JobID')
-                ->from('RescheduledJob')
-                ->where('RescheduledID', $reschedule_id)
-                ->get()
-                ->row_array();
+            $this->db->trans_begin();
+
+            $data_reschedule = $this->db->query(
+                'SELECT JobID FROM RescheduledJob WHERE RescheduledID = ? FOR UPDATE',
+                [$reschedule_id]
+            )->row_array();
 
             if (empty($data_reschedule)) {
+                $this->db->trans_rollback();
                 redirect(base_url('reschedule-job'));
                 return;
             }
 
             $jobID = (int) $data_reschedule['JobID'];
+
+            // Also lock the job row
+            $this->db->query('SELECT JobID FROM ListJob WHERE JobID = ? FOR UPDATE', [$jobID]);
 
             $this->db->where('RescheduledID', $reschedule_id)
                     ->update('RescheduledJob', [
@@ -780,6 +791,8 @@ class Job extends MY_Controller
                         'Status'     => null,
                         'AssignWhen' => null
                     ]);
+
+            $this->db->trans_commit();
 
             redirect(base_url('reschedule-job'));
         }
@@ -894,18 +907,22 @@ class Job extends MY_Controller
             return;
         }
 
-        $job = $this->db->select('JobID, CompanyID, Status')
-                         ->from('ListJob')
-                         ->where('JobID', $jobID)
-                         ->get()
-                         ->row_array();
+        $this->db->trans_begin();
+
+        // Lock the job row to prevent concurrent assignment
+        $job = $this->db->query(
+            'SELECT JobID, CompanyID, Status FROM ListJob WHERE JobID = ? FOR UPDATE',
+            [$jobID]
+        )->row_array();
 
         if (empty($job)) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Job not found.']);
             return;
         }
 
         if ($job['Status'] !== null) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Job is already assigned.']);
             return;
         }
@@ -914,6 +931,7 @@ class Job extends MY_Controller
         $role = (int) $this->session->userdata('Role');
         $sessionCompanyID = (int) $this->session->userdata('CompanyID');
         if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
             return;
         }
@@ -929,19 +947,19 @@ class Job extends MY_Controller
                             ->row_array();
 
         if (empty($driver)) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Driver not found or not active.']);
             return;
         }
 
-        // Check if driver already has an active job
-        $activeJob = $this->db->select('JobID')
-                               ->from('ListJob')
-                               ->where('UserID', $driverID)
-                               ->where('Status', 1)
-                               ->get()
-                               ->row_array();
+        // Lock driver's active jobs to prevent double-assignment
+        $activeJob = $this->db->query(
+            'SELECT JobID FROM ListJob WHERE UserID = ? AND Status = 1 FOR UPDATE',
+            [$driverID]
+        )->row_array();
 
         if (!empty($activeJob)) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'This driver already has an active job (Job #' . $activeJob['JobID'] . ').']);
             return;
         }
@@ -953,11 +971,8 @@ class Job extends MY_Controller
                       'AssignWhen' => date('Y-m-d H:i:s')
                   ]);
 
-        if ($this->db->affected_rows() > 0) {
-            echo json_encode(['success' => true, 'message' => 'Job assigned successfully.']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to assign job.']);
-        }
+        $this->db->trans_commit();
+        echo json_encode(['success' => true, 'message' => 'Job assigned successfully.']);
     }
 
     /**
@@ -973,13 +988,16 @@ class Job extends MY_Controller
             return;
         }
 
-        $job = $this->db->select('JobID, CompanyID, UserID, Status')
-                         ->from('ListJob')
-                         ->where('JobID', $jobID)
-                         ->get()
-                         ->row_array();
+        $this->db->trans_begin();
+
+        // Lock the job row to prevent concurrent modification
+        $job = $this->db->query(
+            'SELECT JobID, CompanyID, UserID, Status FROM ListJob WHERE JobID = ? FOR UPDATE',
+            [$jobID]
+        )->row_array();
 
         if (empty($job) || !in_array($job['Status'], ['1', '3'], false)) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Job not found or not in an assignable state.']);
             return;
         }
@@ -988,6 +1006,7 @@ class Job extends MY_Controller
         $role = (int) $this->session->userdata('Role');
         $sessionCompanyID = (int) $this->session->userdata('CompanyID');
         if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
             return;
         }
@@ -995,6 +1014,7 @@ class Job extends MY_Controller
         $oldDriverID = (int) $job['UserID'];
 
         if ($newDriverID === $oldDriverID) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'New driver is the same as the current driver.']);
             return;
         }
@@ -1010,24 +1030,22 @@ class Job extends MY_Controller
                             ->row_array();
 
         if (empty($driver)) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Driver not found or not active.']);
             return;
         }
 
-        // Check if new driver already has an active job
-        $activeJob = $this->db->select('JobID')
-                               ->from('ListJob')
-                               ->where('UserID', $newDriverID)
-                               ->where('Status', 1)
-                               ->get()
-                               ->row_array();
+        // Lock driver's active jobs to prevent double-assignment
+        $activeJob = $this->db->query(
+            'SELECT JobID FROM ListJob WHERE UserID = ? AND Status = 1 FOR UPDATE',
+            [$newDriverID]
+        )->row_array();
 
         if (!empty($activeJob)) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'This driver already has an active job (Job #' . $activeJob['JobID'] . ').']);
             return;
         }
-
-        $this->db->trans_start();
 
         // Log the reassignment
         $this->db->insert('HistoryCancelJob', [
@@ -1044,13 +1062,8 @@ class Job extends MY_Controller
                       'AssignWhen' => date('Y-m-d H:i:s')
                   ]);
 
-        $this->db->trans_complete();
-
-        if ($this->db->trans_status() === false) {
-            echo json_encode(['success' => false, 'message' => 'Failed to reassign job.']);
-        } else {
-            echo json_encode(['success' => true, 'message' => 'Job reassigned successfully.']);
-        }
+        $this->db->trans_commit();
+        echo json_encode(['success' => true, 'message' => 'Job reassigned successfully.']);
     }
 
     /**
@@ -1066,13 +1079,16 @@ class Job extends MY_Controller
             return;
         }
 
-        $job = $this->db->select('JobID, CompanyID, UserID, Status')
-                         ->from('ListJob')
-                         ->where('JobID', $jobID)
-                         ->get()
-                         ->row_array();
+        $this->db->trans_begin();
+
+        // Lock the job row to prevent concurrent modification
+        $job = $this->db->query(
+            'SELECT JobID, CompanyID, UserID, Status FROM ListJob WHERE JobID = ? FOR UPDATE',
+            [$jobID]
+        )->row_array();
 
         if (empty($job) || !in_array($job['Status'], ['1', '3'], false)) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Job not found or not in a cancellable state.']);
             return;
         }
@@ -1081,11 +1097,10 @@ class Job extends MY_Controller
         $role = (int) $this->session->userdata('Role');
         $sessionCompanyID = (int) $this->session->userdata('CompanyID');
         if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
             return;
         }
-
-        $this->db->trans_start();
 
         // Log cancellation
         $this->db->insert('HistoryCancelJob', [
@@ -1103,13 +1118,8 @@ class Job extends MY_Controller
                       'AssignWhen' => null
                   ]);
 
-        $this->db->trans_complete();
-
-        if ($this->db->trans_status() === false) {
-            echo json_encode(['success' => false, 'message' => 'Failed to cancel job.']);
-        } else {
-            echo json_encode(['success' => true, 'message' => 'Job cancelled and returned to unassigned.']);
-        }
+        $this->db->trans_commit();
+        echo json_encode(['success' => true, 'message' => 'Job cancelled and returned to unassigned.']);
     }
 
     /**
@@ -1133,13 +1143,16 @@ class Job extends MY_Controller
             return;
         }
 
-        $job = $this->db->select('JobID, CompanyID, JobDate, Status')
-                         ->from('ListJob')
-                         ->where('JobID', $jobID)
-                         ->get()
-                         ->row_array();
+        $this->db->trans_begin();
+
+        // Lock the job row to prevent concurrent modification
+        $job = $this->db->query(
+            'SELECT JobID, CompanyID, JobDate, Status FROM ListJob WHERE JobID = ? FOR UPDATE',
+            [$jobID]
+        )->row_array();
 
         if (empty($job) || $job['Status'] == 2) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Job not found or already finished.']);
             return;
         }
@@ -1148,13 +1161,12 @@ class Job extends MY_Controller
         $role = (int) $this->session->userdata('Role');
         $sessionCompanyID = (int) $this->session->userdata('CompanyID');
         if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            $this->db->trans_rollback();
             echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
             return;
         }
 
         $currentDate = date('Y-m-d', strtotime($job['JobDate']));
-
-        $this->db->trans_start();
 
         // Insert auto-approved reschedule record
         $this->db->insert('RescheduledJob', [
@@ -1172,12 +1184,7 @@ class Job extends MY_Controller
                       'JobDate' => $newDate
                   ]);
 
-        $this->db->trans_complete();
-
-        if ($this->db->trans_status() === false) {
-            echo json_encode(['success' => false, 'message' => 'Failed to reschedule job.']);
-        } else {
-            echo json_encode(['success' => true, 'message' => 'Job rescheduled to ' . $newDate . '.']);
-        }
+        $this->db->trans_commit();
+        echo json_encode(['success' => true, 'message' => 'Job rescheduled to ' . $newDate . '.']);
     }
 }
