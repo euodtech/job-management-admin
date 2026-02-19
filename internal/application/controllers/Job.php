@@ -242,6 +242,7 @@ class Job extends MY_Controller
                 "TypeJob" => $row['TypeJob'],
                 "Status" => $row['Status'],
                 "JobID" => $jobID,
+                "UserID" => $row['UserID'] ?? null,
                 "StatusCancelJob" => $cancelJob
             ];
         }
@@ -816,5 +817,357 @@ class Job extends MY_Controller
         }, $listCustomer);
 
         echo json_encode($hasil);
+    }
+
+    // ===================== ADMIN JOB CONTROL FEATURES =====================
+
+    /**
+     * AJAX GET: Return active drivers for a job's company.
+     * Params: jobID, optional excludeUserID
+     */
+    public function getDriversByCompany()
+    {
+        $jobID = (int) $this->input->get('jobID');
+        $excludeUserID = $this->input->get('excludeUserID');
+
+        if ($jobID <= 0) {
+            echo json_encode([]);
+            return;
+        }
+
+        $job = $this->db->select('CompanyID')
+                         ->from('ListJob')
+                         ->where('JobID', $jobID)
+                         ->get()
+                         ->row_array();
+
+        if (empty($job)) {
+            echo json_encode([]);
+            return;
+        }
+
+        $companyID = (int) $job['CompanyID'];
+
+        // Company scoping
+        $role = (int) $this->session->userdata('Role');
+        $sessionCompanyID = (int) $this->session->userdata('CompanyID');
+        if ($role !== 1 && $companyID !== $sessionCompanyID) {
+            echo json_encode([]);
+            return;
+        }
+
+        $this->db->select('UserID, Fullname');
+        $this->db->from('ListUser');
+        $this->db->where('ListCompanyID', $companyID);
+        $this->db->where('StatusActive', 0);
+        $this->db->where('deleted_at IS NULL', null, false);
+        $this->db->order_by('Fullname', 'ASC');
+
+        if (!empty($excludeUserID)) {
+            $this->db->where('UserID !=', (int) $excludeUserID);
+        }
+
+        $drivers = $this->db->get()->result_array();
+        echo json_encode($drivers);
+    }
+
+    /**
+     * AJAX POST: Admin assigns an unassigned job to a driver.
+     */
+    public function assignJob()
+    {
+        $jobID    = (int) $this->input->post('jobID');
+        $driverID = (int) $this->input->post('driverID');
+
+        if ($jobID <= 0 || $driverID <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters.']);
+            return;
+        }
+
+        $job = $this->db->select('JobID, CompanyID, Status')
+                         ->from('ListJob')
+                         ->where('JobID', $jobID)
+                         ->get()
+                         ->row_array();
+
+        if (empty($job)) {
+            echo json_encode(['success' => false, 'message' => 'Job not found.']);
+            return;
+        }
+
+        if ($job['Status'] !== null) {
+            echo json_encode(['success' => false, 'message' => 'Job is already assigned.']);
+            return;
+        }
+
+        // Company scoping
+        $role = (int) $this->session->userdata('Role');
+        $sessionCompanyID = (int) $this->session->userdata('CompanyID');
+        if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
+            return;
+        }
+
+        // Verify driver belongs to same company and is active
+        $driver = $this->db->select('UserID')
+                            ->from('ListUser')
+                            ->where('UserID', $driverID)
+                            ->where('ListCompanyID', $job['CompanyID'])
+                            ->where('StatusActive', 0)
+                            ->where('deleted_at IS NULL', null, false)
+                            ->get()
+                            ->row_array();
+
+        if (empty($driver)) {
+            echo json_encode(['success' => false, 'message' => 'Driver not found or not active.']);
+            return;
+        }
+
+        // Check if driver already has an active job
+        $activeJob = $this->db->select('JobID')
+                               ->from('ListJob')
+                               ->where('UserID', $driverID)
+                               ->where('Status', 1)
+                               ->get()
+                               ->row_array();
+
+        if (!empty($activeJob)) {
+            echo json_encode(['success' => false, 'message' => 'This driver already has an active job (Job #' . $activeJob['JobID'] . ').']);
+            return;
+        }
+
+        $this->db->where('JobID', $jobID)
+                  ->update('ListJob', [
+                      'UserID'     => $driverID,
+                      'Status'     => 1,
+                      'AssignWhen' => date('Y-m-d H:i:s')
+                  ]);
+
+        if ($this->db->affected_rows() > 0) {
+            echo json_encode(['success' => true, 'message' => 'Job assigned successfully.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to assign job.']);
+        }
+    }
+
+    /**
+     * AJAX POST: Admin reassigns a job from one driver to another.
+     */
+    public function reassignJob()
+    {
+        $jobID       = (int) $this->input->post('jobID');
+        $newDriverID = (int) $this->input->post('driverID');
+
+        if ($jobID <= 0 || $newDriverID <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters.']);
+            return;
+        }
+
+        $job = $this->db->select('JobID, CompanyID, UserID, Status')
+                         ->from('ListJob')
+                         ->where('JobID', $jobID)
+                         ->get()
+                         ->row_array();
+
+        if (empty($job) || !in_array($job['Status'], ['1', '3'], false)) {
+            echo json_encode(['success' => false, 'message' => 'Job not found or not in an assignable state.']);
+            return;
+        }
+
+        // Company scoping
+        $role = (int) $this->session->userdata('Role');
+        $sessionCompanyID = (int) $this->session->userdata('CompanyID');
+        if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
+            return;
+        }
+
+        $oldDriverID = (int) $job['UserID'];
+
+        if ($newDriverID === $oldDriverID) {
+            echo json_encode(['success' => false, 'message' => 'New driver is the same as the current driver.']);
+            return;
+        }
+
+        // Verify new driver
+        $driver = $this->db->select('UserID')
+                            ->from('ListUser')
+                            ->where('UserID', $newDriverID)
+                            ->where('ListCompanyID', $job['CompanyID'])
+                            ->where('StatusActive', 0)
+                            ->where('deleted_at IS NULL', null, false)
+                            ->get()
+                            ->row_array();
+
+        if (empty($driver)) {
+            echo json_encode(['success' => false, 'message' => 'Driver not found or not active.']);
+            return;
+        }
+
+        // Check if new driver already has an active job
+        $activeJob = $this->db->select('JobID')
+                               ->from('ListJob')
+                               ->where('UserID', $newDriverID)
+                               ->where('Status', 1)
+                               ->get()
+                               ->row_array();
+
+        if (!empty($activeJob)) {
+            echo json_encode(['success' => false, 'message' => 'This driver already has an active job (Job #' . $activeJob['JobID'] . ').']);
+            return;
+        }
+
+        $this->db->trans_start();
+
+        // Log the reassignment
+        $this->db->insert('HistoryCancelJob', [
+            'JobID'      => $jobID,
+            'UserBefore' => $oldDriverID,
+            'Reason'     => 'Reassigned by admin',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        // Update the job with new driver
+        $this->db->where('JobID', $jobID)
+                  ->update('ListJob', [
+                      'UserID'     => $newDriverID,
+                      'AssignWhen' => date('Y-m-d H:i:s')
+                  ]);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === false) {
+            echo json_encode(['success' => false, 'message' => 'Failed to reassign job.']);
+        } else {
+            echo json_encode(['success' => true, 'message' => 'Job reassigned successfully.']);
+        }
+    }
+
+    /**
+     * AJAX POST: Admin cancels an assigned job, returning it to unassigned.
+     */
+    public function cancelJob()
+    {
+        $jobID  = (int) $this->input->post('jobID');
+        $reason = trim($this->input->post('reason', true));
+
+        if ($jobID <= 0 || empty($reason)) {
+            echo json_encode(['success' => false, 'message' => 'Job ID and reason are required.']);
+            return;
+        }
+
+        $job = $this->db->select('JobID, CompanyID, UserID, Status')
+                         ->from('ListJob')
+                         ->where('JobID', $jobID)
+                         ->get()
+                         ->row_array();
+
+        if (empty($job) || !in_array($job['Status'], ['1', '3'], false)) {
+            echo json_encode(['success' => false, 'message' => 'Job not found or not in a cancellable state.']);
+            return;
+        }
+
+        // Company scoping
+        $role = (int) $this->session->userdata('Role');
+        $sessionCompanyID = (int) $this->session->userdata('CompanyID');
+        if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
+            return;
+        }
+
+        $this->db->trans_start();
+
+        // Log cancellation
+        $this->db->insert('HistoryCancelJob', [
+            'JobID'      => $jobID,
+            'UserBefore' => (int) $job['UserID'],
+            'Reason'     => $reason,
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        // Reset job to unassigned
+        $this->db->where('JobID', $jobID)
+                  ->update('ListJob', [
+                      'Status'     => null,
+                      'UserID'     => null,
+                      'AssignWhen' => null
+                  ]);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === false) {
+            echo json_encode(['success' => false, 'message' => 'Failed to cancel job.']);
+        } else {
+            echo json_encode(['success' => true, 'message' => 'Job cancelled and returned to unassigned.']);
+        }
+    }
+
+    /**
+     * AJAX POST: Admin reschedules a non-finished job to a new date.
+     */
+    public function adminRescheduleJob()
+    {
+        $jobID   = (int) $this->input->post('jobID');
+        $newDate = trim($this->input->post('newDate', true));
+        $reason  = trim($this->input->post('reason', true));
+
+        if ($jobID <= 0 || empty($newDate) || empty($reason)) {
+            echo json_encode(['success' => false, 'message' => 'All fields are required.']);
+            return;
+        }
+
+        // Validate date format
+        $dateObj = DateTime::createFromFormat('Y-m-d', $newDate);
+        if (!$dateObj || $dateObj->format('Y-m-d') !== $newDate) {
+            echo json_encode(['success' => false, 'message' => 'Invalid date format.']);
+            return;
+        }
+
+        $job = $this->db->select('JobID, CompanyID, JobDate, Status')
+                         ->from('ListJob')
+                         ->where('JobID', $jobID)
+                         ->get()
+                         ->row_array();
+
+        if (empty($job) || $job['Status'] == 2) {
+            echo json_encode(['success' => false, 'message' => 'Job not found or already finished.']);
+            return;
+        }
+
+        // Company scoping
+        $role = (int) $this->session->userdata('Role');
+        $sessionCompanyID = (int) $this->session->userdata('CompanyID');
+        if ($role !== 1 && (int) $job['CompanyID'] !== $sessionCompanyID) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
+            return;
+        }
+
+        $currentDate = date('Y-m-d', strtotime($job['JobDate']));
+
+        $this->db->trans_start();
+
+        // Insert auto-approved reschedule record
+        $this->db->insert('RescheduledJob', [
+            'JobID'              => $jobID,
+            'CurrentDateJob'     => $currentDate,
+            'RescheduledDateJob' => $newDate,
+            'Reason'             => $reason,
+            'StatusApproved'     => 2,
+            'created_at'         => date('Y-m-d H:i:s')
+        ]);
+
+        // Update job date
+        $this->db->where('JobID', $jobID)
+                  ->update('ListJob', [
+                      'JobDate' => $newDate
+                  ]);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === false) {
+            echo json_encode(['success' => false, 'message' => 'Failed to reschedule job.']);
+        } else {
+            echo json_encode(['success' => true, 'message' => 'Job rescheduled to ' . $newDate . '.']);
+        }
     }
 }

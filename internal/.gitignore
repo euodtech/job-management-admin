@@ -31,3 +31,6 @@ application/config/*
 *.sublime-project
 /tests/tests/
 /tests/results/
+
+# Logs
+storage/logs/

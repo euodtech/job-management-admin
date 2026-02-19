@@ -434,6 +434,127 @@
     </div>
 </div>
 
+<!-- ===================== ASSIGN JOB MODAL ===================== -->
+<div id="modal_assign" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800">Assign Job</h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_assign">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto">
+                <input type="hidden" id="assign_job_id">
+                <p class="text-sm text-gray-600 mb-3">Assign <strong id="assign_job_name"></strong> to a driver:</p>
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Driver</label>
+                    <select id="assign_driver_select" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" style="width:100%">
+                        <option value="">-- Select Driver --</option>
+                    </select>
+                    <span class="inline-error" id="error-assign_driver_select"></span>
+                </div>
+            </div>
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_assign">Close</button>
+                <button type="button" id="btn_confirm_assign" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors">Assign</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== REASSIGN JOB MODAL ===================== -->
+<div id="modal_reassign" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800">Reassign Job</h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_reassign">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto">
+                <input type="hidden" id="reassign_job_id">
+                <p class="text-sm text-gray-600 mb-3">Reassign <strong id="reassign_job_name"></strong> to a new driver:</p>
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select New Driver</label>
+                    <select id="reassign_driver_select" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" style="width:100%">
+                        <option value="">-- Select Driver --</option>
+                    </select>
+                    <span class="inline-error" id="error-reassign_driver_select"></span>
+                </div>
+            </div>
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_reassign">Close</button>
+                <button type="button" id="btn_confirm_reassign" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors">Reassign</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== CANCEL JOB MODAL ===================== -->
+<div id="modal_cancel" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800">Cancel Job Assignment</h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_cancel">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto">
+                <input type="hidden" id="cancel_job_id">
+                <p class="text-sm text-gray-600 mb-3">Cancel assignment for <strong id="cancel_job_name"></strong>? The job will return to the unassigned pool.</p>
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason for cancellation</label>
+                    <textarea id="cancel_reason" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" rows="4" placeholder="Enter reason..."></textarea>
+                    <span class="inline-error" id="error-cancel_reason"></span>
+                </div>
+            </div>
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_cancel">Close</button>
+                <button type="button" id="btn_confirm_cancel" class="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors">Cancel Job</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== ADMIN RESCHEDULE MODAL ===================== -->
+<div id="modal_admin_reschedule" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+            <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800">Reschedule Job</h3>
+                <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#modal_admin_reschedule">
+                    <span class="sr-only">Close</span>
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto">
+                <input type="hidden" id="reschedule_job_id">
+                <p class="text-sm text-gray-600 mb-3">Reschedule <strong id="reschedule_job_name"></strong>:</p>
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Date</label>
+                    <input type="date" id="reschedule_new_date" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                    <span class="inline-error" id="error-reschedule_new_date"></span>
+                </div>
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                    <textarea id="reschedule_reason" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" rows="4" placeholder="Enter reason..."></textarea>
+                    <span class="inline-error" id="error-reschedule_reason"></span>
+                </div>
+            </div>
+            <div class="flex justify-end items-center gap-2 py-3 px-4 border-t border-gray-200">
+                <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" data-hs-overlay="#modal_admin_reschedule">Close</button>
+                <button type="button" id="btn_confirm_reschedule" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors">Reschedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
@@ -671,11 +792,32 @@ $(document).ready(function() {
                 orderable: false,
                 render: function(data, type, row) {
                     var btns = '<div class="inline-flex items-center justify-center gap-1.5">';
-                    btns += '<button data-jobid="' + data + '" type="button" class="btn-tw-success buttonView" title="View Job"><i class="fas fa-eye"></i></button>';
+                    btns += '<button data-jobid="' + data + '" type="button" class="btn-tw-success buttonView" title="View Job"><i class="fas fa-fw fa-eye"></i></button>';
 
+                    // Assign — only for unassigned jobs
                     if (row.Status == null) {
-                        btns += '<button data-jobid="' + data + '" type="button" class="btn-tw-warning buttonEdit" title="Edit Job"><i class="fas fa-edit fa-xs"></i></button>';
-                        btns += '<button type="button" data-jobid="' + data + '" data-job-name="' + row.JobName + '" class="btn-tw-danger buttonDelete" title="Delete Job"><i class="fas fa-trash fa-xs"></i></button>';
+                        btns += '<button data-jobid="' + data + '" data-job-name="' + row.JobName + '" type="button" class="btn-tw-primary buttonAssign" title="Assign Driver"><i class="fas fa-fw fa-user-plus"></i></button>';
+                    }
+
+                    // Reassign — only for assigned/ongoing jobs
+                    if (row.Status == 1 || row.Status == 3) {
+                        btns += '<button data-jobid="' + data + '" data-job-name="' + row.JobName + '" data-current-driver="' + (row.UserID || '') + '" type="button" class="btn-tw-info buttonReassign" title="Reassign Driver"><i class="fas fa-fw fa-user-tag"></i></button>';
+                    }
+
+                    // Cancel assignment — only for assigned/ongoing jobs
+                    if (row.Status == 1 || row.Status == 3) {
+                        btns += '<button data-jobid="' + data + '" data-job-name="' + row.JobName + '" type="button" class="btn-tw-danger buttonCancel" title="Cancel Assignment"><i class="fas fa-fw fa-ban"></i></button>';
+                    }
+
+                    // Admin reschedule — any non-finished job
+                    if (row.Status == null || row.Status == 1 || row.Status == 3) {
+                        btns += '<button data-jobid="' + data + '" data-job-name="' + row.JobName + '" type="button" class="btn-tw-warning buttonAdminReschedule" title="Reschedule Job"><i class="fas fa-fw fa-calendar-alt"></i></button>';
+                    }
+
+                    // Edit/Delete — only for unassigned
+                    if (row.Status == null) {
+                        btns += '<button data-jobid="' + data + '" type="button" class="btn-tw-warning buttonEdit" title="Edit Job"><i class="fas fa-fw fa-edit"></i></button>';
+                        btns += '<button type="button" data-jobid="' + data + '" data-job-name="' + row.JobName + '" class="btn-tw-danger buttonDelete" title="Delete Job"><i class="fas fa-fw fa-trash"></i></button>';
                     }
 
                     btns += '</div>';
@@ -717,6 +859,262 @@ $(document).ready(function() {
         table.ajax.reload(null, false);
         refreshCard();
     }, 5000);
+
+    // ===================== FEATURE 1: ASSIGN JOB =====================
+
+    $(document).on('click', '.buttonAssign', function(e) {
+        e.preventDefault();
+        var jobID = $(this).data('jobid');
+        var jobName = $(this).data('job-name');
+
+        $('#assign_job_id').val(jobID);
+        $('#assign_job_name').text(jobName);
+        $('#assign_driver_select').empty().append('<option value="">-- Loading... --</option>');
+        clearAllFieldErrors('#modal_assign');
+
+        showModal('#modal_assign');
+
+        $.ajax({
+            url: '<?= base_url("Job/getDriversByCompany") ?>',
+            method: 'GET',
+            data: { jobID: jobID },
+            dataType: 'json',
+            success: function(drivers) {
+                var $select = $('#assign_driver_select');
+                $select.empty().append('<option value="">-- Select Driver --</option>');
+                $.each(drivers, function(i, d) {
+                    $select.append('<option value="' + d.UserID + '">' + d.Fullname + '</option>');
+                });
+            }
+        });
+    });
+
+    $('#btn_confirm_assign').on('click', function() {
+        var jobID = $('#assign_job_id').val();
+        var driverID = $('#assign_driver_select').val();
+
+        clearAllFieldErrors('#modal_assign');
+
+        if (!driverID) {
+            setFieldError('assign_driver_select', 'Please select a driver.');
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Assigning...');
+
+        $.ajax({
+            url: '<?= base_url("Job/assignJob") ?>',
+            method: 'POST',
+            data: { jobID: jobID, driverID: driverID },
+            dataType: 'json',
+            success: function(resp) {
+                if (resp.success) {
+                    hideModal('#modal_assign');
+                    Swal.fire({ icon: 'success', title: 'Success', text: resp.message, timer: 2000, showConfirmButton: false });
+                    silentReload = true;
+                    table.ajax.reload(null, false);
+                    refreshCard();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                }
+            },
+            error: function() {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred.' });
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Assign');
+            }
+        });
+    });
+
+    // ===================== FEATURE 2: REASSIGN JOB =====================
+
+    $(document).on('click', '.buttonReassign', function(e) {
+        e.preventDefault();
+        var jobID = $(this).data('jobid');
+        var jobName = $(this).data('job-name');
+        var currentDriver = $(this).data('current-driver');
+
+        $('#reassign_job_id').val(jobID);
+        $('#reassign_job_name').text(jobName);
+        $('#reassign_driver_select').empty().append('<option value="">-- Loading... --</option>');
+        clearAllFieldErrors('#modal_reassign');
+
+        showModal('#modal_reassign');
+
+        $.ajax({
+            url: '<?= base_url("Job/getDriversByCompany") ?>',
+            method: 'GET',
+            data: { jobID: jobID, excludeUserID: currentDriver },
+            dataType: 'json',
+            success: function(drivers) {
+                var $select = $('#reassign_driver_select');
+                $select.empty().append('<option value="">-- Select New Driver --</option>');
+                $.each(drivers, function(i, d) {
+                    $select.append('<option value="' + d.UserID + '">' + d.Fullname + '</option>');
+                });
+            }
+        });
+    });
+
+    $('#btn_confirm_reassign').on('click', function() {
+        var jobID = $('#reassign_job_id').val();
+        var driverID = $('#reassign_driver_select').val();
+
+        clearAllFieldErrors('#modal_reassign');
+
+        if (!driverID) {
+            setFieldError('reassign_driver_select', 'Please select a new driver.');
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Reassigning...');
+
+        $.ajax({
+            url: '<?= base_url("Job/reassignJob") ?>',
+            method: 'POST',
+            data: { jobID: jobID, driverID: driverID },
+            dataType: 'json',
+            success: function(resp) {
+                if (resp.success) {
+                    hideModal('#modal_reassign');
+                    Swal.fire({ icon: 'success', title: 'Success', text: resp.message, timer: 2000, showConfirmButton: false });
+                    silentReload = true;
+                    table.ajax.reload(null, false);
+                    refreshCard();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                }
+            },
+            error: function() {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred.' });
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Reassign');
+            }
+        });
+    });
+
+    // ===================== FEATURE 3: CANCEL JOB =====================
+
+    $(document).on('click', '.buttonCancel', function(e) {
+        e.preventDefault();
+        var jobID = $(this).data('jobid');
+        var jobName = $(this).data('job-name');
+
+        $('#cancel_job_id').val(jobID);
+        $('#cancel_job_name').text(jobName);
+        $('#cancel_reason').val('');
+        clearAllFieldErrors('#modal_cancel');
+
+        showModal('#modal_cancel');
+    });
+
+    $('#btn_confirm_cancel').on('click', function() {
+        var jobID = $('#cancel_job_id').val();
+        var reason = $('#cancel_reason').val().trim();
+
+        clearAllFieldErrors('#modal_cancel');
+
+        if (!reason) {
+            setFieldError('cancel_reason', 'Please provide a reason for cancellation.');
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Cancelling...');
+
+        $.ajax({
+            url: '<?= base_url("Job/cancelJob") ?>',
+            method: 'POST',
+            data: { jobID: jobID, reason: reason },
+            dataType: 'json',
+            success: function(resp) {
+                if (resp.success) {
+                    hideModal('#modal_cancel');
+                    Swal.fire({ icon: 'success', title: 'Success', text: resp.message, timer: 2000, showConfirmButton: false });
+                    silentReload = true;
+                    table.ajax.reload(null, false);
+                    refreshCard();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                }
+            },
+            error: function() {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred.' });
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Cancel Job');
+            }
+        });
+    });
+
+    // ===================== FEATURE 4: ADMIN RESCHEDULE =====================
+
+    $(document).on('click', '.buttonAdminReschedule', function(e) {
+        e.preventDefault();
+        var jobID = $(this).data('jobid');
+        var jobName = $(this).data('job-name');
+
+        $('#reschedule_job_id').val(jobID);
+        $('#reschedule_job_name').text(jobName);
+        $('#reschedule_new_date').val('');
+        $('#reschedule_reason').val('');
+        clearAllFieldErrors('#modal_admin_reschedule');
+
+        var today = new Date().toISOString().slice(0, 10);
+        $('#reschedule_new_date').attr('min', today);
+
+        showModal('#modal_admin_reschedule');
+    });
+
+    $('#btn_confirm_reschedule').on('click', function() {
+        var jobID = $('#reschedule_job_id').val();
+        var newDate = $('#reschedule_new_date').val();
+        var reason = $('#reschedule_reason').val().trim();
+
+        clearAllFieldErrors('#modal_admin_reschedule');
+        var hasError = false;
+
+        if (!newDate) {
+            setFieldError('reschedule_new_date', 'Please select a new date.');
+            hasError = true;
+        }
+        if (!reason) {
+            setFieldError('reschedule_reason', 'Please provide a reason.');
+            hasError = true;
+        }
+        if (hasError) return;
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Rescheduling...');
+
+        $.ajax({
+            url: '<?= base_url("Job/adminRescheduleJob") ?>',
+            method: 'POST',
+            data: { jobID: jobID, newDate: newDate, reason: reason },
+            dataType: 'json',
+            success: function(resp) {
+                if (resp.success) {
+                    hideModal('#modal_admin_reschedule');
+                    Swal.fire({ icon: 'success', title: 'Success', text: resp.message, timer: 2000, showConfirmButton: false });
+                    silentReload = true;
+                    table.ajax.reload(null, false);
+                    refreshCard();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                }
+            },
+            error: function() {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred.' });
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Reschedule');
+            }
+        });
+    });
 
 });
 
