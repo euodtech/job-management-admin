@@ -1,2 +1,0 @@
-[    3390ms] [ERROR] Access to fetch at 'http://localhost:8080/be-fms/internal/favicon.ico' from origin 'null' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ about:blank:0
-[    3391ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:8080/be-fms/internal/favicon.ico:0
