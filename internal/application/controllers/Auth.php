@@ -141,6 +141,21 @@ class Auth extends MY_Controller
         }
     }
 
+    public function keepalive()
+    {
+        header('Content-Type: application/json');
+
+        if ($this->session->userdata('status') !== 'kusam') {
+            echo json_encode(['alive' => false]);
+            return;
+        }
+
+        // Touch the session to reset its expiration timer
+        $this->session->set_userdata('last_activity', time());
+
+        echo json_encode(['alive' => true, 'expires_in' => config_item('sess_expiration')]);
+    }
+
     public function logout()
     {
         $this->session->sess_destroy();

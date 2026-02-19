@@ -78,12 +78,10 @@ class ApiToken extends MY_Controller
      * @param array $headers tambahan headers
      * @return array [success(bool), httpCode(int|null), body(string), error(string|null)]
      */
-    protected function requestCurl($url, $method = 'GET', $payload = null, $headers = array())
+    protected function requestCurl($url, $method = 'GET', $payload = null, $headers = array(), $_isRetry = false)
     {
         $token = $this->getApiToken();
-        // var_dump($token);
-        // exit;
-        
+
         if (!$token) {
             return array('success' => false, 'httpCode' => null, 'body' => null, 'error' => 'No API token');
         }
@@ -127,6 +125,12 @@ class ApiToken extends MY_Controller
 
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        // Auto-retry once on 401: clear expired token, re-authenticate, replay the request
+        if ($httpCode == 401 && !$_isRetry) {
+            $this->session->unset_userdata('api_access_token');
+            return $this->requestCurl($url, $method, $payload, $headers, true);
+        }
 
         return array(
             'success' => $body !== false,

@@ -339,6 +339,11 @@ $('.custom-file-input').on('change', function() {
 
 
         setInterval(function () {
+            // Only poll when user is active (respects session idle timeout)
+            if (typeof window._efmsLastActivity !== 'undefined') {
+                var idle = Date.now() - window._efmsLastActivity;
+                if (idle > 300000) return; // skip if idle > 5 min
+            }
             countJobInSidebar();
         }, 30000);
 
@@ -1039,6 +1044,152 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+</script>
+
+<!-- Session Keep-Alive & Expiry Warning -->
+<script>
+(function() {
+    var SESSION_LIFETIME  = <?php echo config_item('sess_expiration'); ?>;  // seconds (from PHP config)
+    var WARN_BEFORE       = 300;   // show warning 5 minutes before expiry
+    var PING_INTERVAL     = 240;   // ping server every 4 minutes while active
+    var IDLE_THRESHOLD    = 300;   // consider user idle after 5 minutes of no activity
+    var KEEPALIVE_URL     = "<?php echo base_url('auth/keepalive'); ?>";
+    var LOGOUT_URL        = "<?php echo base_url('auth/logout'); ?>";
+
+    var lastActivity      = window._efmsLastActivity = Date.now();
+    var sessionStart      = Date.now();
+    var warningShown      = false;
+    var warningDismissed  = false;
+    var pingTimer         = null;
+    var checkTimer        = null;
+
+    // Track user activity
+    var activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    activityEvents.forEach(function(evt) {
+        document.addEventListener(evt, function() {
+            lastActivity = window._efmsLastActivity = Date.now();
+        }, { passive: true });
+    });
+
+    // Ping the server to keep session alive (only if user is active)
+    function pingServer() {
+        var idleMs = Date.now() - lastActivity;
+        if (idleMs > IDLE_THRESHOLD * 1000) {
+            return; // user is idle, let session expire naturally
+        }
+
+        $.ajax({
+            url: KEEPALIVE_URL,
+            method: 'GET',
+            dataType: 'json',
+            cache: false,
+            success: function(res) {
+                if (res && res.alive) {
+                    sessionStart = Date.now(); // reset our local timer
+                    warningShown = false;
+                    warningDismissed = false;
+                } else {
+                    // session already dead server-side
+                    forceLogout();
+                }
+            },
+            error: function() {
+                // network error — don't force logout, just skip this ping
+            }
+        });
+    }
+
+    // Check if we should show warning or force logout
+    function checkSession() {
+        var elapsed   = (Date.now() - sessionStart) / 1000;
+        var remaining = SESSION_LIFETIME - elapsed;
+        var idleMs    = Date.now() - lastActivity;
+
+        // If user has been active recently, the ping would have reset sessionStart,
+        // so remaining should be high. We only warn when truly approaching expiry.
+
+        if (remaining <= 0) {
+            forceLogout();
+            return;
+        }
+
+        if (remaining <= WARN_BEFORE && !warningShown && !warningDismissed) {
+            warningShown = true;
+            showWarning(Math.floor(remaining));
+        }
+    }
+
+    function showWarning(secondsLeft) {
+        var minutes = Math.ceil(secondsLeft / 60);
+        Swal.fire({
+            title: 'Session Expiring',
+            html: 'Your session will expire in <b>' + minutes + ' minute' + (minutes !== 1 ? 's' : '') + '</b>.<br>Click below to stay logged in.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Stay Logged In',
+            cancelButtonText: 'Logout',
+            confirmButtonColor: '#070f26',
+            cancelButtonColor: '#da1e26',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            timer: secondsLeft * 1000,
+            timerProgressBar: true,
+            didOpen: function() {
+                // Update countdown in real time
+                var timerInterval = setInterval(function() {
+                    var timeLeft = Swal.getTimerLeft();
+                    if (timeLeft !== null) {
+                        var mins = Math.floor(timeLeft / 60000);
+                        var secs = Math.floor((timeLeft % 60000) / 1000);
+                        var timeStr = mins > 0
+                            ? mins + ' minute' + (mins !== 1 ? 's' : '') + ' ' + secs + 's'
+                            : secs + ' seconds';
+                        var content = Swal.getHtmlContainer();
+                        if (content) {
+                            content.querySelector('b').textContent = timeStr;
+                        }
+                    }
+                }, 1000);
+                Swal.getPopup()._timerInterval = timerInterval;
+            },
+            willClose: function() {
+                clearInterval(Swal.getPopup()._timerInterval);
+            }
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                // User clicked "Stay Logged In" — ping server to refresh
+                warningDismissed = true;
+                pingServer();
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // User clicked "Logout"
+                forceLogout();
+            } else if (result.dismiss === Swal.DismissReason.timer) {
+                // Timer ran out
+                forceLogout();
+            }
+        });
+    }
+
+    function forceLogout() {
+        clearInterval(pingTimer);
+        clearInterval(checkTimer);
+        Swal.fire({
+            title: 'Session Expired',
+            text: 'Your session has expired. You will be redirected to the login page.',
+            icon: 'info',
+            confirmButtonText: 'Go to Login',
+            confirmButtonColor: '#070f26',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then(function() {
+            window.location.href = LOGOUT_URL;
+        });
+    }
+
+    // Start timers
+    pingTimer  = setInterval(pingServer, PING_INTERVAL * 1000);
+    checkTimer = setInterval(checkSession, 10000); // check every 10s
+})();
 </script>
 
 </body>
