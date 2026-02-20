@@ -55,6 +55,9 @@ class Authenticate
             ], 401);
         }
 
+        $data->LastActivity = date('Y-m-d H:i:s');
+        $data->save();
+
         return $next($request);
     }
 }

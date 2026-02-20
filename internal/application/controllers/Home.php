@@ -3,7 +3,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Home extends MY_Controller
 {
-    private $defaultDay = 6;
     public function __construct()
     {
         parent::__construct();
@@ -21,297 +20,171 @@ class Home extends MY_Controller
     public function index()
     {
         $data['title'] = "Dashboard";
-        $from_date = $this->input->post('from_date');
-        $until_date = $this->input->post('until_date');
 
-        if(isset($from_date)) {
-            $where_driver_on_job = " AND DATE(AssignWhen) >= '$from_date' AND DATE(AssignWhen) <= '$until_date' ";
+        $role = $this->session->userdata('Role');
+        $companyID = $this->session->userdata('CompanyID');
 
-            $where_job = " WHERE DATE(ListJob.JobDate) >= '$from_date' AND DATE(ListJob.JobDate) <= '$until_date' ";
+        // --- Driver online/offline (based on LastActivity within 10 minutes) ---
+        $where_company = "";
+        $binds_drivers = [];
+        if ($role != 1) {
+            $where_company = " AND ListUser.ListCompanyID = ?";
+            $binds_drivers[] = $companyID;
+        }
 
-            if($this->session->userdata("Role") != 1) {
+        $drivers = $this->M_Global->globalquery(
+            "SELECT ListUser.Fullname, ListUser.Email, ListUser.PhoneNumber, UserLogin.LastActivity
+             FROM ListUser
+             LEFT JOIN UserLogin ON ListUser.UserLoginID = UserLogin.UserLoginID
+             WHERE ListUser.StatusActive = 0 $where_company",
+            $binds_drivers
+        )->result_array();
 
-                $where_job .= " AND ListJob.CompanyID = " . $this->session->userdata('CompanyID');
+        $drivers_online = 0;
+        $drivers_online_detail = [];
+        $drivers_offline = 0;
+        $drivers_offline_detail = [];
 
-            }
+        $threshold = date('Y-m-d H:i:s', strtotime('-10 minutes'));
 
-        
-        } else {
-            $where_driver_on_job = " AND DATE(AssignWhen) = CURRENT_DATE() ";
+        foreach ($drivers as $val) {
+            $driver_info = [
+                "Fullname"     => $val['Fullname'],
+                "Email"        => $val['Email'],
+                "PhoneNumber"  => $val['PhoneNumber'],
+                "LastActivity" => $val['LastActivity']
+            ];
 
-            $where_job = " WHERE DATE(ListJob.JobDate) = CURRENT_DATE() ";
-
-            if($this->session->userdata("Role") != 1) {
-
-                $where_job .= " AND ListJob.CompanyID = " . $this->session->userdata('CompanyID');
-
+            if ($val['LastActivity'] && $val['LastActivity'] >= $threshold) {
+                $drivers_online++;
+                $drivers_online_detail[] = $driver_info;
+            } else {
+                $drivers_offline++;
+                $drivers_offline_detail[] = $driver_info;
             }
         }
 
-        if($this->session->userdata('Role') != 1) {
-
-            $where_company = " AND ListCompanyID = " . $this->session->userdata('CompanyID');
-
+        // --- Jobs today ---
+        $where_job = " WHERE DATE(ListJob.JobDate) = CURRENT_DATE()";
+        $binds_jobs = [];
+        if ($role != 1) {
+            $where_job .= " AND ListJob.CompanyID = ?";
+            $binds_jobs[] = $companyID;
         }
 
-        
+        $total_jobs = $this->M_Global->globalquery(
+            "SELECT ListJob.*, ListUser.Fullname, ListUser.PhoneNumber,
+                    Customer.CustomerName, Customer.PhoneNumber as PhoneCustomer
+             FROM ListJob
+             LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID
+             LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID
+             $where_job",
+            $binds_jobs
+        )->result_array();
 
-        $total_drivers = $this->M_Global->globalquery("SELECT * FROM ListUser WHERE StatusActive =  0 $where_company ")->result_array();
-
-        $total_customer = $this->M_Global->globalquery("SELECT *  FROM Customer")->result_array();
-
-        $total_jobs = $this->M_Global->globalquery("SELECT ListJob.*, ListUser.*, Customer.CustomerName, Customer.PhoneNumber as PhoneCustomer FROM ListJob LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID $where_job")->result_array();
-
-        $driver_on_duty = 0;
-        $driver_on_duty_detail = [];
-        $driver_off_duty = 0;
-        $driver_off_duty_detail = [];
-        
         $finished_job = 0;
         $finished_job_detail = [];
-
-        $detail_jobs = [];
         $total_job_on_duty = 0;
         $detail_job_on_duty = [];
         $total_job_off_duty = 0;
         $detail_job_off_duty = [];
 
-        foreach($total_drivers as $val) {
+        foreach ($total_jobs as $val) {
+            $job_info = [
+                "JobName"       => $val['JobName'],
+                "NameDriver"    => $val['Fullname'],
+                "PhoneDriver"   => $val['PhoneNumber'],
+                "CustomerName"  => $val['CustomerName'],
+                "CustomerPhone" => $val['PhoneCustomer'],
+                "JobDate"       => $val['JobDate']
+            ];
 
-            $driver_id = $val['UserID'];
-            $driver_name = $val['Fullname'];
-            $driver_email = $val['Email'];
-            $driver_phone = $val['PhoneNumber'];
-
-            $cek_driver = $this->M_Global->globalquery("SELECT UserID FROM ListJob WHERE UserID = '$driver_id' $where_driver_on_job ")->result_array();
-
-            if(count($cek_driver) > 0) {
-                // Driver sedang bertugas
-                $driver_on_duty++;
-                $driver_on_duty_detail[] = [
-                    "Fullname"    => $driver_name,
-                    "Email"       => $driver_email,
-                    "PhoneNumber" => $driver_phone
-                ];
-            } else {
-                // Driver belum bertugas
-                $driver_off_duty++;
-                $driver_off_duty_detail[] = [
-                    "Fullname"    => $driver_name,
-                    "Email"       => $driver_email,
-                    "PhoneNumber" => $driver_phone
-                ];
-            }
-        }
-
-        foreach($total_jobs as $val) {
-
-
-            if($val['UserID'] != null) {
-
-                if($val['Status'] == "2") {
+            if ($val['UserID'] != null) {
+                if ($val['Status'] == "2") {
                     $finished_job++;
-                    $finished_job_detail[] = [
-                        "JobName"    => $val['JobName'],
-                        "NameDriver"       => $val['Fullname'],
-                        "PhoneDriver"       => $val['PhoneNumber'],
-                        "CustomerName" => $val['CustomerName'],
-                        "CustomerPhone" => $val['PhoneCustomer'],
-                        "JobDate" => $val['JobDate']
-                    ];
+                    $finished_job_detail[] = $job_info;
                 } else {
                     $total_job_on_duty++;
-
-                    $detail_job_on_duty[] = [
-                        "JobName"    => $val['JobName'],
-                        "NameDriver"       => $val['Fullname'],
-                        "PhoneDriver"       => $val['PhoneNumber'],
-                        "CustomerName" => $val['CustomerName'],
-                        "CustomerPhone" => $val['PhoneCustomer'],
-                        "JobDate" => $val['JobDate']
-                    ];
+                    $detail_job_on_duty[] = $job_info;
                 }
-
-                
-
             } else {
                 $total_job_off_duty++;
-
-                $detail_job_off_duty[] = [
-                    "JobName"    => $val['JobName'],
-                    "NameDriver"       => $val['Fullname'],
-                    "PhoneDriver"       => $val['PhoneNumber'],
-                    "CustomerName" => $val['CustomerName'],
-                    "CustomerPhone" => $val['PhoneCustomer'],
-                    "JobDate" => $val['JobDate']
-                ];
+                $detail_job_off_duty[] = $job_info;
             }
-
-            $detail_jobs[] = [
-                "JobName"    => $val['JobName'],
-                "NameDriver"       => $val['Fullname'],
-                "PhoneDriver"       => $val['PhoneNumber'],
-                "CustomerName" => $val['CustomerName'],
-                "CustomerPhone" => $val['PhoneCustomer'],
-                "JobDate" => $val['JobDate']
-            ];
         }
 
         $return = [
-            "total_drivers"         => count($total_drivers),
-            "drivers_on_duty"       => $driver_on_duty,
-            "drivers_on_duty_detail"=> $driver_on_duty_detail,
-            "drivers_off_duty"      => $driver_off_duty,
-            "drivers_off_duty_detail"=> $driver_off_duty_detail,
-            "total_job" => count($total_jobs),
-            "detail_job_today" => $detail_jobs,
-            "total_job_on_duty" => $total_job_on_duty,
-            "total_finished_job" => $finished_job,
-            "finished_job_detail" => $finished_job_detail,
-            "detail_job_on_duty" => $detail_job_on_duty,
-            "total_job_off_duty" => $total_job_off_duty,
-            "detail_job_off_duty" => $detail_job_off_duty
+            "total_drivers"          => count($drivers),
+            "drivers_online"         => $drivers_online,
+            "drivers_online_detail"  => $drivers_online_detail,
+            "drivers_offline"        => $drivers_offline,
+            "drivers_offline_detail" => $drivers_offline_detail,
+            "total_job"              => count($total_jobs),
+            "total_job_on_duty"      => $total_job_on_duty,
+            "total_finished_job"     => $finished_job,
+            "finished_job_detail"    => $finished_job_detail,
+            "detail_job_on_duty"     => $detail_job_on_duty,
+            "total_job_off_duty"     => $total_job_off_duty,
+            "detail_job_off_duty"    => $detail_job_off_duty
         ];
 
         $data['return'] = $return;
 
-        // echo json_encode($return);
-        // die;
-
-
-        $this->render_page('main/home/page_home',$data);
+        $this->render_page('main/home/page_home', $data);
     }
 
-    private function getSalesSummary($fromDate=null,$untilDate=null,$month=null,$type = null)
+    public function get_driver_status_ajax()
     {
-        if(!$type)
-            $type = $this->input->get('time')?:"range_date";
-        if($type == "range_date"){
-            if(!$fromDate)
-                $fromDate = $this->input->get('from_date');
-            if(!$untilDate)
-                $untilDate = $this->input->get('until_date') ?: date('Y-m-d');
-            if ($fromDate && $untilDate) {
-                $where = " WHERE Transaction.TransactionDatetime >= '".$fromDate." 00:00:00' AND Transaction.TransactionDatetime <= '".$untilDate." 23:59:59'";
+        header('Content-Type: application/json');
+
+        $role = $this->session->userdata('Role');
+        $companyID = $this->session->userdata('CompanyID');
+
+        $where_company = "";
+        $binds = [];
+        if ($role != 1) {
+            $where_company = " AND ListUser.ListCompanyID = ?";
+            $binds[] = $companyID;
+        }
+
+        $drivers = $this->M_Global->globalquery(
+            "SELECT ListUser.Fullname, ListUser.Email, ListUser.PhoneNumber, UserLogin.LastActivity
+             FROM ListUser
+             LEFT JOIN UserLogin ON ListUser.UserLoginID = UserLogin.UserLoginID
+             WHERE ListUser.StatusActive = 0 $where_company",
+            $binds
+        )->result_array();
+
+        $drivers_online = 0;
+        $drivers_online_detail = [];
+        $drivers_offline = 0;
+        $drivers_offline_detail = [];
+
+        $threshold = date('Y-m-d H:i:s', strtotime('-10 minutes'));
+
+        foreach ($drivers as $val) {
+            $driver_info = [
+                "Fullname"     => $val['Fullname'],
+                "PhoneNumber"  => $val['PhoneNumber'],
+                "LastActivity" => $val['LastActivity']
+            ];
+
+            if ($val['LastActivity'] && $val['LastActivity'] >= $threshold) {
+                $drivers_online++;
+                $drivers_online_detail[] = $driver_info;
             } else {
-                $diff = $this->defaultDay;
-                $fromDateRes = new DateTime(date('Y-m-d'));
-                $fromDateRes->modify("-$diff days");
-                $fromDateRes = $fromDateRes->format("Y-m-d");
-
-                $where = " WHERE Transaction.TransactionDatetime >= '".$fromDateRes." 00:00:00' AND Transaction.TransactionDatetime <= '".date('Y-m-d')." 23:59:59'";
+                $drivers_offline++;
+                $drivers_offline_detail[] = $driver_info;
             }
-        }else{
-            if (!$month)
-                $month = $this->input->get("month");
-            $diffMonth = 0;
-            if($month == 1){
-                $month = "01";
-            }else if($month > 9){
-                $diffMonth = $month + 1;
-                if($diffMonth < 10)
-                    $diffMonth = "0".$diffMonth;
-            }else{
-                $month = "0".$month;
-                $diffMonth = "0".($month + 1);
-            }
-            $fromDataRes = date("Y-$month-01"); 
-            $toDataRes = date("Y-$diffMonth-01");
-            if($diffMonth > 12){
-                $yearNext = date("Y") + 1;
-                $diffMonth = $diffMonth - 12;
-                if($diffMonth < 10)
-                    $diffMonth = "0".$diffMonth;
-                $toDataRes = date("$yearNext-$diffMonth-01");
-            }else if($diffMonth == 0){
-                $yearPass = date("Y") - 1;
-                $toDataRes = date("$yearPass-12-01");
-            }
-            $where = " WHERE Transaction.TransactionDatetime >= '" . $fromDataRes . " 00:00:00' AND Transaction.TransactionDatetime < '" . $toDataRes . " 00:00:00'";
         }
-        $where .= "AND StatusTransID != 0 ";
 
-        $res =  $this->M_Global->globalquery("SELECT DATE(TransactionDatetime) as date, sum(TotalTransaction) total_transaction FROM Transaction $where GROUP BY DATE(TransactionDatetime)")->result();
-    
-        $res2 = [];
-        foreach ($res as $key => $value) {
-            $res2[$value->date] = $value->total_transaction;
-        }
-        $resDate = [];
-        $resValue = [];
-        foreach ($res2 as $key => $value) {
-            $dateFormat = new DateTime($key );
-            $dateFormat = $dateFormat->format("d M Y");
-
-            $resDate[] = $dateFormat;
-            $resValue[] = (int) $value;
-        }
-        return [
-            "date" => json_encode($resDate),
-            "value" => json_encode($resValue),
-        ];
-    }
-
-    private function getTopProduct($fromDate=null,$untilDate=null,$month=null,$type = null)
-    {
-        if(!$type)
-            $type = $this->input->get('time')?:"range_date";
-        if($type == "range_date"){
-            if(!$fromDate)
-                $fromDate = $this->input->get('from_date');
-            if(!$untilDate)
-                $untilDate = $this->input->get('until_date') ?: date('Y-m-d');
-            if ($fromDate && $untilDate) {
-                $where = " WHERE date(td.created_at) >= '".$fromDate." 00:00:00' AND date(td.created_at) <= '".$untilDate." 23:59:59'";
-            } else {
-                $diff = $this->defaultDay;
-                $fromDateRes = new DateTime(date('Y-m-d'));
-                $fromDateRes->modify("-$diff days");
-                $fromDateRes = $fromDateRes->format("Y-m-d");
-
-                $where = " WHERE date(td.created_at) >= '".$fromDateRes." 00:00:00' AND date(td.created_at) <= '".date('Y-m-d')." 23:59:59'";
-            }
-        }else{
-            if (!$month)
-                $month = $this->input->get("month");
-            $diffMonth = 0;
-            if($month == 1){
-                $month = "01";
-            }else if($month > 9){
-                $diffMonth = $month + 1;
-                if($diffMonth < 10)
-                    $diffMonth = "0".$diffMonth;
-            }else{
-                $month = "0".$month;
-                $diffMonth = "0".($month + 1);
-            }
-            $fromDataRes = date("Y-$month-01"); 
-            $toDataRes = date("Y-$diffMonth-01");
-            if($diffMonth > 12){
-                $yearNext = date("Y") + 1;
-                $diffMonth = $diffMonth - 12;
-                if($diffMonth < 10)
-                    $diffMonth = "0".$diffMonth;
-                $toDataRes = date("$yearNext-$diffMonth-01");
-            }else if($diffMonth == 0){
-                $yearPass = date("Y") - 1;
-                $toDataRes = date("$yearPass-12-01");
-            }
-            $where = " WHERE date(td.created_at) >= '" . $fromDataRes . " 00:00:00' AND date(td.created_at) < '" . $toDataRes . " 00:00:00'";
-        }
-        $where .= "AND tr.StatusTransaction != 0 ";
-
-        $res =  $this->M_Global->globalquery("SELECT td.ProductName, SUM(td.qty) as total_qty FROM TransactionDetail td JOIN Transaction tr ON tr.TransactionID = td.TransactionID GROUP BY td.ProductID ORDER BY SUM(td.qty) DESC LIMIT 5")->result();
-        $resDate = [];
-        $resValue = [];
-        foreach ($res as $value) {
-            $resDate[] = $value->ProductName;
-            $resValue[] = (int) $value->total_qty;
-        }
-        return [
-            "product_name" => json_encode($resDate),
-            "total_qty" => json_encode($resValue),
-        ];
+        echo json_encode([
+            "total_drivers"          => count($drivers),
+            "drivers_online"         => $drivers_online,
+            "drivers_online_detail"  => $drivers_online_detail,
+            "drivers_offline"        => $drivers_offline,
+            "drivers_offline_detail" => $drivers_offline_detail
+        ]);
     }
 
     public function get_total_job_ajax()
@@ -346,74 +219,6 @@ class Home extends MY_Controller
         ];
 
         echo json_encode($dataReturn);
-    }
-
-    private function getTopMember($fromDate=null,$untilDate=null,$month=null,$type = null)
-    {
-        if(!$type)
-            $type = $this->input->get('time')?:"range_date";
-        if($type == "range_date"){
-            if(!$fromDate)
-                $fromDate = $this->input->get('from_date');
-            if(!$untilDate)
-                $untilDate = $this->input->get('until_date') ?: date('Y-m-d');
-            if ($fromDate && $untilDate) {
-                $where = " WHERE date(td.created_at) >= '".$fromDate." 00:00:00' AND date(td.created_at) <= '".$untilDate." 23:59:59'";
-            } else {
-                $diff = $this->defaultDay;
-                $fromDateRes = new DateTime(date('Y-m-d'));
-                $fromDateRes->modify("-$diff days");
-                $fromDateRes = $fromDateRes->format("Y-m-d");
-
-                $where = " WHERE date(td.created_at) >= '".$fromDateRes." 00:00:00' AND date(td.created_at) <= '".date('Y-m-d')." 23:59:59'";
-            }
-        }else{
-            if (!$month)
-                $month = $this->input->get("month");
-            $diffMonth = 0;
-            if($month == 1){
-                $month = "01";
-            }else if($month > 9){
-                $diffMonth = $month + 1;
-                if($diffMonth < 10)
-                    $diffMonth = "0".$diffMonth;
-            }else{
-                $month = "0".$month;
-                $diffMonth = "0".($month + 1);
-            }
-            $fromDataRes = date("Y-$month-01"); 
-            $toDataRes = date("Y-$diffMonth-01");
-            if($diffMonth > 12){
-                $yearNext = date("Y") + 1;
-                $diffMonth = $diffMonth - 12;
-                if($diffMonth < 10)
-                    $diffMonth = "0".$diffMonth;
-                $toDataRes = date("$yearNext-$diffMonth-01");
-            }else if($diffMonth == 0){
-                $yearPass = date("Y") - 1;
-                $toDataRes = date("$yearPass-12-01");
-            }
-            $where = " WHERE date(td.created_at) >= '" . $fromDataRes . " 00:00:00' AND date(td.created_at) < '" . $toDataRes . " 00:00:00'";
-        }
-        $where .= "AND tr.StatusTransaction != 0 ";
-
-        if($outletID = $this->input->get("outlet"))
-            $where .= "AND tr.PoolID = $outletID";
-
-        $res =  $this->M_Global->globalquery("SELECT tr.CustomerName, SUM(td.qty) as total_qty 
-        FROM TransactionDetail td 
-        JOIN Transaction tr ON tr.TransactionID = td.TransactionID 
-        GROUP BY tr.CustomerID ORDER BY SUM(td.qty) DESC LIMIT 5")->result();
-        $resDate = [];
-        $resValue = [];
-        foreach ($res as $value) {
-            $resDate[] = $value->CustomerName;
-            $resValue[] = (int) $value->total_qty;
-        }
-        return [
-            "member" => json_encode($resDate),
-            "total_qty" => json_encode($resValue),
-        ];
     }
 
     public function forgot_password()

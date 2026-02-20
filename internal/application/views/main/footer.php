@@ -863,6 +863,8 @@ function toggleSidebar() {
         });
     });
 
+    window.initPaginatedTable = initPaginatedTable;
+
     function initPaginatedTable(table) {
         var perPage = parseInt(table.getAttribute('data-per-page')) || 5;
         var searchable = table.hasAttribute('data-searchable');
