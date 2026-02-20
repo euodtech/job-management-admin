@@ -111,7 +111,7 @@
                                     <td class="text-center px-4 py-3"><?= $no++ ?></td>
                                     <td class="px-4 py-3 driver-name"><?= $val['Fullname'] ?></td>
                                     <td class="px-4 py-3"><?= $val['PhoneNumber'] ?></td>
-                                    <td class="px-4 py-3"><?= $val['LastActivity'] ? date('M d, Y h:i A', strtotime($val['LastActivity'])) : '-' ?></td>
+                                    <td class="px-4 py-3 italic text-gray-500" title="<?= $val['LastActivity'] ? date('M d, Y h:i A', strtotime($val['LastActivity'] . ' UTC')) : '' ?>"><?= $val['LastActivity'] ? time_ago(strtotime($val['LastActivity'] . ' UTC')) : '-' ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -148,7 +148,7 @@
                                     <td class="text-center px-4 py-3"><?= $no++ ?></td>
                                     <td class="px-4 py-3"><?= $val['Fullname'] ?></td>
                                     <td class="px-4 py-3"><?= $val['PhoneNumber'] ?></td>
-                                    <td class="px-4 py-3"><?= $val['LastActivity'] ? date('M d, Y h:i A', strtotime($val['LastActivity'])) : 'Never' ?></td>
+                                    <td class="px-4 py-3 italic text-gray-500" title="<?= $val['LastActivity'] ? date('M d, Y h:i A', strtotime($val['LastActivity'] . ' UTC')) : '' ?>"><?= $val['LastActivity'] ? time_ago(strtotime($val['LastActivity'] . ' UTC')) : 'Never' ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -264,17 +264,21 @@ function toggleCard(btn, targetId) {
     var BASE_URL = '<?= base_url("home/get_driver_status_ajax") ?>';
 
     function formatDate(dateStr) {
-        if (!dateStr) return 'Never';
-        var d = new Date(dateStr.replace(' ', 'T'));
-        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        var month = months[d.getMonth()];
-        var day = ('0' + d.getDate()).slice(-2);
-        var year = d.getFullYear();
-        var hours = d.getHours();
-        var ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        var mins = ('0' + d.getMinutes()).slice(-2);
-        return month + ' ' + day + ', ' + year + ' ' + ('0' + hours).slice(-2) + ':' + mins + ' ' + ampm;
+        if (!dateStr) return { ago: 'Never', full: '' };
+        var d = new Date(dateStr.replace(' ', 'T') + 'Z');
+        var full = d.toLocaleString('en-US', {
+            timeZone: 'Asia/Manila',
+            year: 'numeric', month: 'short', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: true
+        });
+        var diff = Math.floor((Date.now() - d.getTime()) / 1000);
+        var ago;
+        if (diff < 60) ago = 'Just now';
+        else if (diff < 3600) { var m = Math.floor(diff / 60); ago = m + (m === 1 ? ' min ago' : ' mins ago'); }
+        else if (diff < 86400) { var h = Math.floor(diff / 3600); ago = h + (h === 1 ? ' hr ago' : ' hrs ago'); }
+        else if (diff < 2592000) { var da = Math.floor(diff / 86400); ago = da + (da === 1 ? ' day ago' : ' days ago'); }
+        else { ago = full; }
+        return { ago: ago, full: full };
     }
 
     function buildRows(drivers, emptyLabel) {
@@ -284,12 +288,13 @@ function toggleCard(btn, targetId) {
         var html = '';
         for (var i = 0; i < drivers.length; i++) {
             var d = drivers[i];
-            var lastActive = d.LastActivity ? formatDate(d.LastActivity) : emptyLabel === 'online' ? '-' : 'Never';
+            var fallback = emptyLabel === 'online' ? '-' : 'Never';
+            var result = d.LastActivity ? formatDate(d.LastActivity) : { ago: fallback, full: '' };
             html += '<tr class="border-b border-gray-100 hover:bg-gray-50">' +
                 '<td class="text-center px-4 py-3">' + (i + 1) + '</td>' +
                 '<td class="px-4 py-3">' + (d.Fullname || '') + '</td>' +
                 '<td class="px-4 py-3">' + (d.PhoneNumber || '') + '</td>' +
-                '<td class="px-4 py-3">' + lastActive + '</td>' +
+                '<td class="px-4 py-3 italic text-gray-500" title="' + result.full + '">' + result.ago + '</td>' +
                 '</tr>';
         }
         return html;

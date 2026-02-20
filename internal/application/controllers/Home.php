@@ -45,7 +45,7 @@ class Home extends MY_Controller
         $drivers_offline = 0;
         $drivers_offline_detail = [];
 
-        $threshold = date('Y-m-d H:i:s', strtotime('-10 minutes'));
+        $threshold = gmdate('Y-m-d H:i:s', strtotime('-1 hour'));
 
         foreach ($drivers as $val) {
             $driver_info = [
@@ -160,7 +160,7 @@ class Home extends MY_Controller
         $drivers_offline = 0;
         $drivers_offline_detail = [];
 
-        $threshold = date('Y-m-d H:i:s', strtotime('-10 minutes'));
+        $threshold = gmdate('Y-m-d H:i:s', strtotime('-1 hour'));
 
         foreach ($drivers as $val) {
             $driver_info = [
