@@ -632,8 +632,12 @@ class Job extends MY_Controller
         $length  = intval($request['length'] ?? 10);
         $searchValue = $request['search']['value'] ?? '';
 
-        $dateFrom  = $this->input->get('dateFrom');
-        $dateUntil = $this->input->get('dateUntil');
+        $dateFrom     = $this->input->get('dateFrom');
+        $dateUntil    = $this->input->get('dateUntil');
+        $statusFilter = $this->input->get('statusFilter') ?? 'pending';
+
+        $statusMap = ['pending' => 1, 'approved' => 2, 'rejected' => 3];
+        $statusValue = isset($statusMap[$statusFilter]) ? $statusMap[$statusFilter] : 1;
 
         $columns = [
             0 => 'ListJob.JobID',
@@ -658,7 +662,9 @@ class Job extends MY_Controller
         $this->db->join('Customer', 'ListJob.CustomerID = Customer.CustomerID', 'left');
         $this->db->join('ListUser', 'ListJob.UserID = ListUser.UserID', 'left');
 
-        if (!empty($dateFrom) && !empty($dateUntil)) {
+        $this->db->where('RescheduledJob.StatusApproved', $statusValue);
+
+        if ($statusFilter !== 'pending' && !empty($dateFrom) && !empty($dateUntil)) {
             $this->db->where('DATE(ListJob.JobDate) >=', $dateFrom);
             $this->db->where('DATE(ListJob.JobDate) <=', $dateUntil);
         }
@@ -706,6 +712,7 @@ class Job extends MY_Controller
                 "Fullname" => $row['Fullname'],
                 "JobName" => $row['JobName'],
                 "Reason" => $row['Reason'],
+                "ReasonReject" => $row['ReasonReject'] ?? null,
                 "StatusApproved" => $row['StatusApproved'],
                 "RescheduledID" => $row['RescheduledID'],
             ];
@@ -721,6 +728,27 @@ class Job extends MY_Controller
             ]));
     }
 
+
+    public function getPendingRescheduleCount()
+    {
+        $role      = (int) $this->session->userdata('Role');
+        $companyID = (int) $this->session->userdata('CompanyID');
+
+        $this->db->select('COUNT(*) as cnt');
+        $this->db->from('RescheduledJob');
+        $this->db->join('ListJob', 'RescheduledJob.JobID = ListJob.JobID', 'left');
+        $this->db->where('RescheduledJob.StatusApproved', 1);
+
+        if ($role !== 1) {
+            $this->db->where('ListJob.CompanyID', $companyID);
+        }
+
+        $result = $this->db->get()->row();
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode(['count' => (int) $result->cnt]));
+    }
 
     public function actionRescheduleJob($type, $reschedule_id = null)
     {

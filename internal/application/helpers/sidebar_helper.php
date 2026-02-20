@@ -116,7 +116,7 @@ if (!function_exists('get_total_reschedule')) {
 	        return 0;
 	    }
 
-	    $sql = "SELECT COUNT(*) AS cnt FROM RescheduledJob LEFT JOIN ListJob ON RescheduledJob.JobID = ListJob.JobID WHERE DATE(RescheduledJob.created_at) = CURRENT_DATE AND StatusApproved = 1";
+	    $sql = "SELECT COUNT(*) AS cnt FROM RescheduledJob LEFT JOIN ListJob ON RescheduledJob.JobID = ListJob.JobID WHERE StatusApproved = 1";
 	    $binds = array();
 
 		if($role != '1') {

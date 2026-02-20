@@ -58,6 +58,28 @@
         border-radius: 6px;
     }
 
+    /* Tab styles */
+    .tab-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+        cursor: pointer;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+    .tab-btn:hover {
+        color: #374151;
+    }
+    .tab-btn.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+
 </style>
 
 <!-- Content Header -->
@@ -86,7 +108,22 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-4 border-b border-gray-200">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Tab Navigation -->
+            <div class="flex items-center gap-0 border-b border-gray-200 mb-4">
+                <button type="button" class="tab-btn active" data-tab="pending">
+                    Pending Approval
+                    <span id="pending-count-badge" class="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold text-white bg-amber-500 rounded-full hidden">0</span>
+                </button>
+                <button type="button" class="tab-btn" data-tab="approved">
+                    Approved
+                </button>
+                <button type="button" class="tab-btn" data-tab="rejected">
+                    Rejected
+                </button>
+            </div>
+
+            <!-- Date Filters (hidden when Pending tab is active) -->
+            <div id="date-filters" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4" style="display: none;">
                 <div class="form-group mb-0">
                     <label for="from_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
                     <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="from_date_job" id="from_date_job">
@@ -159,9 +196,40 @@
 
 <script>
 
-
 $(document).ready(function() {
 
+    // === Current active tab state ===
+    var currentTab = 'pending';
+
+    // === Tab click handler ===
+    $('.tab-btn').on('click', function() {
+        var tab = $(this).data('tab');
+        if (tab === currentTab) return;
+
+        // Update tab visual state
+        $('.tab-btn').removeClass('active');
+        $(this).addClass('active');
+        currentTab = tab;
+
+        // Show/hide date filters
+        if (tab === 'pending') {
+            $('#date-filters').slideUp(200);
+        } else {
+            $('#date-filters').slideDown(200);
+        }
+
+        // Adjust sort order: oldest first for pending, newest first for processed
+        if (tab === 'pending') {
+            table.order([1, 'asc']);
+        } else {
+            table.order([1, 'desc']);
+        }
+
+        // Reload the DataTable with new filter (reset to page 1)
+        table.ajax.reload(null, true);
+    });
+
+    // === Date filter validation ===
     let form_date_until = $('#from_date_job').val();
     $('#until_date_job').attr('min', form_date_until);
 
@@ -190,9 +258,12 @@ $(document).ready(function() {
         ajax: {
             url: "<?= base_url('Job/getJobReschedule') ?>",
             type: "GET",
-            data : function(d) {
-                d.dateFrom = $('#from_date_job').val();
-                d.dateUntil = $('#until_date_job').val();
+            data: function(d) {
+                d.statusFilter = currentTab;
+                if (currentTab !== 'pending') {
+                    d.dateFrom = $('#from_date_job').val();
+                    d.dateUntil = $('#until_date_job').val();
+                }
             }
         },
         columns: [
@@ -222,6 +293,13 @@ $(document).ready(function() {
             {
                 data: "Reason",
                 className: "text-center whitespace-nowrap",
+                render: function(data, type, row) {
+                    var html = data || '-';
+                    if (row.ReasonReject) {
+                        html += '<br><span class="text-xs text-red-500 italic">Reject: ' + $('<span>').text(row.ReasonReject).html() + '</span>';
+                    }
+                    return html;
+                }
             },
             {
                 data: "StatusApproved",
@@ -268,7 +346,7 @@ $(document).ready(function() {
         responsive: false,
         pageLength: 10,
         lengthMenu: [10, 25, 50, 100],
-        order: [[0, 'desc']],
+        order: [[1, 'asc']],
         paging: true,
         autoWidth: true,
         scrollX: true,
@@ -294,12 +372,38 @@ $(document).ready(function() {
         if (isProcessing) return;
         silentReload = true;
         table.ajax.reload(null, false);
+        refreshPendingCount();
     }, 10000);
 
-});
+    // === Date change triggers reload (only relevant for non-pending tabs) ===
+    $('#from_date_job, #until_date_job').on('change', function() {
+        if (currentTab !== 'pending') {
+            table.ajax.reload();
+        }
+    });
 
-$('#from_date_job, #until_date_job').on('change', function() {
-    $('#tableJobRider').DataTable().ajax.reload();
+    // === Pending count badge ===
+    function refreshPendingCount() {
+        $.ajax({
+            url: "<?= base_url('Job/getPendingRescheduleCount') ?>",
+            type: "GET",
+            dataType: "json",
+            success: function(response) {
+                var count = response.count || 0;
+                var $badge = $('#pending-count-badge');
+                $badge.text(count);
+                if (count > 0) {
+                    $badge.removeClass('hidden');
+                } else {
+                    $badge.addClass('hidden');
+                }
+            }
+        });
+    }
+
+    // Initial load of pending count
+    refreshPendingCount();
+
 });
 
 // handle button reject reschedule
