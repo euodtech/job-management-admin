@@ -104,8 +104,7 @@ class AuthController extends Controller {
                         "CompanyID" => $customer->ListCompanyID,
                         "CompanyType" => $customer->CompanySubscribe,
                         "CompanyLabel" => ($customer->CompanySubscribe == 1) ? "Basic" : "Pro",
-                        "UsernameTraxrooot" => $customer->username_traxroot,
-                        "PasswordTraxrooot" => $customer->password_traxroot,
+                        "HasTraxroot" => !empty($customer->username_traxroot),
                         "UserRole" => $customer->UserRole,
                         // "CompanyLogo" => $logoUrl,
                         "CompanyLogo" => $customer->CompanyLogo 
@@ -293,7 +292,7 @@ class AuthController extends Controller {
         try {
             // Validate input
             $this->validate($request, [
-                'new_password' => 'required|string|min:5|max:255',
+                'new_password' => 'required|string|min:8|max:255',
                 'token' => 'required|string'
             ]);
 
@@ -593,7 +592,7 @@ class AuthController extends Controller {
                 try {
                     Mail::send([], [], function ($message) use ($bodyNya, $email) {
                         $message->to($email)
-                            ->from('support@primafit.co.id', 'PrimaFit')
+                            ->from(env('MAIL_FROM_ADDRESS', 'noreply@efms.com'), env('MAIL_FROM_NAME', 'E-FMS'))
                             ->subject('Password Reset Request')
                             ->setBody($bodyNya, 'text/html')
                             ->addPart(strip_tags($bodyNya), 'text/plain');

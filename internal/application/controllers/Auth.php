@@ -108,12 +108,25 @@ class Auth extends MY_Controller
 
                 $this->session->set_userdata($data);
 
-                // Set traxroot credentials if they exist
+                // Set traxroot credentials if they exist (decrypt from DB)
                 if (!empty($user['username_traxroot'])) {
-                    $this->session->set_userdata('traxroot_username', $user['username_traxroot']);
+                    $encKey = $this->config->item('encryption_key');
+                    $data = base64_decode($user['username_traxroot'], true);
+                    if ($data !== false && strlen($data) >= 17) {
+                        $decrypted_user = openssl_decrypt(substr($data, 16), 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, substr($data, 0, 16));
+                    } else {
+                        $decrypted_user = false;
+                    }
+                    $this->session->set_userdata('traxroot_username', $decrypted_user !== false ? $decrypted_user : $user['username_traxroot']);
                 }
                 if (!empty($user['password_traxroot'])) {
-                    $this->session->set_userdata('traxroot_password', $user['password_traxroot']);
+                    $data = base64_decode($user['password_traxroot'], true);
+                    if ($data !== false && strlen($data) >= 17) {
+                        $decrypted_pass = openssl_decrypt(substr($data, 16), 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, substr($data, 0, 16));
+                    } else {
+                        $decrypted_pass = false;
+                    }
+                    $this->session->set_userdata('traxroot_password', $decrypted_pass !== false ? $decrypted_pass : $user['password_traxroot']);
                 }
 
                 // Update last login - use Query Builder for security
@@ -121,20 +134,29 @@ class Auth extends MY_Controller
                 $this->db->where('Email', $email);
                 $this->db->update('UserLogin', ['LastLogin' => $date]);
 
+                // Audit log: successful login
+                $this->audit_log('login.success', ['email' => $email]);
+
                 // Redirect to home
                 redirect(base_url('home'));
 
             } else {
+                // Audit log: failed login (wrong password)
+                $this->audit_log('login.failed', ['email' => $email, 'reason' => 'wrong_password']);
+
                 // Wrong password
-                $this->session->set_flashdata('message', 
+                $this->session->set_flashdata('message',
                     '<div class="alert alert-danger" role="alert">Wrong password!</div>'
                 );
                 redirect('auth');
             }
 
         } else {
+            // Audit log: failed login (user not found)
+            $this->audit_log('login.failed', ['email' => $email, 'reason' => 'user_not_found']);
+
             // User not found
-            $this->session->set_flashdata('message', 
+            $this->session->set_flashdata('message',
                 '<div class="alert alert-sm alert-danger" role="alert">Incorect Email & Password!</div>'
             );
             redirect('auth');

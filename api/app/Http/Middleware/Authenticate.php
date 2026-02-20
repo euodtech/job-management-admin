@@ -36,8 +36,18 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        // Prefer header-based key, fall back to query/body parameter
-        $apiKey = $request->header('X-API-Key') ?? $request->input('x-key');
+        $apiKey = $request->header('X-API-Key');
+
+        // Temporary backward compatibility (remove after mobile app update)
+        if (empty($apiKey)) {
+            $apiKey = $request->input('x-key');
+            if ($apiKey) {
+                \Log::warning('API key passed via query parameter - deprecated. Use X-API-Key header.', [
+                    'ip' => $request->ip(),
+                    'path' => $request->path()
+                ]);
+            }
+        }
 
         if (empty($apiKey)) {
             return response([
@@ -54,6 +64,9 @@ class Authenticate
                 'Message' => 'Unauthorized Token'
             ], 401);
         }
+
+        // Store authenticated user on request for downstream use
+        $request->attributes->set('authenticated_user', $data);
 
         $data->LastActivity = date('Y-m-d H:i:s');
         $data->save();

@@ -21,13 +21,20 @@ use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller {
 
+    private function getAuthenticatedUser(Request $request)
+    {
+        $apiKey = $request->header('X-API-Key') ?? $request->input('x-key');
+        return UserLogin::leftJoin('ListUser', 'UserLogin.UserLoginID', '=', 'ListUser.UserLoginID')
+            ->where('ApiKey', $apiKey)
+            ->first();
+    }
+
     public function get_job(Request $request)
     {
 
-        $apiKey = $request->query('x-key');
         $dnow = date('Y-m-d');
 
-        $dataLogin = UserLogin::leftJoin('ListUser', 'UserLogin.UserLoginID', '=', 'ListUser.UserLoginID')->where('ApiKey', $apiKey)->first();
+        $dataLogin = $this->getAuthenticatedUser($request);
 
         $dataJob = JobModel::leftJoin('Customer', 'ListJob.CustomerID', '=', 'Customer.CustomerID')
             ->where('ListJob.CompanyID', $dataLogin->ListCompanyID)
@@ -72,11 +79,22 @@ class JobController extends Controller {
 
     }
 
-    public function get_job_by_user($userID)
+    public function get_job_by_user(Request $request, $userID)
     {
-        $dataJob = JobModel::with('details') 
+        $authUser = $this->getAuthenticatedUser($request);
+        if (!$authUser) {
+            return response()->json(["Success" => false, "Message" => "Unauthorized"], 401);
+        }
+
+        $targetUser = DriverModel::where('UserID', $userID)->first();
+        if (!$targetUser || $targetUser->ListCompanyID !== $authUser->ListCompanyID) {
+            return response()->json(["Success" => false, "Message" => "Access denied"], 403);
+        }
+
+        $dataJob = JobModel::with('details')
         ->leftJoin('Customer', 'ListJob.CustomerID', '=', 'Customer.CustomerID')
         ->where('ListJob.UserID', $userID)
+        ->where('ListJob.CompanyID', $authUser->ListCompanyID)
         ->where('ListJob.Status', 2)
         ->orderBy('ListJob.created_at', 'DESC')
         ->get();
@@ -185,10 +203,16 @@ class JobController extends Controller {
 
     }
 
-    public function get_job_ongoing($user_id)
+    public function get_job_ongoing(Request $request, $user_id)
     {
+        $authUser = $this->getAuthenticatedUser($request);
+        if (!$authUser) {
+            return response()->json(["Success" => false, "Message" => "Unauthorized"], 401);
+        }
+
         $dataJob = JobModel::leftJoin('Customer', 'ListJob.CustomerID', '=', 'Customer.CustomerID')
             ->where("UserID", $user_id)
+            ->where('ListJob.CompanyID', $authUser->ListCompanyID)
             ->whereIn('Status', [1, 3])
             ->orderBy('ListJob.created_at', 'DESC')
             ->get();
@@ -233,11 +257,16 @@ class JobController extends Controller {
             'new_date' => 'required'
         ]);
 
+        $authUser = $this->getAuthenticatedUser($request);
+        if (!$authUser) {
+            return response()->json(["Success" => false, "Message" => "Unauthorized"], 401);
+        }
+
         DB::beginTransaction();
         try {
             $dataJob = JobModel::where('JobID', $jobID)->lockForUpdate()->first();
 
-            if (!$dataJob) {
+            if (!$dataJob || $dataJob->CompanyID !== $authUser->ListCompanyID) {
                 DB::rollBack();
                 return response()->json([
                     "Success" => false,
@@ -371,11 +400,16 @@ class JobController extends Controller {
             }
         }
 
+        $authUser = $this->getAuthenticatedUser($request);
+        if (!$authUser) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
         DB::beginTransaction();
         try {
             $dataJob = JobModel::where("JobID", $jobId)->lockForUpdate()->first();
 
-            if (!$dataJob) {
+            if (!$dataJob || $dataJob->CompanyID !== $authUser->ListCompanyID) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
@@ -419,9 +453,18 @@ class JobController extends Controller {
 
     public function cancel_job(Request $request, $jobID)
     {
+        $authUser = $this->getAuthenticatedUser($request);
+        if (!$authUser) {
+            return response()->json(["Success" => false, "Message" => "Unauthorized"], 401);
+        }
+
         DB::beginTransaction();
         try {
             $data = JobModel::where("JobID", $jobID)->lockForUpdate()->first();
+
+            if ($data != null && $data->CompanyID !== $authUser->ListCompanyID) {
+                $data = null;
+            }
 
             if ($data != null) {
 

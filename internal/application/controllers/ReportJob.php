@@ -18,22 +18,32 @@ class ReportJob extends MY_Controller
     }
 
     public function detail_job($jobID)
-    { 
+    {
 
         $data['jobID'] = $jobID;
 
-        $dataJobHead = $this->M_Global->globalquery("SELECT ListJob.*, ListUser.Fullname, ListUser.Email, ListUser.PhoneNumber, Customer.CustomerName, Customer.Address, Customer.PhoneNumber FROM ListJob 
-        LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID  
-        LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID  
-        WHERE ListJob.JobID = '$jobID' ")->result_array();
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+
+        $detailJobBinds = [(int)$jobID];
+        $companyFilter = "";
+        if ($role != 1) {
+            $companyFilter = " AND ListJob.CompanyID = ?";
+            $detailJobBinds[] = $companyID;
+        }
+
+        $dataJobHead = $this->M_Global->globalquery("SELECT ListJob.*, ListUser.Fullname, ListUser.Email, ListUser.PhoneNumber, Customer.CustomerName, Customer.Address, Customer.PhoneNumber FROM ListJob
+        LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID
+        LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID
+        WHERE ListJob.JobID = ? " . $companyFilter, $detailJobBinds)->result_array();
 
         $dataJobHead = array_map(function($job) {
 
             $jobID = $job['JobID'];
 
-            $statusCancelJob = $this->M_Global->globalquery("SELECT UserBefore, HistoryCancelJob.created_at, Fullname, Reason FROM HistoryCancelJob LEFT JOIN ListUser ON HistoryCancelJob.UserBefore = ListUser.UserID WHERE JobID = '$jobID' ORDER BY HistoryCancelJob.created_at ASC ")->result_array();
+            $statusCancelJob = $this->M_Global->globalquery("SELECT UserBefore, HistoryCancelJob.created_at, Fullname, Reason FROM HistoryCancelJob LEFT JOIN ListUser ON HistoryCancelJob.UserBefore = ListUser.UserID WHERE JobID = ? ORDER BY HistoryCancelJob.created_at ASC ", [(int)$jobID])->result_array();
 
-            $assets_job = $this->M_Global->globalquery("SELECT * FROM ListJobDetail WHERE ListJobID = '$jobID' ")->result_array();
+            $assets_job = $this->M_Global->globalquery("SELECT * FROM ListJobDetail WHERE ListJobID = ? ", [(int)$jobID])->result_array();
 
             if($job['TypeJob'] == 1) {
                 $job['TypeJob'] = "Line Interrupt";
@@ -59,11 +69,21 @@ class ReportJob extends MY_Controller
 
     public function index()
     {
-        
+
         $dnow = date("Y-m-d");
 
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+
+        $indexBinds = [$dnow];
+        $companyFilter = "";
+        if ($role != 1) {
+            $companyFilter = " AND CompanyID = ?";
+            $indexBinds[] = $companyID;
+        }
+
         $data['title'] = "Job Report";
-        $data['jobs'] = $this->M_Global->globalquery("SELECT * FROM ListJob WHERE DATE(JobDate) = '$dnow' ")->result_array();
+        $data['jobs'] = $this->M_Global->globalquery("SELECT * FROM ListJob WHERE DATE(JobDate) = ? " . $companyFilter, $indexBinds)->result_array();
 
         // Mengirim data ke view
         $this->render_page('main/report/reportJob', $data);
@@ -99,8 +119,9 @@ class ReportJob extends MY_Controller
 
         // Ambil parameter order dari DataTables
         $orderColIndex = $request['order'][0]['column'] ?? 3; // default kolom 1
-        $orderDir = $request['order'][0]['dir'] ?? 'asc';
-        $orderBy = $columns[$orderColIndex] . " " . $orderDir;
+        $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
+        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'CustomerName';
+        $orderBy = $orderCol . " " . $orderDir;
 
         $dnow = date('Y-m-d');
 
@@ -111,18 +132,23 @@ class ReportJob extends MY_Controller
         ";
 
         $where = []; // buat nampung kondisi WHERE
+        $binds = [];
 
         if (empty($filterFromDate)) {
-            $where[] = "DATE(lj.JobDate) = '" . $this->db->escape_str($dnow) . "'";
+            $where[] = "DATE(lj.JobDate) = ?";
+            $binds[] = $dnow;
         }
 
         if (!empty($filterFromDate) && !empty($filterUntilDate)) {
-            $where[] = "DATE(lj.JobDate) >= '" . $this->db->escape_str($filterFromDate) . "'";
-            $where[] = "DATE(lj.JobDate) <= '" . $this->db->escape_str($filterUntilDate) . "'";
+            $where[] = "DATE(lj.JobDate) >= ?";
+            $binds[] = $filterFromDate;
+            $where[] = "DATE(lj.JobDate) <= ?";
+            $binds[] = $filterUntilDate;
         }
 
         if($role != 1) {
-            $where[] = "lj.CompanyID = " . $companyID;
+            $where[] = "lj.CompanyID = ?";
+            $binds[] = (int)$companyID;
         }
 
         if($filterStatusJob != "all_status") {
@@ -158,18 +184,21 @@ class ReportJob extends MY_Controller
 
         // --- search filter ---
         if (!empty($searchValue)) {
+            $searchValueEscaped = $this->db->escape_like_str($searchValue);
             $sql .= " AND (
-                lj.JobName LIKE '%$searchValue%' OR c.CustomerName LIKE '%$searchValue%' OR lu.Fullname LIKE '%$searchValue%'
+                lj.JobName LIKE '%" . $searchValueEscaped . "%' OR c.CustomerName LIKE '%" . $searchValueEscaped . "%' OR lu.Fullname LIKE '%" . $searchValueEscaped . "%'
             )";
         }
 
         // total sebelum limit
-        $totalQuery = $this->M_Global->globalquery($sql)->result_array();
+        $totalQuery = $this->M_Global->globalquery($sql, $binds)->result_array();
         $recordsTotal = count($totalQuery);
 
         // Ambil data dengan LIMIT (untuk paging)
+        $start = (int)$start;
+        $length = (int)$length;
         $sql .= " ORDER BY $orderBy LIMIT $start, $length";
-        $query = $this->M_Global->globalquery($sql)->result_array();
+        $query = $this->M_Global->globalquery($sql, $binds)->result_array();
 
 
         $data = [];
@@ -221,14 +250,19 @@ class ReportJob extends MY_Controller
         ];
 
         $orderColIndex = $request['order'][0]['column'] ?? 3;
-        $orderDir = $request['order'][0]['dir'] ?? 'desc';
-        $orderBy = $columns[$orderColIndex] . " " . $orderDir;
+        $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'ASC') ? 'ASC' : 'DESC';
+        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'sub.JobDate';
+        $orderBy = $orderCol . " " . $orderDir;
+
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+        $companyWhere = ($role != 1) ? "WHERE j.CompanyID = " . $companyID : "";
 
         $baseQuery = "
-            SELECT 
-                j.JobID, 
-                j.JobName, 
-                CASE 
+            SELECT
+                j.JobID,
+                j.JobName,
+                CASE
                     WHEN j.TypeJob = 1 THEN 'Line Interrupt'
                     WHEN j.TypeJob = 2 THEN 'Reconnection'
                     WHEN j.TypeJob = 3 THEN 'Short Circuit'
@@ -236,21 +270,22 @@ class ReportJob extends MY_Controller
                 END AS TypeJob,
                 j.JobDate,
                 COUNT(d.ListDetailID) AS TotalDokumentasi,
-                CONCAT('[', 
+                CONCAT('[',
                     GROUP_CONCAT(
                         JSON_OBJECT(
                             'photo', d.Photo,
                             'caption', DATE_FORMAT(d.created_at, '%Y-%m-%d %H:%i:%s')
-                        ) 
+                        )
                         ORDER BY d.ListDetailID ASC SEPARATOR ','
                     ),
                 ']') AS Dokumentasi,
-                CASE 
+                CASE
                     WHEN COUNT(d.ListDetailID) > 0 THEN 'Finished'
                     ELSE 'No documentation yet'
                 END AS StatusDokumentasi
             FROM ListJob j
             LEFT JOIN ListJobDetail d ON j.JobID = d.ListJobID
+            $companyWhere
             GROUP BY j.JobID, j.JobName, j.TypeJob, j.JobDate
         ";
 
@@ -303,23 +338,18 @@ class ReportJob extends MY_Controller
         $recordsFiltered = count($totalQuery);
 
         // Hitung recordsTotal tanpa filter (optional)
-        $totalRecordsQuery = "SELECT COUNT(*) as cnt FROM ListJob";
+        $totalRecordsQuery = "SELECT COUNT(*) as cnt FROM ListJob" . (($role != 1) ? " WHERE CompanyID = " . $companyID : "");
         $totalRecords = $this->M_Global->globalquery($totalRecordsQuery)->row()->cnt;
 
         // tambah order + limit
+        $start = (int)$start;
+        $length = (int)$length;
         $sql .= " ORDER BY $orderBy LIMIT $start, $length";
         $query = $this->M_Global->globalquery($sql)->result_array();
 
         $data = [];
         $no = $start + 1;
         foreach ($query as $row) {
-            // $photos = json_decode($row['Dokumentasi'], true) ?? [];
-            // $photoHtml = '';
-
-            // foreach ($photos as $p) {
-            //     $photoHtml .= "<div class='job-photo'><img src='{$p['photo']}' style='width:80px;height:80px;object-fit:cover;border-radius:8px;margin:4px'><br><small>{$p['caption']}</small></div>";
-            // }
-
             $data[] = [
                 "no" => $no++,
                 "JobName" => $row['JobName'],
@@ -371,11 +401,16 @@ class ReportJob extends MY_Controller
         ];
 
         $orderColIndex = $request['order'][0]['column'] ?? 3;
-        $orderDir = $request['order'][0]['dir'] ?? 'asc';
-        $orderBy = $columns[$orderColIndex] . " " . $orderDir;
+        $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
+        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'j.created_at';
+        $orderBy = $orderCol . " " . $orderDir;
+
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+        $companyWhere = ($role != 1) ? "WHERE j.CompanyID = " . $companyID : "";
 
         $baseQuery = "
-            SELECT 
+            SELECT
                 j.JobID,
                 j.JobName,
                 c.CustomerName,
@@ -384,6 +419,7 @@ class ReportJob extends MY_Controller
                 TIMESTAMPDIFF(MINUTE, j.created_at, j.AssignWhen) AS DurationMinutes
             FROM ListJob j
             JOIN Customer c ON j.CustomerID = c.CustomerID
+            $companyWhere
         ";
 
         $sql = "SELECT * FROM ($baseQuery) AS sub WHERE 1=1";
@@ -428,10 +464,12 @@ class ReportJob extends MY_Controller
         $recordsFiltered = count($totalQuery);
 
         // total semua record
-        $totalRecordsQuery = "SELECT COUNT(*) as cnt FROM ListJob";
+        $totalRecordsQuery = "SELECT COUNT(*) as cnt FROM ListJob" . (($role != 1) ? " WHERE CompanyID = " . $companyID : "");
         $totalRecords = $this->M_Global->globalquery($totalRecordsQuery)->row()->cnt;
 
         // order + limit
+        $start = (int)$start;
+        $length = (int)$length;
         $sql .= " ORDER BY $orderBy LIMIT $start, $length";
         $query = $this->M_Global->globalquery($sql)->result_array();
 
@@ -490,11 +528,16 @@ class ReportJob extends MY_Controller
         ];
 
         $orderColIndex = $request['order'][0]['column'] ?? 4;
-        $orderDir = $request['order'][0]['dir'] ?? 'asc';
-        $orderBy = $columns[$orderColIndex] . " " . $orderDir;
+        $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
+        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'j.JobDate';
+        $orderBy = $orderCol . " " . $orderDir;
+
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+        $companyWhere = ($role != 1) ? "WHERE j.CompanyID = " . $companyID : "";
 
         $baseQuery = "
-            SELECT 
+            SELECT
                 j.JobID,
                 j.JobName,
                 c.CustomerName,
@@ -502,6 +545,7 @@ class ReportJob extends MY_Controller
                 j.JobDate
             FROM ListJob j
             JOIN Customer c ON j.CustomerID = c.CustomerID
+            $companyWhere
         ";
 
         $sql = "SELECT * FROM ($baseQuery) AS sub WHERE 1=1";
@@ -543,9 +587,11 @@ class ReportJob extends MY_Controller
         $totalQuery = $this->M_Global->globalquery($sql)->result_array();
         $recordsFiltered = count($totalQuery);
 
-        $totalRecordsQuery = "SELECT COUNT(*) as cnt FROM ListJob";
+        $totalRecordsQuery = "SELECT COUNT(*) as cnt FROM ListJob" . (($role != 1) ? " WHERE CompanyID = " . $companyID : "");
         $totalRecords = $this->M_Global->globalquery($totalRecordsQuery)->row()->cnt;
 
+        $start = (int)$start;
+        $length = (int)$length;
         $sql .= " ORDER BY $orderBy LIMIT $start, $length";
         $query = $this->M_Global->globalquery($sql)->result_array();
 
@@ -599,14 +645,20 @@ class ReportJob extends MY_Controller
         ];
 
         $orderColIndex = $request['order'][0]['column'] ?? 0;
-        $orderDir = $request['order'][0]['dir'] ?? 'asc';
-        $orderBy = $columns[$orderColIndex] . " " . $orderDir;
+        $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
+        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'no';
+        $orderBy = $orderCol . " " . $orderDir;
+
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+        $companyWhere = ($role != 1) ? "WHERE j.CompanyID = " . $companyID : "";
 
         $baseQuery = "
-            SELECT 
+            SELECT
                 DATE(j.JobDate) as JobDate,
                 COUNT(*) as TotalJob
             FROM ListJob j
+            $companyWhere
             GROUP BY DATE(j.JobDate)
         ";
 
@@ -623,9 +675,11 @@ class ReportJob extends MY_Controller
         $totalQuery = $this->M_Global->globalquery($sql)->result_array();
         $recordsFiltered = count($totalQuery);
 
-        $totalRecordsQuery = "SELECT COUNT(DISTINCT DATE(JobDate)) as cnt FROM ListJob";
+        $totalRecordsQuery = "SELECT COUNT(DISTINCT DATE(JobDate)) as cnt FROM ListJob" . (($role != 1) ? " WHERE CompanyID = " . $companyID : "");
         $totalRecords = $this->M_Global->globalquery($totalRecordsQuery)->row()->cnt;
 
+        $start = (int)$start;
+        $length = (int)$length;
         $sql .= " ORDER BY $orderBy LIMIT $start, $length";
         $query = $this->M_Global->globalquery($sql)->result_array();
 
@@ -663,7 +717,7 @@ class ReportJob extends MY_Controller
         $untilDateFilter = $request['untilDateFilter'] ?? '';
 
         $columns = [
-            0 => 'no',            
+            0 => 'no',
             1 => 'JobName',
             2 => 'CustomerName',
             3 => 'TotalPhoto',
@@ -672,32 +726,38 @@ class ReportJob extends MY_Controller
         ];
 
         $orderColIndex = $request['order'][0]['column'] ?? 4;
-        $orderDir = $request['order'][0]['dir'] ?? 'desc';
-        $orderBy = $columns[$orderColIndex] . " " . $orderDir;
+        $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'ASC') ? 'ASC' : 'DESC';
+        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'LastPhotoDate';
+        $orderBy = $orderCol . " " . $orderDir;
 
-        if ($columns[$orderColIndex] === 'no') {
+        if ($orderCol === 'no') {
             $orderBy = "LastPhotoDate DESC";
         }
 
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+        $companyWhere = ($role != 1) ? "WHERE j.CompanyID = " . $companyID : "";
+
         $baseQuery = "
-            SELECT 
+            SELECT
                 j.JobID,
                 j.JobName,
                 c.CustomerName,
                 COUNT(d.ListDetailID) AS TotalPhoto,
                 MAX(d.created_at) AS LastPhotoDate,
-                CONCAT('[', 
+                CONCAT('[',
                     GROUP_CONCAT(
                         JSON_OBJECT(
                             'photo', d.Photo,
                             'caption', DATE_FORMAT(d.created_at, '%Y-%m-%d %H:%i:%s')
-                        ) 
+                        )
                         ORDER BY d.ListDetailID ASC SEPARATOR ','
                     ),
                 ']') AS Photos
             FROM ListJob j
             JOIN Customer c ON j.CustomerID = c.CustomerID
             LEFT JOIN ListJobDetail d ON j.JobID = d.ListJobID
+            $companyWhere
             GROUP BY j.JobID, j.JobName, c.CustomerName
         ";
 
@@ -741,10 +801,12 @@ class ReportJob extends MY_Controller
 
         $recordsFiltered = $this->M_Global->globalquery($sql)->num_rows();
 
-        $totalRecordsQuery = "SELECT COUNT(DISTINCT JobID) as cnt FROM ListJob";
+        $totalRecordsQuery = "SELECT COUNT(DISTINCT JobID) as cnt FROM ListJob" . (($role != 1) ? " WHERE CompanyID = " . $companyID : "");
         $totalRecords = $this->M_Global->globalquery($totalRecordsQuery)->row()->cnt;
 
         // Ambil data dengan sorting + paging
+        $start = (int)$start;
+        $length = (int)$length;
         $sql .= " ORDER BY $orderBy LIMIT $start, $length";
         $query = $this->M_Global->globalquery($sql)->result_array();
 
@@ -834,9 +896,12 @@ class ReportJob extends MY_Controller
                 throw new Exception('Filter tanggal belum diisi.');
             }
 
+            $export_binds = [$from_date, $until_date];
+
             $where_company = "";
             if($role != 1) {
-                $where_company = " AND ListJob.CompanyID = " . $companyID;
+                $where_company = " AND ListJob.CompanyID = ?";
+                $export_binds[] = (int)$companyID;
             }
 
             // --- Ambil data dari database ---
@@ -844,10 +909,10 @@ class ReportJob extends MY_Controller
                 SELECT * FROM ListJob
                 LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID
                 LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID
-                WHERE DATE(JobDate) >= '$from_date' AND DATE(JobDate) <= '$until_date' AND ListJob.Status = 2
+                WHERE DATE(JobDate) >= ? AND DATE(JobDate) <= ? AND ListJob.Status = 2
             " . $where_company;
 
-            $jobs = $this->M_Global->globalquery($query)->result_array();
+            $jobs = $this->M_Global->globalquery($query, $export_binds)->result_array();
 
             // $jobs = $this->db->query($query, [$from_date, $until_date])->result_array();
 
@@ -888,7 +953,7 @@ class ReportJob extends MY_Controller
                 $sheet->setCellValue('E'.$rowNum, date('d M Y H:i', strtotime($job['JobDate'])));
                 // --- Tambahkan gambar per data ---
 
-                $dataGambar = $this->M_Global->globalquery("SELECT * FROM ListJobDetail WHERE ListJobID = '$jobID' ")->result_array();
+                $dataGambar = $this->M_Global->globalquery("SELECT * FROM ListJobDetail WHERE ListJobID = ? ", [(int)$jobID])->result_array();
 
                 $offsetY = 0;
                 

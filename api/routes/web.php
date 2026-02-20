@@ -19,9 +19,8 @@ $router->get('/', function () use ($router) {
 $router->group([
     'prefix' => 'myapi/',
 ], function ($app) {
-    $app->post('login', 'AuthController@login');
-    $app->post('forgot-password', 'AuthController@forgot_password');
-    $app->get('check-type-company/{companyID:[0-9]+}', 'AuthController@check_company_driver');
+    $app->post('login', ['middleware' => 'throttle:5,1', 'uses' => 'AuthController@login']);
+    $app->post('forgot-password', ['middleware' => 'throttle:3,5', 'uses' => 'AuthController@forgot_password']);
     $app->get('company-logo/{filename}', 'CompanyLogoController@show');
 });
 
@@ -53,4 +52,12 @@ $router->group([
     $app->post('insert-job', 'DapaController@InsertJob');
     $app->delete('delete-job/{id:[0-9]+}', 'DapaController@DeleteJob');
     $app->post('update-job/{id:[0-9]+}', 'DapaController@UpdateJob');
+
+    // Check company type (moved behind auth)
+    $app->get('check-type-company/{companyID:[0-9]+}', 'AuthController@check_company_driver');
+
+    // Traxroot proxy endpoints (credentials stay server-side)
+    $app->post('traxroot/token', 'TraxrootProxyController@getToken');
+    $app->get('traxroot/objects-status', 'TraxrootProxyController@getObjectsStatus');
+    $app->get('traxroot/geozones', 'TraxrootProxyController@getGeozones');
 });

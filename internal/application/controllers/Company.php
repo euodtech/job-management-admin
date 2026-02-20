@@ -272,7 +272,8 @@ class Company extends MY_Controller
 
         // Commit transaction
         $this->db->trans_commit();
-        $this->session->set_flashdata('message', 
+        $this->audit_log('company.create', ['company_id' => $company_id, 'name' => $company_name]);
+        $this->session->set_flashdata('message',
             '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Company created successfully</div>'
         );
 
@@ -444,13 +445,14 @@ public function update()
         // 10. Commit transaction
         // -----------------------------
         $this->db->trans_commit();
+        $this->audit_log('company.update', ['company_id' => $company_id, 'name' => $company_name]);
 
         // Delete old logo AFTER commit
         if (!empty($old_logo_path) && file_exists($old_logo_path)) {
             @unlink($old_logo_path);
         }
 
-        $this->session->set_flashdata('message', 
+        $this->session->set_flashdata('message',
             '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Company updated successfully</div>'
         );
 
@@ -517,6 +519,7 @@ public function update()
             );
         } else {
             $this->db->trans_commit();
+            $this->audit_log('company.delete', ['company_id' => $company_id]);
             $this->session->set_flashdata(
                 'message',
                 '<div class="alert alert-success">
@@ -547,7 +550,7 @@ public function update()
 
         // Use Query Builder (prevents SQL injection)
         $dataReturn = $this->db
-            ->select('ListCompany.*, UserLogin.Password')
+            ->select('ListCompany.*, UserLogin.UserLoginID')
             ->from('ListCompany')
             ->join('UserLogin', 'ListCompany.UserLoginID = UserLogin.UserLoginID', 'left')
             ->where('ListCompanyID', $companyID)
@@ -569,10 +572,16 @@ public function update()
         $username  = $this->input->post('username_traxroot');
         $password  = $this->input->post('password_traxroot');
 
+        $encKey = $this->config->item('encryption_key');
+        $iv = openssl_random_pseudo_bytes(16);
+        $encUser = base64_encode($iv . openssl_encrypt($username, 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, $iv));
+        $iv2 = openssl_random_pseudo_bytes(16);
+        $encPass = base64_encode($iv2 . openssl_encrypt($password, 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, $iv2));
+
         $this->db->where('ListCompanyID', $companyID);
         $this->db->update('ListCompany', [
-            'username_traxroot' => $username,
-            'password_traxroot' => $password
+            'username_traxroot' => $encUser,
+            'password_traxroot' => $encPass
         ]);
 
         $this->session->set_flashdata('swal', [

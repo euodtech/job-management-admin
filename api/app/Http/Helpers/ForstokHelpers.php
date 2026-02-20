@@ -16,19 +16,13 @@ class ForstokHelpers
     // }
     public function authForstok($country)
     {
-        if ($country == 1) {
-            //indonesia
-            $data = array('id' => '10057', 'secret_key' => '8wx2LlcvfJBEBBhTuV8lvtszRnU8aK6o', 'type' => 'channel');
-        } else if ($country == 2) {
-            //Malaysia
-            $data = array('id' => '10798', 'secret_key' => 'p7fCzc7abFjzgCBLYL9uHpUa34xGXHSg', 'type' => 'channel');
-        } else if ($country == 5) {
-            //Singapore
-            $data = array('id' => '10799', 'secret_key' => 'BeDafw8GYKvz9gmr24gvf2yQD6y2wBKS', 'type' => 'channel');
-        } else {
-            //indonesia
-            $data = array('id' => '10057', 'secret_key' => '8wx2LlcvfJBEBBhTuV8lvtszRnU8aK6o', 'type' => 'channel');
-        }
+        $configs = [
+            1 => ['id' => env('FORSTOK_ID_ID', '10057'), 'secret_key' => env('FORSTOK_SECRET_ID', ''), 'type' => 'channel'],
+            2 => ['id' => env('FORSTOK_ID_MY', '10798'), 'secret_key' => env('FORSTOK_SECRET_MY', ''), 'type' => 'channel'],
+            5 => ['id' => env('FORSTOK_ID_SG', '10799'), 'secret_key' => env('FORSTOK_SECRET_SG', ''), 'type' => 'channel'],
+        ];
+
+        $data = $configs[$country] ?? $configs[1];
 
         $curl = curl_init();
 
@@ -53,28 +47,14 @@ class ForstokHelpers
     {
         $trans = TransactionModel::where('TransactionNumber', $transNumber)->first();
         $country = $trans['CountryID'];
-        // return $country;
-        if ($country == 1) {
-            $channel = [
-                'account_id' => 8130,
-                'channel' => 10057
-            ];
-        } else if ($country == 2) {
-            $channel = [
-                'account_id' => 12297,
-                'channel' => 10798
-            ];
-        } else if ($country == 5) {
-            $channel = [
-                'account_id' => 12298,
-                'channel' => 10799
-            ];
-        } else {
-            $channel = [
-                'account_id' => 8130,
-                'channel' => 10057
-            ];
-        }
+
+        $channels = [
+            1 => ['account_id' => (int) env('FORSTOK_ACCOUNT_ID', 8130), 'channel' => (int) env('FORSTOK_ID_ID', 10057)],
+            2 => ['account_id' => (int) env('FORSTOK_ACCOUNT_MY', 12297), 'channel' => (int) env('FORSTOK_ID_MY', 10798)],
+            5 => ['account_id' => (int) env('FORSTOK_ACCOUNT_SG', 12298), 'channel' => (int) env('FORSTOK_ID_SG', 10799)],
+        ];
+
+        $channel = $channels[$country] ?? $channels[1];
 
         $token = $this->authForstok($country);
 

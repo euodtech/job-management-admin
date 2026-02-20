@@ -26,16 +26,17 @@ class Customer extends MY_Controller
         $companyID = $this->session->userdata('CompanyID');
 
         $additional_where_customer = " ";
+        $binds_customer = [];
 
         if($role != 1) {
 
-            $additional_where_customer = " WHERE Customer.ListCompanyID = " . $companyID;
-
+            $additional_where_customer = " WHERE Customer.ListCompanyID = ?";
+            $binds_customer[] = $companyID;
 
         }
 
-        $data['customer'] = $this->M_Global->globalquery("SELECT * FROM  Customer LEFT JOIN ListCompany ON Customer.ListCompanyID = ListCompany.ListCompanyID $additional_where_customer 
-            ORDER BY CustomerID DESC")->result_array();
+        $data['customer'] = $this->M_Global->globalquery("SELECT * FROM  Customer LEFT JOIN ListCompany ON Customer.ListCompanyID = ListCompany.ListCompanyID $additional_where_customer
+            ORDER BY CustomerID DESC", $binds_customer)->result_array();
 
         $data['list_company'] = $this->M_Global->globalquery("SELECT * FROM ListCompany")->result_array();
 
@@ -87,10 +88,10 @@ class Customer extends MY_Controller
 
                 // ❌ Cek email sudah ada
                 $checkQuery = "
-                    SELECT * FROM Customer 
-                    WHERE ListCompanyID='$companyID' AND CustomerEmail='$customerEmail'
+                    SELECT * FROM Customer
+                    WHERE ListCompanyID = ? AND CustomerEmail = ?
                 ";
-                $checkEmail = $this->M_Global->globalquery($checkQuery)->result_array();
+                $checkEmail = $this->M_Global->globalquery($checkQuery, [$companyID, $customerEmail])->result_array();
 
                 if (count($checkEmail) > 0) {
                     $email_ready[] = $customerEmail;
@@ -166,7 +167,7 @@ class Customer extends MY_Controller
 
         $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
 
-        $cek_email_available = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerEmail = '$customerEmail' AND ListCompanyID = '$companyID' ")->result_array();
+        $cek_email_available = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerEmail = ? AND ListCompanyID = ?", [$customerEmail, $companyID])->result_array();
 
         if(count($cek_email_available) > 0) {
 
@@ -209,11 +210,11 @@ class Customer extends MY_Controller
 
         $selected_company = ($this->session->userdata("Role") != 1) ? $companyID : $this->input->post('company_selected');
 
-        $cek_email_before = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerID = '$customer_id' ")->row_array();
+        $cek_email_before = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerID = ?", [$customer_id])->row_array();
 
         if($customer_email != $cek_email_before['CustomerEmail']) {
 
-            $cek_available_email = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerEmail = '$customer_email' ")->result_array();
+            $cek_available_email = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerEmail = ?", [$customer_email])->result_array();
 
             if(count($cek_available_email) > 0) {
 
@@ -236,7 +237,7 @@ class Customer extends MY_Controller
             "created_at" => date('Y-m-d H:i:s')
         ];
 
-        $where = " CustomerID =  '$customer_id' ";
+        $where = ['CustomerID' => $customer_id];
         // create user
         $job = $this->M_Global->update_data($where, $dara_update, "Customer");
 
@@ -253,7 +254,7 @@ class Customer extends MY_Controller
     {
         $customer_id = $this->input->post('customer_id');
 
-        $delete = $this->M_Global->delete('Customer' , "CustomerID = '$customer_id' ");
+        $delete = $this->M_Global->delete('Customer' , ['CustomerID' => $customer_id]);
 
         if ($delete == "success") {
             $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Customer delete successfully</div>');
@@ -268,7 +269,7 @@ class Customer extends MY_Controller
     {
         $customerID = $this->input->post('customerID');
 
-        $dataReturn = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerID  = '$customerID' ")->row_array();
+        $dataReturn = $this->M_Global->globalquery("SELECT * FROM Customer WHERE CustomerID = ?", [$customerID])->row_array();
 
         echo json_encode($dataReturn);
     }

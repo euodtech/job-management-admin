@@ -75,4 +75,16 @@ class MY_Controller extends CI_Controller
 
 		$this->load->view('main/index', $data);
 	}
+
+	protected function audit_log($action, $details = [])
+	{
+		$logData = [
+			'admin_id'   => $this->session->userdata('AdminID'),
+			'action'     => $action,
+			'ip'         => $this->input->ip_address(),
+			'details'    => json_encode($details),
+			'created_at' => date('Y-m-d H:i:s')
+		];
+		$this->db->insert('AuditLog', $logData);
+	}
 }

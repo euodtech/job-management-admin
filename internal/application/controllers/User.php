@@ -157,9 +157,9 @@ class User extends MY_Controller
                 }
 
                 // CEK EMAIL SUDAH ADA DI DB
-                $queryCheck = "SELECT * FROM ListUser 
-                    WHERE ListCompanyID = '$companyID' AND Email = '$email'";
-                $dataCheck = $this->M_Global->globalquery($queryCheck)->result_array();
+                $queryCheck = "SELECT * FROM ListUser
+                    WHERE ListCompanyID = ? AND Email = ?";
+                $dataCheck = $this->M_Global->globalquery($queryCheck, [$companyID, $email])->result_array();
 
                 if (count($dataCheck) == 0) {
 
@@ -356,6 +356,7 @@ class User extends MY_Controller
                 '<div class="alert alert-danger">Failed to create user</div>'
             );
         } else {
+            $this->audit_log('user.create', ['email' => $email, 'fullname' => $fullname]);
             $this->session->set_flashdata(
                 'message',
                 '<div class="alert alert-success">User created successfully</div>'
@@ -445,6 +446,7 @@ class User extends MY_Controller
             $create_akses = $this->M_Global->update_data($whereLogin, $akses_login, "UserLogin");
 
             if ($create_akses == "success") {
+                $this->audit_log('user.update', ['user_id' => $userID]);
                 $this->session->set_flashdata('message', '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> User updated successfully</div>');
             } else {
                 $this->session->set_flashdata('message', '<div class="alert alert-danger">Failed to update Login Access!</div>');
@@ -461,6 +463,8 @@ class User extends MY_Controller
     {
         // Sanitize input
         $userID = (int) $userID;
+        $companyID = $this->session->userdata('CompanyID');
+        $role = (int) $this->session->userdata('Role');
 
         if ($userID <= 0) {
             // Return empty if invalid
@@ -470,8 +474,12 @@ class User extends MY_Controller
 
         // Fetch jobs for the user with Status = 1
         $this->db->from('ListJob');
-        $this->db->where('UserID', $userID);
-        $this->db->where('Status', 1);
+        $this->db->join('ListUser', 'ListJob.UserID = ListUser.UserID');
+        $this->db->where('ListJob.UserID', $userID);
+        $this->db->where('ListJob.Status', 1);
+        if ($role !== 1) {
+            $this->db->where('ListUser.ListCompanyID', $companyID);
+        }
         $data_detail_job = $this->db->get()->row_array();
 
         echo json_encode($data_detail_job ?: []);
@@ -540,6 +548,7 @@ class User extends MY_Controller
                 </div>'
             );
         } else {
+            $this->audit_log('user.delete', ['user_id' => $userID]);
             $this->session->set_flashdata('message',
                 '<div class="alert alert-success">
                     <i class="fa-solid fa-circle-check"></i> User deleted successfully

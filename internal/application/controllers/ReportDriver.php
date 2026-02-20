@@ -48,28 +48,39 @@ class ReportDriver extends MY_Controller
         ];
 
         $orderColIndex = $request['order'][0]['column'] ?? 1; // default kolom 1
-        $orderDir = $request['order'][0]['dir'] ?? 'ASC';
-        $orderBy = $columns[$orderColIndex] . " " . $orderDir;
+        $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
+        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'Fullname';
+        $orderBy = $orderCol . " " . $orderDir;
 
         $sql = "
             SELECT * FROM ListUser
         ";
 
         $where = []; // buat nampung kondisi WHERE
+        $binds = [];
+        $where_job = "";
+        $where_job_binds = [];
+        $where_job_cancel = "";
+        $where_job_cancel_binds = [];
 
         if (empty($fromDate)) {
-            $where_job = " AND DATE(JobDate) = '" . $this->db->escape_str($dnow) . "'";
-            $where_job_cancel = " AND DATE(created_at) = '" . $this->db->escape_str($dnow) . "'";
+            $dnow = date("Y-m-d");
+            $where_job = " AND DATE(JobDate) = ?";
+            $where_job_binds = [$dnow];
+            $where_job_cancel = " AND DATE(created_at) = ?";
+            $where_job_cancel_binds = [$dnow];
         }
 
         if (!empty($fromDate) && !empty($untilDate)) {
-            $where_job = " AND DATE(JobDate) >= '" . $this->db->escape_str($fromDate) . "' AND DATE(JobDate) <= '" . $this->db->escape_str($untilDate) . "' ";
-
-            $where_job_cancel = " AND DATE(created_at) >= '" . $this->db->escape_str($fromDate) . "' AND DATE(created_at) <= '" . $this->db->escape_str($untilDate) . "' ";
+            $where_job = " AND DATE(JobDate) >= ? AND DATE(JobDate) <= ?";
+            $where_job_binds = [$fromDate, $untilDate];
+            $where_job_cancel = " AND DATE(created_at) >= ? AND DATE(created_at) <= ?";
+            $where_job_cancel_binds = [$fromDate, $untilDate];
         }
 
         if($role != 1) {
-            $where[] = "ListUser.ListCompanyID = " . $companyID;
+            $where[] = "ListUser.ListCompanyID = ?";
+            $binds[] = (int)$companyID;
         }
         
         // if (!empty($searchValue)) {
@@ -91,11 +102,13 @@ class ReportDriver extends MY_Controller
             $sql .= " WHERE " . implode(' AND ', $where);
         }
 
-        $totalQuery = $this->M_Global->globalquery($sql)->result_array();
+        $totalQuery = $this->M_Global->globalquery($sql, $binds)->result_array();
         $recordsFiltered = count($totalQuery);
 
+        $start = (int)$start;
+        $length = (int)$length;
         $sql .= " ORDER BY $orderBy LIMIT $start, $length";
-        $query = $this->M_Global->globalquery($sql)->result_array();
+        $query = $this->M_Global->globalquery($sql, $binds)->result_array();
 
         $data = [];
         $no = $start + 1;
@@ -103,13 +116,13 @@ class ReportDriver extends MY_Controller
 
             $driverID = $row['UserID'];
 
-            $totalJobComplete = $this->M_Global->globalquery("SELECT COUNT(JobID) as total_job FROM ListJob WHERE UserID = '$driverID' $where_job ")->row_array();
+            $totalJobComplete = $this->M_Global->globalquery("SELECT COUNT(JobID) as total_job FROM ListJob WHERE UserID = ? $where_job ", array_merge([$driverID], $where_job_binds))->row_array();
 
-            $complete_job = $this->M_Global->globalquery("SELECT COUNT(JobID) as complete_job FROM ListJob WHERE UserID = '$driverID' AND Status = 2 $where_job ")->row_array();
+            $complete_job = $this->M_Global->globalquery("SELECT COUNT(JobID) as complete_job FROM ListJob WHERE UserID = ? AND Status = 2 $where_job ", array_merge([$driverID], $where_job_binds))->row_array();
 
-            $ongoing_job = $this->M_Global->globalquery("SELECT COUNT(JobID) as ongoing_job FROM ListJob WHERE UserID = '$driverID' AND Status = 1 $where_job ")->row_array();
+            $ongoing_job = $this->M_Global->globalquery("SELECT COUNT(JobID) as ongoing_job FROM ListJob WHERE UserID = ? AND Status = 1 $where_job ", array_merge([$driverID], $where_job_binds))->row_array();
 
-            $cancel_job = $this->M_Global->globalquery("SELECT COUNT(JobID) as cancel_job, JobID FROM HistoryCancelJob WHERE UserBefore = '$driverID' $where_job_cancel GROUP BY JobID ")->result_array();
+            $cancel_job = $this->M_Global->globalquery("SELECT COUNT(JobID) as cancel_job, JobID FROM HistoryCancelJob WHERE UserBefore = ? $where_job_cancel GROUP BY JobID ", array_merge([$driverID], $where_job_cancel_binds))->result_array();
 
             $data[] = [
                 "no" => $no++,
@@ -135,13 +148,22 @@ class ReportDriver extends MY_Controller
 
     public function detail_job($user_id, $type_job, $from_date, $until_date)
     {
-        
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
+
+        $binds = [$user_id, $type_job, $from_date, $until_date];
+        $companyFilter = '';
+        if ($role != 1) {
+            $companyFilter = ' AND ListJob.CompanyID = ?';
+            $binds[] = $companyID;
+        }
+
         $data['job'] = $this->M_Global->globalquery("
         SELECT * FROM ListJob
         LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID
         LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID
-        WHERE ListJob.UserID = '$user_id' AND Status = '$type_job' AND DATE(ListJob.JobDate) >= '$from_date' AND DATE(ListJob.JobDate) <= '$until_date' ORDER By ListJob.JobDate DESC
-        ")->result_array();
+        WHERE ListJob.UserID = ? AND Status = ? AND DATE(ListJob.JobDate) >= ? AND DATE(ListJob.JobDate) <= ?" . $companyFilter . " ORDER By ListJob.JobDate DESC
+        ", $binds)->result_array();
 
         $data['type_job'] = $type_job;
 
@@ -150,15 +172,32 @@ class ReportDriver extends MY_Controller
 
     public function detail_job_cancel()
     {
+        $role = $this->session->userdata('Role');
+        $companyID = (int)$this->session->userdata('CompanyID');
 
-        $job_id = '(' . $_GET['job_id'] . ')';
+        $job_ids_raw = $this->input->get('job_id');
+        $job_ids = array_filter(array_map('intval', explode(',', $job_ids_raw)));
+
+        if (empty($job_ids)) {
+            $data['job'] = [];
+            $this->load->view('main/report/detail_driver_cancel', $data);
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($job_ids), '?'));
+        $binds = $job_ids;
+        $companyFilter = '';
+        if ($role != 1) {
+            $companyFilter = ' AND ListJob.CompanyID = ?';
+            $binds[] = $companyID;
+        }
 
         $data['job'] = $this->M_Global->globalquery("
         SELECT * FROM HistoryCancelJob
         LEFT JOIN ListUser ON HistoryCancelJob.UserBefore = ListUser.UserID
         LEFT JOIN ListJob ON HistoryCancelJob.JobID = ListJob.JobID
-        WHERE HistoryCancelJob.JobID IN $job_id ORDER By HistoryCancelJob.created_at DESC
-        ")->result_array();
+        WHERE HistoryCancelJob.JobID IN ($placeholders)" . $companyFilter . " ORDER By HistoryCancelJob.created_at DESC
+        ", $binds)->result_array();
 
         $this->load->view('main/report/detail_driver_cancel', $data);
     }

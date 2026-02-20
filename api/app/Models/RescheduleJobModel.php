@@ -11,8 +11,9 @@ class RescheduleJobModel extends Model
 
     public $timestamps = false;
 
-    protected $guarded = [];
-    //const CREATED_AT = 'created_at';
-    //const UPDATED_AT = 'updated_at';
+    protected $fillable = [
+        'JobID', 'CurrentDateJob', 'RescheduledDateJob', 'Reason',
+        'StatusApproved', 'created_at'
+    ];
 
 }

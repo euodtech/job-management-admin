@@ -12,9 +12,11 @@ class DriverModel extends Model
     public $timestamps = false;
 
 
-    protected $guarded = [];
-    //const CREATED_AT = 'created_at';
-    //const UPDATED_AT = 'updated_at';
+    protected $fillable = [
+        'Fullname', 'ListCompanyID', 'Email', 'PhoneNumber',
+        'UserRole', 'StatusActive', 'UserLoginID', 'Category',
+        'Rank', 'License', 'LicenseValidUntil'
+    ];
 
 
 

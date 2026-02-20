@@ -19,8 +19,8 @@ class APITraxrootConnect extends MY_Controller
         $url = 'https://connect.traxroot.com/api/Token'; 
         
         $data = array(
-            'userName'  => 'euodoo',
-            'password'  => 'euodoo360',
+            'userName'  => $this->config->item('traxroot_username'),
+            'password'  => $this->config->item('traxroot_password'),
             'subUserId' => 0,
             'language'  => 'en'
         );

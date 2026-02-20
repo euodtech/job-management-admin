@@ -228,7 +228,7 @@ class Home extends MY_Controller
         } else {
             $token = $_GET['token'];
 
-            $data = $this->M_Global->globalquery("SELECT * FROM UserLogin WHERE key_resetpassword = '$token' ")->row_array();
+            $data = $this->M_Global->globalquery("SELECT * FROM UserLogin WHERE key_resetpassword = ?", [$token])->row_array();
 
             if($data == null AND $token != "success_update_password") {
 
