@@ -89,9 +89,6 @@
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Customer</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Total Job</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">First Job</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Last Job</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Retention Days</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status Customer</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
                     </tr>
@@ -104,6 +101,7 @@
     <div id="customerDetailModal" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="customerNameHeader">
         <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-4xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
             <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
+                <!-- Header -->
                 <div class="flex justify-between items-center py-3 px-4 border-b border-gray-200">
                     <h3 id="customerNameHeader" class="font-semibold text-gray-800">Customer Detail</h3>
                     <button type="button" class="inline-flex items-center justify-center size-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition" data-hs-overlay="#customerDetailModal">
@@ -111,23 +109,77 @@
                         <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
-                <div class="p-4 overflow-y-auto">
-                    <table id="customerDetailTable" class="w-full text-sm dt-responsive" width="100%">
-                    <thead class="bg-gray-50">
-                        <tr class="text-center whitespace-nowrap">
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Name</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Date</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Type Job</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Notes</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Handled By</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Company Name</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Cancel Reason</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                    </table>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-200 px-4">
+                    <button class="tab-btn active" data-tab-target="tab-customer-overview">Overview</button>
+                    <button class="tab-btn" data-tab-target="tab-customer-jobs">Job History</button>
+                </div>
+
+                <!-- Body -->
+                <div class="p-4 overflow-y-auto" style="max-height: 70vh;">
+
+                    <!-- Overview Tab -->
+                    <div id="tab-customer-overview" class="tab-panel active">
+                        <div class="content_header">
+                            <div class="row-item">
+                                <div class="label">Customer:</div>
+                                <div class="value" id="detail_customer_name"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">Company:</div>
+                                <div class="value" id="detail_company"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">Total Job:</div>
+                                <div class="value" id="detail_total_job"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">First Job:</div>
+                                <div class="value" id="detail_first_job"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">Last Job:</div>
+                                <div class="value" id="detail_last_job"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">Retention Days:</div>
+                                <div class="value" id="detail_retention"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">Status:</div>
+                                <div class="value" id="detail_status"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">Last Handled By:</div>
+                                <div class="value" id="detail_handled_by"></div>
+                            </div>
+                            <div class="row-item">
+                                <div class="label">Last Cancel Reason:</div>
+                                <div class="value" id="detail_cancel_reason"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job History Tab -->
+                    <div id="tab-customer-jobs" class="tab-panel">
+                        <table id="customerDetailTable" class="w-full text-sm dt-responsive" width="100%">
+                            <thead class="bg-gray-50">
+                                <tr class="text-center whitespace-nowrap">
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">No</th>
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Name</th>
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Job Date</th>
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Type Job</th>
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Notes</th>
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Handled By</th>
+                                    <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">Cancel Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -183,6 +235,74 @@
 </div>
 
 <style>
+    /* Tab styles */
+    .tab-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+    .tab-btn:hover { color: #374151; }
+    .tab-btn.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Overview card styles */
+    .content_header {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px 20px;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    .content_header .row-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px dashed #ddd;
+    }
+    .content_header .row-item:last-child { border-bottom: none; }
+    .content_header .label {
+        flex: 0 0 160px;
+        font-weight: 600;
+        color: #212529;
+    }
+    .content_header .value {
+        flex: 1;
+        color: #495057;
+    }
+
+    /* Compact search label and input */
+    #tableCustomerRetentionReport_wrapper .dataTables_filter label {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        margin: 0;
+    }
+
+    /* Full-width table with centered cells */
+    #tableCustomerRetentionReport {
+        width: 100% !important;
+    }
+    table#tableCustomerRetentionReport.dataTable thead th {
+        text-align: center !important;
+    }
+    #tableCustomerRetentionReport tbody tr td {
+        vertical-align: middle;
+        text-align: center;
+    }
+
     /* Child row styles for DataTables responsive mode */
     #tableCustomerRetentionReport tr.child td {
         text-align: left !important;
@@ -235,7 +355,6 @@
         });
 
         var table = $('#tableCustomerRetentionReport').DataTable({
-            scrollX: true,
             processing: true,
             serverSide: true,
             ajax: {
@@ -256,27 +375,16 @@
                 { data: "CompanyName", className: "text-center whitespace-nowrap align-middle" },
                 { data: "TotalJob", className: "text-center whitespace-nowrap align-middle" },
                 {
-                    data: "FirstJob",
+                    data: "StatusCustomer",
                     className: "text-center whitespace-nowrap align-middle",
-                    render: function(data, type, row) {
-                        if (!data || data === '-') return '-';
-                        const date = new Date(data);
-                        const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
-                        return date.toLocaleDateString('en-US', options);
+                    render: function(data) {
+                        if (data === 'Active') {
+                            return '<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"><span class="size-1.5 rounded-full bg-green-500"></span>Active</span>';
+                        } else {
+                            return '<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/20"><span class="size-1.5 rounded-full bg-gray-400"></span>Inactive</span>';
+                        }
                     }
                 },
-                {
-                    data: "LastJob",
-                    className: "text-center whitespace-nowrap align-middle",
-                    render: function(data, type, row) {
-                        if (!data || data === '-') return '-';
-                        const date = new Date(data);
-                        const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
-                        return date.toLocaleDateString('en-US', options);
-                    }
-                },
-                { data: "RetentionDays", className: "text-center whitespace-nowrap align-middle" },
-                { data: "StatusCustomer", className: "text-center whitespace-nowrap align-middle" },
                 { data: "Action", className: "text-center whitespace-nowrap align-middle" }
             ],
             responsive: false,
@@ -284,13 +392,13 @@
             rowReorder: {
                 selector: 'td:nth-child(2)'
             },
-            dom: '<"d-flex justify-content-between align-items-center mb-2"f>rtip',
+            dom: '<"d-flex justify-content-end align-items-center mb-2"f>rtip',
             ordering: true,
             searching: true,
             language: {
                 search: "Search:",
             },
-            order: [[4, "desc"]],
+            order: [[3, "desc"]],
         });
 
         // Export Excel
@@ -330,23 +438,53 @@
             untilInput.removeAttribute("min");
         });
 
-        $('#tableCustomerRetentionReport').on('click', '.btn-detail', function() {
-            let customerID = $(this).data('id');
+        // Tab switching
+        let jobHistoryLoaded = false;
+        let currentCustomerID = null;
+
+        $('#customerDetailModal').on('click', '.tab-btn', function() {
+            let target = $(this).data('tab-target');
+
+            // Switch active tab button
+            $('#customerDetailModal .tab-btn').removeClass('active');
+            $(this).addClass('active');
+
+            // Switch active panel
+            $('#customerDetailModal .tab-panel').removeClass('active');
+            $('#' + target).addClass('active');
+
+            // Lazy-load job history on first click
+            if (target === 'tab-customer-jobs' && !jobHistoryLoaded && currentCustomerID) {
+                loadJobHistory(currentCustomerID);
+            }
+        });
+
+        function formatDate(dateStr) {
+            if (!dateStr || dateStr === '-') return '-';
+            const date = new Date(dateStr);
+            const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function getStatusBadge(status) {
+            if (status === 'Active') {
+                return '<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"><span class="size-1.5 rounded-full bg-green-500"></span>Active</span>';
+            }
+            return '<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/20"><span class="size-1.5 rounded-full bg-gray-400"></span>Inactive</span>';
+        }
+
+        function loadJobHistory(customerID) {
             $.ajax({
                 url: "<?= base_url('ReportCustomer/getCustomerDetail') ?>",
                 type: "GET",
                 data: { CustomerID: customerID },
                 dataType: "json",
-                success: function(res){
-                    $('#customerNameHeader').text(res.CustomerName || '-');
-
-                    // Jika sudah pernah di-init DataTable, destroy dulu
+                success: function(res) {
                     if ($.fn.DataTable.isDataTable('#customerDetailTable')) {
                         $('#customerDetailTable').DataTable().clear().destroy();
                     }
 
-                    // Inisialisasi DataTable baru
-                    detailTable = $('#customerDetailTable').DataTable({
+                    $('#customerDetailTable').DataTable({
                         data: res.Jobs || [],
                         columns: [
                             {
@@ -360,7 +498,6 @@
                             { data: "JobStatus" },
                             { data: "Notes" },
                             { data: "HandledBy" },
-                            { data: "CompanyName" },
                             { data: "CancelReason" }
                         ],
                         responsive: true,
@@ -368,35 +505,47 @@
                         paging: true,
                         lengthMenu: [5, 10, 25, 50],
                         pageLength: 5,
-                        order: [[2, 'desc']] // urut berdasarkan JobDate
+                        order: [[2, 'desc']]
                     });
 
-                    showModal('#customerDetailModal');
+                    jobHistoryLoaded = true;
                 },
-                //     var tbody = $('#customerDetailBody');
-                //     tbody.empty();
-                //     if(res.Jobs && res.Jobs.length > 0){
-                //         res.Jobs.forEach((job, i) => {
-                //             tbody.append('<tr>' +
-                //                 `<td>${i + 1}</td>` +
-                //                 `<td>${job.JobName || '-'}</td>` +
-                //                 `<td>${job.JobDate || '-'}</td>` +
-                //                 `<td>${job.TypeJob || '-'}</td>` +
-                //                 `<td>${job.JobStatus || '-'}</td>` +
-                //                 `<td>${job.Notes || '-'}</td>` +
-                //                 `<td>${job.HandledBy || '-'}</td>` +
-                //                 `<td>${job.CancelReason || '-'}</td>` +
-                //             '</tr>');
-                //         });
-                //     } else {
-                //         tbody.append('<tr><td colspan="8" class="text-center">No jobs found</td></tr>');
-                //     }
-                //     $('#customerDetailModal').modal('show');
-                // },
                 error: function(xhr) {
                     console.error(xhr.responseText);
                 }
             });
+        }
+
+        // Detail button click - populate Overview tab
+        $('#tableCustomerRetentionReport').on('click', '.btn-detail', function() {
+            let btn = $(this);
+            currentCustomerID = btn.data('id');
+            jobHistoryLoaded = false;
+
+            // Reset to Overview tab
+            $('#customerDetailModal .tab-btn').removeClass('active');
+            $('#customerDetailModal .tab-btn[data-tab-target="tab-customer-overview"]').addClass('active');
+            $('#customerDetailModal .tab-panel').removeClass('active');
+            $('#tab-customer-overview').addClass('active');
+
+            // Destroy previous job history DataTable
+            if ($.fn.DataTable.isDataTable('#customerDetailTable')) {
+                $('#customerDetailTable').DataTable().clear().destroy();
+            }
+
+            // Populate Overview from data attributes
+            $('#customerNameHeader').text(btn.data('name') || 'Customer Detail');
+            $('#detail_customer_name').text(btn.data('name') || '-');
+            $('#detail_company').text(btn.data('company') || '-');
+            $('#detail_total_job').text(btn.data('totaljob') ?? '-');
+            $('#detail_first_job').text(formatDate(btn.data('firstjob')));
+            $('#detail_last_job').text(formatDate(btn.data('lastjob')));
+            $('#detail_retention').text((btn.data('retention') ?? '-') + (btn.data('retention') !== '-' ? ' days' : ''));
+            $('#detail_status').html(getStatusBadge(btn.data('status')));
+            $('#detail_handled_by').text(btn.data('handledby') || '-');
+            $('#detail_cancel_reason').text(btn.data('cancelreason') || '-');
+
+            showModal('#customerDetailModal');
         });
 
     });

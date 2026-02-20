@@ -3,6 +3,26 @@
     padding: 3px 5px !important;
     font-size: 12px !important;
 }
+
+/* Full-width table with centered cells */
+#tableJobCustomer {
+    width: 100% !important;
+}
+table#tableJobCustomer.dataTable thead th {
+    text-align: center !important;
+}
+#tableJobCustomer tbody tr td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Compact search label and input */
+#tableJobCustomer_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0;
+}
 </style>
 
 <div class="px-4 sm:px-6 lg:px-8 py-4">
@@ -520,7 +540,6 @@
         var table = $('#tableJobCustomer').DataTable({
             processing: true,
             serverSide: true,
-            scrollX: true ,
             columnDefs: [
                 { targets: [5, 6], orderable: false } // kolom 3–6 gak bisa di-sort
             ],
@@ -613,7 +632,7 @@
             pageLength: 10,
             rowReorder: { selector: 'td:nth-child(2)' },
             lengthMenu: [10, 25, 50, 100],
-            dom: '<"d-flex justify-content-between align-items-center mb-2"f>rtip',
+            dom: '<"d-flex justify-content-end align-items-center mb-2"f>rtip',
 
             ordering: true,
             searching: true,

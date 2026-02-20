@@ -123,7 +123,7 @@ class ReportCustomer extends MY_Controller
                 COUNT(DISTINCT lj.JobID) AS TotalJob,
                 COALESCE(MIN(lj.JobDate), '-') AS FirstJob,
                 COALESCE(MAX(lj.JobDate), '-') AS LastJob,
-                TIMESTAMPDIFF(DAY, MIN(lj.JobDate), MAX(lj.JobDate)) AS RetentionDays,
+                TIMESTAMPDIFF(DAY, MIN(lj.JobDate), CURDATE()) AS RetentionDays,
                 CASE 
                     WHEN MAX(lj.JobDate) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) THEN 'Active' 
                     ELSE 'Inactive' 
@@ -191,9 +191,18 @@ class ReportCustomer extends MY_Controller
         $no = $start + 1;
         foreach ($result as &$row) {
             $row['No'] = $no++;
-            $row['Action'] = '<button class="btn btn-sm btn-primary btn-detail" style="white-space: nowrap;" data-id="' . $row['CustomerID'] . '">
-                    <i class="fas fa-eye"></i> Detail
-                </button>';
+            $row['Action'] = '<button class="btn-tw-primary btn-detail"'
+                . ' data-id="' . $row['CustomerID'] . '"'
+                . ' data-name="' . htmlspecialchars($row['CustomerName'] ?? '-', ENT_QUOTES) . '"'
+                . ' data-company="' . htmlspecialchars($row['CompanyName'] ?? '-', ENT_QUOTES) . '"'
+                . ' data-totaljob="' . ($row['TotalJob'] ?? 0) . '"'
+                . ' data-firstjob="' . ($row['FirstJob'] ?? '-') . '"'
+                . ' data-lastjob="' . ($row['LastJob'] ?? '-') . '"'
+                . ' data-retention="' . ($row['RetentionDays'] ?? '-') . '"'
+                . ' data-status="' . ($row['StatusCustomer'] ?? '-') . '"'
+                . ' data-handledby="' . htmlspecialchars($row['LastHandledBy'] ?? '-', ENT_QUOTES) . '"'
+                . ' data-cancelreason="' . htmlspecialchars($row['LastCancelReason'] ?? '-', ENT_QUOTES) . '"'
+                . '><i class="fas fa-eye mr-1"></i>Detail</button>';
         }
 
         // ==============================
@@ -462,11 +471,11 @@ class ReportCustomer extends MY_Controller
                 COUNT(DISTINCT lj.JobID) AS TotalJob,
                 COALESCE(MIN(lj.JobDate), '-') AS FirstJob,
                 COALESCE(MAX(lj.JobDate), '-') AS LastJob,
-                DATEDIFF(MAX(lj.JobDate), MIN(lj.JobDate)) AS RetentionDays,
-                CASE 
-                    WHEN COUNT(DISTINCT lj.JobID) > 5 THEN 'Loyal'
-                    ELSE 'Normal'
-                END AS Status
+                DATEDIFF(CURDATE(), MIN(lj.JobDate)) AS RetentionDays,
+                CASE
+                    WHEN MAX(lj.JobDate) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) THEN 'Active'
+                    ELSE 'Inactive'
+                END AS StatusCustomer
             FROM Customer c
             LEFT JOIN ListJob lj ON c.CustomerID = lj.CustomerID
             LEFT JOIN ListCompany lc ON lj.CompanyID = lc.ListCompanyID
@@ -486,34 +495,29 @@ class ReportCustomer extends MY_Controller
             $sql .= " AND lj.JobDate BETWEEN " . $this->db->escape($from) . " AND " . $this->db->escape($until);
         }
         
+        $sql .= " GROUP BY c.CustomerID, c.CustomerName, lc.CompanyName";
+
         $having = [];
 
         if (!empty($totalJob)) {
-            $having[] = "COUNT(DISTINCT lj.JobID) >= " . intval($totalJob);
+            $having[] = "TotalJob >= " . intval($totalJob);
         }
 
         if (!empty($retentionDays)) {
-            $having[] = "DATEDIFF(MAX(lj.JobDate), MIN(lj.JobDate)) >= " . intval($retentionDays);
-        }
-        
-        
-        if (!empty($status)) {
-            if ($status == 'Loyal') {
-                $sql .= " HAVING COUNT(DISTINCT lj.JobID) > 5";
-            } elseif ($status == 'Normal') {
-                $sql .= " HAVING COUNT(DISTINCT lj.JobID) <= 5";
-            }
+            $having[] = "RetentionDays >= " . intval($retentionDays);
         }
 
-        $sql .= "
-            GROUP BY c.CustomerID, c.CustomerName, lc.CompanyName
-        ";
-
-        if (count($having) > 0) {
+        if (!empty($having)) {
             $sql .= " HAVING " . implode(" AND ", $having);
         }
 
-        $sql .= " ORDER BY TotalJob DESC";
+        // Status filter via wrapping query (same approach as DataTable)
+        $statusFilter = "";
+        if (!empty($status)) {
+            $statusFilter = " AND x.StatusCustomer = " . $this->db->escape($status);
+        }
+
+        $sql = "SELECT * FROM ({$sql}) x WHERE 1=1 {$statusFilter} ORDER BY TotalJob DESC";
 
         $query = $this->db->query($sql);
         $data = $query->result_array();
@@ -549,7 +553,7 @@ class ReportCustomer extends MY_Controller
                     <td>{$row['FirstJob']}</td>
                     <td>{$row['LastJob']}</td>
                     <td style='text-align:center;'>{$row['RetentionDays']}</td>
-                    <td>{$row['Status']}</td>
+                    <td>{$row['StatusCustomer']}</td>
                 </tr>";
 
             $where = "WHERE lj.CustomerID = " . $this->db->escape($row['CustomerID']);

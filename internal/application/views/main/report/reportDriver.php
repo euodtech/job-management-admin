@@ -1,4 +1,24 @@
 <style>
+    /* Full-width table with centered cells */
+    #tableUserLogin {
+        width: 100% !important;
+    }
+    table#tableUserLogin.dataTable thead th {
+        text-align: center !important;
+    }
+    #tableUserLogin tbody tr td {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    /* Compact search label and input */
+    #tableUserLogin_wrapper .dataTables_filter label {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        margin: 0;
+    }
+
     /* Child row styles for DataTables responsive mode */
     #tableUserPerformance tr.child td {
         text-align: left !important;
@@ -223,10 +243,9 @@
 
             ],
             responsive: false,
-            scrollX: true ,
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
-            dom: '<"d-flex justify-content-between align-items-center mb-2"f>rtip',
+            dom: '<"d-flex justify-content-end align-items-center mb-2"f>rtip',
             buttons: [
                 {
                     extend: 'excelHtml5',
