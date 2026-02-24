@@ -6,7 +6,13 @@
       "Bash(find:*)",
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_install",
-      "Bash(/c/xampp/mysql/bin/mysql:*)"
+      "Bash(/c/xampp/mysql/bin/mysql:*)",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_run_code",
+      "Bash(netstat:*)",
+      "Bash(node -e:*)",
+      "Bash(curl:*)",
+      "Bash(pip show:*)"
     ]
   }
 }
