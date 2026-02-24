@@ -186,68 +186,106 @@ class Auth extends MY_Controller
 
     public function forgot_password()
     {
-        if (empty($_GET['token'])) {
-            $this->load->view('main/expired_forgot_password');
-        } else {
-            $token = $_GET['token'];
-
-            $data = $this->M_Global->globalquery("SELECT * FROM UserLogin WHERE key_resetpassword = ?", [$token])->row_array();
-
-            if ($data == null && $token != "success_update_password") {
-                $this->load->view('main/expired_forgot_password');
-            } else {
-                if ($token == "success_update_password") {
-                    $this->load->view('main/success_forgot_password');
-                } else {
-                    $data['user_id'] = $data['UserLoginID'];
-                    $this->load->view('main/forgot_password', $data);
-                }
-            }
+        // Success redirect via flashdata (replaces ?token=success_update_password hack)
+        if ($this->session->flashdata('reset_success')) {
+            $this->load->view('main/success_forgot_password');
+            return;
         }
+
+        // Token from URL (initial click) or flashdata (validation failure redirect)
+        $token = $this->input->get('token', TRUE);
+        if (empty($token)) {
+            $token = $this->session->flashdata('reset_token');
+        }
+
+        if (empty($token)) {
+            $this->load->view('main/expired_forgot_password');
+            return;
+        }
+
+        // Validate token exists in DB
+        $user = $this->M_Global->globalquery(
+            "SELECT UserLoginID FROM UserLogin WHERE key_resetpassword = ?",
+            [$token]
+        )->row_array();
+
+        if (!$user) {
+            $this->load->view('main/expired_forgot_password');
+            return;
+        }
+
+        $data = [
+            'token' => $token,
+            'error' => $this->session->flashdata('reset_error'),
+        ];
+
+        $this->load->view('main/forgot_password', $data);
     }
 
     public function submit_new_password()
     {
-        // Get and sanitize input
-        $password       = $this->input->post('confirm_password');
-        $user_login_id  = (int) $this->input->post('user_login_id');
+        $new_password    = $this->input->post('new_password');
+        $confirm_password = $this->input->post('confirm_password');
+        $token           = $this->input->post('reset_token');
 
-        // Validate input
-        if ($user_login_id <= 0 || empty($password)) {
-            $this->session->set_flashdata('message',
-                '<div class="alert alert-danger">Invalid request or empty password!</div>'
-            );
+        // Token is required — reject tampered requests
+        if (empty($token)) {
+            $this->load->view('main/expired_forgot_password');
+            return;
+        }
+
+        // Validate passwords are not empty
+        if (empty($new_password) || empty($confirm_password)) {
+            $this->session->set_flashdata('reset_error', 'Please fill in both password fields.');
+            $this->session->set_flashdata('reset_token', $token);
             redirect(base_url('forgot-password'));
             return;
         }
 
         // Validate password length
-        if (strlen($password) < 8) {
-            $this->session->set_flashdata('message',
-                '<div class="alert alert-danger">Password must be at least 8 characters long!</div>'
-            );
+        if (strlen($new_password) < 8) {
+            $this->session->set_flashdata('reset_error', 'Password must be at least 8 characters long.');
+            $this->session->set_flashdata('reset_token', $token);
             redirect(base_url('forgot-password'));
             return;
         }
 
-        // Prepare data
+        // Validate passwords match
+        if ($new_password !== $confirm_password) {
+            $this->session->set_flashdata('reset_error', 'Passwords do not match.');
+            $this->session->set_flashdata('reset_token', $token);
+            redirect(base_url('forgot-password'));
+            return;
+        }
+
+        // Re-validate token against DB (security: prevents user_login_id tampering)
+        $user = $this->M_Global->globalquery(
+            "SELECT UserLoginID FROM UserLogin WHERE key_resetpassword = ?",
+            [$token]
+        )->row_array();
+
+        if (!$user) {
+            $this->load->view('main/expired_forgot_password');
+            return;
+        }
+
+        // Update password and clear token
         $data_update = [
-            "Password"          => password_hash($password, PASSWORD_BCRYPT),
+            "Password"          => password_hash($new_password, PASSWORD_BCRYPT),
             "key_resetpassword" => null
         ];
 
-        // Update safely using Query Builder
-        $this->db->where('UserLoginID', $user_login_id);
+        $this->db->where('UserLoginID', $user['UserLoginID']);
         if (!$this->db->update('UserLogin', $data_update)) {
-            $this->session->set_flashdata('message',
-                '<div class="alert alert-danger">Failed to update password. Please try again.</div>'
-            );
+            $this->session->set_flashdata('reset_error', 'Failed to update password. Please try again.');
+            $this->session->set_flashdata('reset_token', $token);
             redirect(base_url('forgot-password'));
             return;
         }
 
-        // Success redirect
-        redirect(base_url('forgot-password?token=success_update_password'));
+        // Success
+        $this->session->set_flashdata('reset_success', true);
+        redirect(base_url('forgot-password'));
     }
 
     // ─── Profile Management ──────────────────────────────────────────
