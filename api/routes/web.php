@@ -53,6 +53,9 @@ $router->group([
     $app->delete('delete-job/{id:[0-9]+}', 'DapaController@DeleteJob');
     $app->post('update-job/{id:[0-9]+}', 'DapaController@UpdateJob');
 
+    // Change password
+    $app->post('change-password', 'AuthController@change_password');
+
     // Check company type (moved behind auth)
     $app->get('check-type-company/{companyID:[0-9]+}', 'AuthController@check_company_driver');
 

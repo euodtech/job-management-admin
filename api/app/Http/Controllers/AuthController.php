@@ -414,6 +414,52 @@ class AuthController extends Controller {
         }
     }
 
+    public function change_password(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'current_password' => 'required|string',
+                'new_password' => 'required|string|min:8|confirmed',
+            ]);
+
+            $user = $request->attributes->get('authenticated_user');
+
+            if (!password_verify($request->input('current_password'), $user->Password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Current password is incorrect',
+                ], 401);
+            }
+
+            $user->Password = Hash::make($request->input('new_password'));
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password changed successfully',
+            ], 200);
+
+        } catch (ValidationException $e) {
+            $errors = $e->errors();
+            $firstMessage = collect($errors)->flatten()->first();
+
+            return response()->json([
+                'success' => false,
+                'message' => $firstMessage,
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('change_password Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while changing password',
+            ], 500);
+        }
+    }
+
     public function forgot_password(Request $request)
     {
         try {
