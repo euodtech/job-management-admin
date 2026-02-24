@@ -63,7 +63,7 @@ class Test extends MY_Controller
         $this->db->trans_begin(); // ⬅️ mulai transaksi
 
         try {
-            $url = 'http://quetraverse.pro/efms/internal/v1/api/traxroot/getDrivers';
+            $url = base_url('v1/api/traxroot/getDrivers');
             $result = $this->hitApi($url);
 
             if (empty($result) || !is_array($result)) {

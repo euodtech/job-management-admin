@@ -10,6 +10,7 @@
             echo $sidebar;
         }
     ?>
+    <?php if (!isset($_POST['exportExcel']) && isset($profile_modal)) { echo $profile_modal; } ?>
     <main class="<?= !isset($_POST['exportExcel']) ? 'lg:ml-64 pt-16 pb-16' : '' ?> min-h-screen transition-all duration-300" id="content-blur" data-sidebar-content>
         <?php echo $content; ?>
     </main>

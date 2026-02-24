@@ -221,28 +221,4 @@ class Home extends MY_Controller
         echo json_encode($dataReturn);
     }
 
-    public function forgot_password()
-    {
-        if(empty($_GET['token'])){
-            $this->load->view('main/expired_forgot_password');
-        } else {
-            $token = $_GET['token'];
-
-            $data = $this->M_Global->globalquery("SELECT * FROM UserLogin WHERE key_resetpassword = ?", [$token])->row_array();
-
-            if($data == null AND $token != "success_update_password") {
-
-                $this->load->view('main/expired_forgot_password');
-            } else {
-                if($token == "success_update_password") {
-
-                    $this->load->view('main/success_forgot_password');
-                }  else {
-                    $data['user_id'] = $data['UserLoginID'];
-                    $this->load->view('main/forgot_password', $data);
-                }
-            }
-        }
-    
-    }
 }

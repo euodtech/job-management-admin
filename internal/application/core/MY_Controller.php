@@ -25,6 +25,7 @@ class MY_Controller extends CI_Controller
 		$data['header']			= $this->load->view('main/header', $data, TRUE);
 		$data['topbar']			= $this->load->view('main/topbar', $data, TRUE);
 		$data['sidebar']		= $this->load->view('main/sidebar', $data, TRUE);
+		$data['profile_modal']	= $this->load->view('main/profile_modal', $data, TRUE);
 		$data['content']		= $this->load->view($content, $data, TRUE);
 		$data['ourjs'] 			= $this->load->view('main/ourjs', $data, TRUE);
 		$data['footer'] 		= $this->load->view('main/footer', $data, TRUE);

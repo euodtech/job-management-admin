@@ -571,10 +571,10 @@ class AuthController extends Controller {
 
                             <!-- Body -->
                             <div class="email-body">
-                                <img src="http://quetraverse.pro/efms/internal/assets/dist/logo_efms.jpg" width="100" style="border-radius: 5px;" alt="">
+                                <img src="' . env('APP_LOGO_URL', '') . '" width="100" style="border-radius: 5px;" alt="">
                                 <p>Hi there,</p>
                                 <p>We received a request to reset your password. Click the button below to proceed. If you did not request this, you can safely ignore this email.</p>
-                                <a href="http://quetraverse.pro/efms/internal/forgot-password?token=' . $encEmail . '" class="reset-button">Reset Password</a>
+                                <a href="' . env('APP_INTERNAL_URL', '') . '/forgot-password?token=' . $encEmail . '" class="reset-button">Reset Password</a>
                                 <p style="margin-top: 20px; font-size: 14px; color: #666;">This link will expire in 24 hours for security reasons.</p>
                             </div>
 

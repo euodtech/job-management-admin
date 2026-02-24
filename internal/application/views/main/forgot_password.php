@@ -32,7 +32,7 @@
 
         <!-- Body -->
         <div class="p-5 text-center">
-            <form action="<?= base_url('User/submit_new_password') ?>" method="post" class="max-w-sm mx-auto p-5 bg-white border border-gray-200 rounded-lg shadow-sm text-left">
+            <form action="<?= base_url('Auth/submit_new_password') ?>" method="post" class="max-w-sm mx-auto p-5 bg-white border border-gray-200 rounded-lg shadow-sm text-left">
                 <?php if (config_item('csrf_protection')): ?>
                 <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                 <?php endif; ?>

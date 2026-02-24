@@ -211,19 +211,21 @@
             <div class="px-5 py-4">
                 <form id="formUpdateProfile" method="post">
                     <input type="hidden" id="company_id_profile" name="company_id">
+                    <p id="traxroot-status" class="text-xs text-gray-400 mb-4"></p>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="username_traxroot" name="username_traxroot">
+                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="username_traxroot" name="username_traxroot" placeholder="Enter Traxroot username">
                     </div>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                         <div class="flex">
-                            <input type="password" class="tw-input block w-full rounded-l-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="password_traxroot" name="password_traxroot">
+                            <input type="password" class="tw-input block w-full rounded-l-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="password_traxroot" name="password_traxroot" placeholder="Enter Traxroot password">
                             <button class="toggle-password inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500 hover:bg-gray-100 transition-colors" type="button">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
+                    <p class="text-xs text-gray-400">Leave fields blank to keep current credentials.</p>
                 </form>
             </div>
             <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200">
@@ -485,8 +487,12 @@ $(document).ready(function() {
             dataType: "json",
             success: function(res) {
                 $('#company_id_profile').val(res.ListCompanyID);
-                $('#username_traxroot').val(res.username_traxroot);
-                $('#password_traxroot').val(res.password_traxroot);
+                // Show status indicator (credentials are never exposed)
+                if (res.has_traxroot == 1) {
+                    $('#traxroot-status').html('<i class="fa-solid fa-circle-check text-green-500"></i> Traxroot credentials are configured.');
+                } else {
+                    $('#traxroot-status').html('<i class="fa-solid fa-circle-exclamation text-amber-500"></i> No Traxroot credentials set yet.');
+                }
             }
         });
     });

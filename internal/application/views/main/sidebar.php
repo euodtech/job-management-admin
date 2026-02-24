@@ -24,15 +24,18 @@
     </div>
 
     <!-- User Panel -->
-    <div class="flex items-center gap-3 pl-6 pr-4 py-3 border-b border-gray-100">
+    <div id="sidebar-user-panel"
+         class="flex items-center gap-3 pl-6 pr-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors group"
+         onclick="openProfileModal()">
         <div class="relative shrink-0">
             <img src="<?= base_url('assets/dist/1144760.png') ?>" class="w-9 h-9 rounded-full ring-2 ring-gray-200" alt="User">
             <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
         </div>
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-gray-800 truncate leading-tight"><?= ucwords(strtolower($this->session->userdata('Fullname'))) ?></p>
             <p class="text-[11px] text-gray-400 truncate leading-tight mt-0.5"><?= $this->session->userdata('Role') == 1 ? 'Super Admin' : 'Administrator' ?></p>
         </div>
+        <i class="fa-solid fa-pen-to-square text-gray-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
     </div>
 
     <!-- Sidebar Menu -->

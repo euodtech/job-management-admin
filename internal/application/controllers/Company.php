@@ -549,8 +549,13 @@ public function update()
         }
 
         // Use Query Builder (prevents SQL injection)
+        // Exclude encrypted traxroot credentials from response
         $dataReturn = $this->db
-            ->select('ListCompany.*, UserLogin.UserLoginID')
+            ->select('ListCompany.ListCompanyID, ListCompany.CompanyName, ListCompany.CompanyCode,
+                      ListCompany.CompanyPhone, ListCompany.CompanyEmail, ListCompany.CompanySubscribe,
+                      ListCompany.CompanyLogo, ListCompany.UserLoginID,
+                      CASE WHEN ListCompany.username_traxroot IS NOT NULL AND ListCompany.username_traxroot != "" THEN 1 ELSE 0 END AS has_traxroot',
+                    false)
             ->from('ListCompany')
             ->join('UserLogin', 'ListCompany.UserLoginID = UserLogin.UserLoginID', 'left')
             ->where('ListCompanyID', $companyID)
@@ -568,26 +573,53 @@ public function update()
     // Update Profile Company (Traxroot)
     public function update_traxroot_profile()
     {
-        $companyID = $this->input->post('company_id');
+        $companyID = (int) $this->input->post('company_id');
         $username  = $this->input->post('username_traxroot');
         $password  = $this->input->post('password_traxroot');
 
+        if ($companyID <= 0) {
+            $this->session->set_flashdata('swal', [
+                'title' => 'Error',
+                'text'  => 'Invalid company.',
+                'icon'  => 'error'
+            ]);
+            redirect('company-list');
+            return;
+        }
+
+        // Only update fields that were provided (leave blank = keep current)
+        $updateData = [];
         $encKey = $this->config->item('encryption_key');
-        $iv = openssl_random_pseudo_bytes(16);
-        $encUser = base64_encode($iv . openssl_encrypt($username, 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, $iv));
-        $iv2 = openssl_random_pseudo_bytes(16);
-        $encPass = base64_encode($iv2 . openssl_encrypt($password, 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, $iv2));
+
+        if (!empty($username)) {
+            $iv = openssl_random_pseudo_bytes(16);
+            $updateData['username_traxroot'] = base64_encode($iv . openssl_encrypt($username, 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, $iv));
+        }
+
+        if (!empty($password)) {
+            $iv2 = openssl_random_pseudo_bytes(16);
+            $updateData['password_traxroot'] = base64_encode($iv2 . openssl_encrypt($password, 'AES-256-CBC', $encKey, OPENSSL_RAW_DATA, $iv2));
+        }
+
+        if (empty($updateData)) {
+            $this->session->set_flashdata('swal', [
+                'title' => 'Info',
+                'text'  => 'No changes were made.',
+                'icon'  => 'info'
+            ]);
+            redirect('company-list');
+            return;
+        }
 
         $this->db->where('ListCompanyID', $companyID);
-        $this->db->update('ListCompany', [
-            'username_traxroot' => $encUser,
-            'password_traxroot' => $encPass
-        ]);
+        $this->db->update('ListCompany', $updateData);
+
+        $this->audit_log('company.traxroot_update', ['company_id' => $companyID]);
 
         $this->session->set_flashdata('swal', [
             'title' => 'Success',
-            'text' => 'Traxroot profile updated!',
-            'icon' => 'success'
+            'text'  => 'Traxroot profile updated!',
+            'icon'  => 'success'
         ]);
 
         redirect('company-list');

@@ -75,49 +75,6 @@ class User extends MY_Controller
 
 
 
-    public function submit_new_password()
-    {
-        // Get and sanitize input
-        $password       = $this->input->post('confirm_password');
-        $user_login_id  = (int) $this->input->post('user_login_id');
-
-        // Validate input
-        if ($user_login_id <= 0 || empty($password)) {
-            $this->session->set_flashdata('message', 
-                '<div class="alert alert-danger">Invalid request or empty password!</div>'
-            );
-            redirect(base_url('forgot-password'));
-            return;
-        }
-
-        // Optional: validate password length
-        if (strlen($password) < 8) {
-            $this->session->set_flashdata('message', 
-                '<div class="alert alert-danger">Password must be at least 8 characters long!</div>'
-            );
-            redirect(base_url('forgot-password'));
-            return;
-        }
-
-        // Prepare data
-        $data_update = [
-            "Password"          => password_hash($password, PASSWORD_BCRYPT),
-            "key_resetpassword" => null
-        ];
-
-        // Update safely using Query Builder
-        $this->db->where('UserLoginID', $user_login_id);
-        if (!$this->db->update('UserLogin', $data_update)) {
-            $this->session->set_flashdata('message', 
-                '<div class="alert alert-danger">Failed to update password. Please try again.</div>'
-            );
-            redirect(base_url('forgot-password'));
-            return;
-        }
-
-        // Success redirect
-        redirect(base_url('forgot-password?token=success_update_password'));
-    }
 
 
     public function import_excel()

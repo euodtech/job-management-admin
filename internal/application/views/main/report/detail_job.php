@@ -111,7 +111,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <?php foreach($detail[0]['AssetsJob'] as $val): ?>
         <div>
-            <img src="<?= 'http://localhost:8080/be-fms/api/' . $val['Photo'] ?>" class="w-full rounded-lg shadow-sm" alt="">
+            <img src="<?= $this->config->item('base_api_url') . $val['Photo'] ?>" class="w-full rounded-lg shadow-sm" alt="">
         </div>
         <?php endforeach; ?>
     </div>

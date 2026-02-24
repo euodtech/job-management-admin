@@ -183,4 +183,234 @@ class Auth extends MY_Controller
         $this->session->sess_destroy();
         redirect('auth');
     }
+
+    public function forgot_password()
+    {
+        if (empty($_GET['token'])) {
+            $this->load->view('main/expired_forgot_password');
+        } else {
+            $token = $_GET['token'];
+
+            $data = $this->M_Global->globalquery("SELECT * FROM UserLogin WHERE key_resetpassword = ?", [$token])->row_array();
+
+            if ($data == null && $token != "success_update_password") {
+                $this->load->view('main/expired_forgot_password');
+            } else {
+                if ($token == "success_update_password") {
+                    $this->load->view('main/success_forgot_password');
+                } else {
+                    $data['user_id'] = $data['UserLoginID'];
+                    $this->load->view('main/forgot_password', $data);
+                }
+            }
+        }
+    }
+
+    public function submit_new_password()
+    {
+        // Get and sanitize input
+        $password       = $this->input->post('confirm_password');
+        $user_login_id  = (int) $this->input->post('user_login_id');
+
+        // Validate input
+        if ($user_login_id <= 0 || empty($password)) {
+            $this->session->set_flashdata('message',
+                '<div class="alert alert-danger">Invalid request or empty password!</div>'
+            );
+            redirect(base_url('forgot-password'));
+            return;
+        }
+
+        // Validate password length
+        if (strlen($password) < 8) {
+            $this->session->set_flashdata('message',
+                '<div class="alert alert-danger">Password must be at least 8 characters long!</div>'
+            );
+            redirect(base_url('forgot-password'));
+            return;
+        }
+
+        // Prepare data
+        $data_update = [
+            "Password"          => password_hash($password, PASSWORD_BCRYPT),
+            "key_resetpassword" => null
+        ];
+
+        // Update safely using Query Builder
+        $this->db->where('UserLoginID', $user_login_id);
+        if (!$this->db->update('UserLogin', $data_update)) {
+            $this->session->set_flashdata('message',
+                '<div class="alert alert-danger">Failed to update password. Please try again.</div>'
+            );
+            redirect(base_url('forgot-password'));
+            return;
+        }
+
+        // Success redirect
+        redirect(base_url('forgot-password?token=success_update_password'));
+    }
+
+    // ─── Profile Management ──────────────────────────────────────────
+
+    public function get_profile()
+    {
+        header('Content-Type: application/json');
+
+        if ($this->session->userdata('status') !== 'kusam') {
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+            return;
+        }
+
+        $adminID = (int) $this->session->userdata('AdminID');
+
+        $profile = $this->M_Global->globalquery(
+            "SELECT ul.UserLoginID, ul.Fullname, ul.Email, ul.LastLogin, ul.Role,
+                    lc.CompanyName, lc.CompanyCode, lc.CompanySubscribe
+             FROM UserLogin ul
+             LEFT JOIN ListCompany lc ON ul.UserLoginID = lc.UserLoginID
+             WHERE ul.UserLoginID = ?",
+            [$adminID]
+        )->row_array();
+
+        if (!$profile) {
+            echo json_encode(['status' => 'error', 'message' => 'Profile not found']);
+            return;
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'data' => [
+                'Fullname'         => $profile['Fullname'],
+                'Email'            => $profile['Email'],
+                'LastLogin'        => $profile['LastLogin'],
+                'Role'             => $profile['Role'],
+                'CompanyName'      => $profile['CompanyName'] ?? '-',
+                'CompanyCode'      => $profile['CompanyCode'] ?? '-',
+                'CompanySubscribe' => $profile['CompanySubscribe'] ?? 1,
+            ]
+        ]);
+    }
+
+    public function update_profile()
+    {
+        header('Content-Type: application/json');
+
+        if ($this->session->userdata('status') !== 'kusam') {
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+            return;
+        }
+
+        $adminID  = (int) $this->session->userdata('AdminID');
+        $fullname = trim($this->input->post('fullname', true));
+        $email    = strtolower(trim($this->input->post('email', true)));
+
+        $errors = [];
+
+        if (empty($fullname)) {
+            $errors['fullname'] = 'Full name is required.';
+        }
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'A valid email address is required.';
+        }
+
+        // Check email uniqueness (exclude self)
+        if (empty($errors['email'])) {
+            $existing = $this->M_Global->globalquery(
+                "SELECT UserLoginID FROM UserLogin WHERE Email = ? AND UserLoginID != ?",
+                [$email, $adminID]
+            )->row_array();
+
+            if ($existing) {
+                $errors['email'] = 'This email is already in use by another account.';
+            }
+        }
+
+        if (!empty($errors)) {
+            echo json_encode(['status' => 'validation_error', 'errors' => $errors]);
+            return;
+        }
+
+        $this->db->trans_start();
+
+        $this->db->where('UserLoginID', $adminID);
+        $this->db->update('UserLogin', [
+            'Fullname' => $fullname,
+            'Email'    => $email,
+        ]);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to update profile.']);
+            return;
+        }
+
+        // Refresh session
+        $this->session->set_userdata('Fullname', $fullname);
+
+        $this->audit_log('profile.update', ['admin_id' => $adminID, 'email' => $email]);
+
+        echo json_encode([
+            'status'  => 'success',
+            'message' => 'Profile updated successfully.',
+            'data'    => ['Fullname' => $fullname, 'Email' => $email]
+        ]);
+    }
+
+    public function change_password()
+    {
+        header('Content-Type: application/json');
+
+        if ($this->session->userdata('status') !== 'kusam') {
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+            return;
+        }
+
+        $adminID         = (int) $this->session->userdata('AdminID');
+        $currentPassword = $this->input->post('current_password');
+        $newPassword     = $this->input->post('new_password');
+        $confirmPassword = $this->input->post('confirm_password');
+
+        $errors = [];
+
+        if (empty($currentPassword)) {
+            $errors['current_password'] = 'Current password is required.';
+        }
+        if (empty($newPassword)) {
+            $errors['new_password'] = 'New password is required.';
+        } elseif (strlen($newPassword) < 8) {
+            $errors['new_password'] = 'Password must be at least 8 characters.';
+        }
+        if ($newPassword !== $confirmPassword) {
+            $errors['confirm_password'] = 'Passwords do not match.';
+        }
+
+        if (!empty($errors)) {
+            echo json_encode(['status' => 'validation_error', 'errors' => $errors]);
+            return;
+        }
+
+        // Verify current password
+        $user = $this->M_Global->globalquery(
+            "SELECT Password FROM UserLogin WHERE UserLoginID = ?",
+            [$adminID]
+        )->row_array();
+
+        if (!$user || !password_verify($currentPassword, $user['Password'])) {
+            echo json_encode(['status' => 'validation_error', 'errors' => [
+                'current_password' => 'Current password is incorrect.'
+            ]]);
+            return;
+        }
+
+        $this->db->where('UserLoginID', $adminID);
+        $this->db->update('UserLogin', [
+            'Password' => password_hash($newPassword, PASSWORD_BCRYPT),
+        ]);
+
+        $this->audit_log('profile.password_change', ['admin_id' => $adminID]);
+
+        echo json_encode(['status' => 'success', 'message' => 'Password changed successfully.']);
+    }
 }
