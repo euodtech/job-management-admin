@@ -220,7 +220,7 @@
 
 
 
-                        return `<button type='button' class='btn-tw-danger btn_detail_cancel_job' data-job-id='${jobID}' >${total}</button>`;
+                        return `<button type='button' class='btn-tw-danger btn_detail_cancel_job' data-job-id='${jobID}' data-user-id='${row.UserID}' >${total}</button>`;
 
                     }
                 },
@@ -306,7 +306,10 @@
 
 
         // Load konten dari controller (kirim jobId ke backend)
-        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/2/" + fromDate + "/" + untilDate );
+        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/2/" + fromDate + "/" + untilDate, function() {
+            var table = $("#modal_detail_job [data-paginated-table]")[0];
+            if (table && window.initPaginatedTable) window.initPaginatedTable(table);
+        });
     });
 
     $(document).on("click", ".btn_detail_ongoing_job", function() {
@@ -321,18 +324,25 @@
 
 
         // Load konten dari controller (kirim jobId ke backend)
-        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/1/" + fromDate + "/" + untilDate );
+        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job/') ?>" + userID + "/1/" + fromDate + "/" + untilDate, function() {
+            var table = $("#modal_detail_job [data-paginated-table]")[0];
+            if (table && window.initPaginatedTable) window.initPaginatedTable(table);
+        });
     });
 
     $(document).on("click", ".btn_detail_cancel_job", function() {
 
         const jobID = $(this).data('job-id');
+        const userID = $(this).data('user-id');
         // Tampilkan modal dulu
         showModal('#modal_detail_job');
         $('#modal_detail_job #modal_detail_job_header').text('Detail Cancel Job');
 
         // Load konten dari controller (kirim jobId ke backend)
-        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job_cancel?job_id=') ?>"  + encodeURIComponent(jobID));
+        $("#modal_detail_job .p-4.overflow-y-auto").load("<?= base_url('ReportDriver/detail_job_cancel?job_id=') ?>"  + encodeURIComponent(jobID) + "&user_id=" + encodeURIComponent(userID), function() {
+            var table = $("#modal_detail_job [data-paginated-table]")[0];
+            if (table && window.initPaginatedTable) window.initPaginatedTable(table);
+        });
     });
 
 </script>

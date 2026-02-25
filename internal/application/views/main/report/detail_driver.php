@@ -1,6 +1,6 @@
 <div class="p-4">
     <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm" data-paginated-table data-per-page="6" data-searchable>
             <thead>
                 <tr>
                     <th class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 border-b border-gray-200">No</th>
@@ -41,4 +41,5 @@
             </tbody>
         </table>
     </div>
+    <div data-pagination-controls class="mt-3 px-2"></div>
 </div>

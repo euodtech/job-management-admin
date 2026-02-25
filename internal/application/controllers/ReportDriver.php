@@ -176,9 +176,10 @@ class ReportDriver extends MY_Controller
         $companyID = (int)$this->session->userdata('CompanyID');
 
         $job_ids_raw = $this->input->get('job_id');
+        $user_id = (int)$this->input->get('user_id');
         $job_ids = array_filter(array_map('intval', explode(',', $job_ids_raw)));
 
-        if (empty($job_ids)) {
+        if (empty($job_ids) || empty($user_id)) {
             $data['job'] = [];
             $this->load->view('main/report/detail_driver_cancel', $data);
             return;
@@ -186,6 +187,8 @@ class ReportDriver extends MY_Controller
 
         $placeholders = implode(',', array_fill(0, count($job_ids), '?'));
         $binds = $job_ids;
+        $driverFilter = ' AND HistoryCancelJob.UserBefore = ?';
+        $binds[] = $user_id;
         $companyFilter = '';
         if ($role != 1) {
             $companyFilter = ' AND ListJob.CompanyID = ?';
@@ -196,7 +199,7 @@ class ReportDriver extends MY_Controller
         SELECT * FROM HistoryCancelJob
         LEFT JOIN ListUser ON HistoryCancelJob.UserBefore = ListUser.UserID
         LEFT JOIN ListJob ON HistoryCancelJob.JobID = ListJob.JobID
-        WHERE HistoryCancelJob.JobID IN ($placeholders)" . $companyFilter . " ORDER By HistoryCancelJob.created_at DESC
+        WHERE HistoryCancelJob.JobID IN ($placeholders)" . $driverFilter . $companyFilter . " ORDER By HistoryCancelJob.created_at DESC
         ", $binds)->result_array();
 
         $this->load->view('main/report/detail_driver_cancel', $data);

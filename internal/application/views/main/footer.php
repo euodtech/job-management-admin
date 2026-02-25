@@ -866,6 +866,13 @@ function toggleSidebar() {
     window.initPaginatedTable = initPaginatedTable;
 
     function initPaginatedTable(table) {
+        // Guard against double initialization (removes previous search input if re-initialized)
+        var wrapper = table.closest('.overflow-x-auto');
+        if (wrapper && wrapper.parentElement) {
+            var oldSearch = wrapper.parentElement.querySelector('input[data-paginated-search]');
+            if (oldSearch) oldSearch.remove();
+        }
+
         var perPage = parseInt(table.getAttribute('data-per-page')) || 5;
         var searchable = table.hasAttribute('data-searchable');
         var tbody = table.querySelector('tbody');
@@ -877,7 +884,6 @@ function toggleSidebar() {
         var searchInput = null;
 
         // Find the pagination controls container (sibling of overflow-x-auto wrapper)
-        var wrapper = table.closest('.overflow-x-auto');
         var controlsContainer = wrapper
             ? wrapper.parentElement.querySelector('[data-pagination-controls]')
             : null;
@@ -888,6 +894,7 @@ function toggleSidebar() {
             searchInput = document.createElement('input');
             searchInput.type = 'text';
             searchInput.placeholder = 'Search...';
+            searchInput.setAttribute('data-paginated-search', '');
             searchInput.className = 'mb-3 block w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors';
             // Insert search before the overflow wrapper
             if (wrapper && wrapper.parentElement) {
