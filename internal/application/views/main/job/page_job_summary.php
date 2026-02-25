@@ -128,17 +128,17 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-4 border-b border-gray-200">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="form-group mb-0">
-                    <label for="from_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="from_date_job" id="from_date_job">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <!-- Preset date filter buttons -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-medium text-gray-600 mr-1">Period:</span>
+                    <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1day">Today</button>
+                    <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="7days">7 Days</button>
+                    <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1month">1 Month</button>
+                    <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="custom">Custom</button>
                 </div>
-                <div class="form-group mb-0">
-                    <label for="until_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date Until</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="until_date_job" id="until_date_job">
-                </div>
-                <div class="form-group mb-0 md:col-span-2">
-                    <label for="customer_name_form" class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                <!-- Customer filter -->
+                <div class="w-full sm:w-auto sm:min-w-[220px]">
                     <select name="customer_name_form" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2bs4" id="customer_name_form">
                         <option value="all">--- All Customer ---</option>
                         <?php foreach($customer as $val): ?>
@@ -147,6 +147,24 @@
                     </select>
                 </div>
             </div>
+
+            <!-- Custom date range (hidden by default) -->
+            <form id="formFilterJobSummary" method="GET" action="">
+                <div id="customDateRangeJob" class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 mb-3 overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0; margin-bottom: 0;">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                        <input type="date" name="from_date_job" id="from_date_job" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= date('Y-m-d', strtotime('-6 days')) ?>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Until Date</label>
+                        <input type="date" name="until_date_job" id="until_date_job" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= date('Y-m-d') ?>">
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors cursor-pointer"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Apply</button>
+                        <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer" id="resetFilterJobSummary">Reset</button>
+                    </div>
+                </div>
+            </form>
 
         </div>
 
@@ -342,22 +360,102 @@ function returnDateFormatDetailJS(value) {
 
 $(document).ready(function() {
 
-    let form_date_until = $('#from_date_job').val();
-    $('#until_date_job').attr('min', form_date_until);
+    // --- Date preset helpers ---
+    function formatDate(date) {
+        return date.getFullYear() + '-' +
+            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date.getDate()).padStart(2, '0');
+    }
 
+    function getPresetRange(preset) {
+        var today = new Date();
+        var from = new Date();
+        switch (preset) {
+            case '1day':
+                break;
+            case '7days':
+                from.setDate(today.getDate() - 6);
+                break;
+            case '1month':
+                from.setDate(today.getDate() - 30);
+                break;
+        }
+        return { from: formatDate(from), until: formatDate(today) };
+    }
+
+    function setActivePreset(preset) {
+        $('.date-preset-btn').each(function() {
+            if ($(this).data('preset') === preset) {
+                $(this).removeClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50')
+                       .addClass('bg-primary border-primary text-white');
+            } else {
+                $(this).removeClass('bg-primary border-primary text-white')
+                       .addClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50');
+            }
+        });
+    }
+
+    function showCustomDateRange(show) {
+        var el = $('#customDateRangeJob');
+        if (show) {
+            el.css({ 'max-height': '200px', 'opacity': '1', 'margin-bottom': '0.75rem' });
+        } else {
+            el.css({ 'max-height': '0', 'opacity': '0', 'margin-bottom': '0' });
+        }
+    }
+
+    function applyPreset(preset) {
+        var range = getPresetRange(preset);
+        $('#from_date_job').val(range.from);
+        $('#until_date_job').val(range.until);
+        $('#until_date_job').attr('min', range.from);
+        setActivePreset(preset);
+        showCustomDateRange(false);
+        table.ajax.reload();
+        refreshCard();
+    }
+
+    // Initialize with 7 Days active
+    setActivePreset('7days');
+
+    // Preset button click handler
+    $('.date-preset-btn').on('click', function() {
+        var preset = $(this).data('preset');
+        if (preset === 'custom') {
+            setActivePreset('custom');
+            showCustomDateRange(true);
+        } else {
+            applyPreset(preset);
+        }
+    });
+
+    // From date change validation
     $('#from_date_job').on('change', function() {
-        let fromDate = $(this).val();
+        var fromDate = $(this).val();
         $('#until_date_job').attr('min', fromDate);
     });
 
+    // Until date change validation
     $('#until_date_job').on('change', function() {
-        let untilDate = $(this).val();
-        let fromDate = $('#from_date_job').val();
-
+        var untilDate = $(this).val();
+        var fromDate = $('#from_date_job').val();
         if (untilDate < fromDate) {
             alert('Until Date cannot be earlier than From Date.');
             $(this).val(fromDate);
         }
+    });
+
+    // Custom date range form submit
+    $('#formFilterJobSummary').on('submit', function(e) {
+        e.preventDefault();
+        setActivePreset('custom');
+        table.ajax.reload();
+        refreshCard();
+    });
+
+    // Reset button
+    $('#resetFilterJobSummary').on('click', function() {
+        applyPreset('7days');
     });
 
     refreshCard();
@@ -449,7 +547,7 @@ $(document).ready(function() {
 
 });
 
-$('#customer_name_form, #from_date_job, #until_date_job').on('change', function() {
+$('#customer_name_form').on('change', function() {
     $('#tableJobRider').DataTable().ajax.reload();
     refreshCard();
 });
