@@ -65,10 +65,11 @@ class ReportDriver extends MY_Controller
 
         if (empty($fromDate)) {
             $dnow = date("Y-m-d");
-            $where_job = " AND DATE(JobDate) = ?";
-            $where_job_binds = [$dnow];
-            $where_job_cancel = " AND DATE(created_at) = ?";
-            $where_job_cancel_binds = [$dnow];
+            $dfrom = date("Y-m-d", strtotime("-6 days"));
+            $where_job = " AND DATE(JobDate) >= ? AND DATE(JobDate) <= ?";
+            $where_job_binds = [$dfrom, $dnow];
+            $where_job_cancel = " AND DATE(created_at) >= ? AND DATE(created_at) <= ?";
+            $where_job_cancel_binds = [$dfrom, $dnow];
         }
 
         if (!empty($fromDate) && !empty($untilDate)) {

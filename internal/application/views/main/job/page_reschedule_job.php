@@ -123,14 +123,29 @@
             </div>
 
             <!-- Date Filters (hidden when Pending tab is active) -->
-            <div id="date-filters" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4" style="display: none;">
-                <div class="form-group mb-0">
-                    <label for="from_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="from_date_job" id="from_date_job">
+            <div id="date-filters" style="display: none;">
+                <!-- Preset date filter buttons -->
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <span class="text-sm font-medium text-gray-600 mr-1">Period:</span>
+                    <button type="button" class="date-preset-btn-reschedule rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1day">Today</button>
+                    <button type="button" class="date-preset-btn-reschedule rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="7days">7 Days</button>
+                    <button type="button" class="date-preset-btn-reschedule rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1month">1 Month</button>
+                    <button type="button" class="date-preset-btn-reschedule rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="custom">Custom</button>
                 </div>
-                <div class="form-group mb-0">
-                    <label for="until_date_job" class="block text-sm font-medium text-gray-700 mb-1">Date Until</label>
-                    <input type="date" value="<?= date('Y-m-d') ?>" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="until_date_job" id="until_date_job">
+                <!-- Custom date range (hidden by default) -->
+                <div id="customDateRangeReschedule" class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 mb-3 overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0; margin-bottom: 0;">
+                    <div>
+                        <label for="from_date_job" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                        <input type="date" value="<?= date('Y-m-d', strtotime('-6 days')) ?>" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="from_date_job" id="from_date_job">
+                    </div>
+                    <div>
+                        <label for="until_date_job" class="block text-sm font-medium text-gray-700 mb-1">Until Date</label>
+                        <input type="date" value="<?= date('Y-m-d') ?>" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" name="until_date_job" id="until_date_job">
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button type="button" id="applyCustomDateReschedule" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors cursor-pointer"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Apply</button>
+                        <button type="button" id="resetDateReschedule" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">Reset</button>
+                    </div>
                 </div>
             </div>
 
@@ -198,6 +213,89 @@
 
 $(document).ready(function() {
 
+    // === Date preset helpers ===
+    function formatDate(date) {
+        return date.getFullYear() + '-' +
+            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date.getDate()).padStart(2, '0');
+    }
+
+    function getPresetRange(preset) {
+        var today = new Date();
+        var from = new Date();
+        switch (preset) {
+            case '1day':
+                break;
+            case '7days':
+                from.setDate(today.getDate() - 6);
+                break;
+            case '1month':
+                from.setDate(today.getDate() - 30);
+                break;
+        }
+        return { from: formatDate(from), until: formatDate(today) };
+    }
+
+    function setActivePreset(preset) {
+        $('.date-preset-btn-reschedule').each(function() {
+            if ($(this).data('preset') === preset) {
+                $(this).removeClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50')
+                       .addClass('bg-primary border-primary text-white');
+            } else {
+                $(this).removeClass('bg-primary border-primary text-white')
+                       .addClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50');
+            }
+        });
+    }
+
+    function showCustomDateRange(show) {
+        var el = $('#customDateRangeReschedule');
+        if (show) {
+            el.css({ 'max-height': '200px', 'opacity': '1', 'margin-bottom': '0.75rem' });
+        } else {
+            el.css({ 'max-height': '0', 'opacity': '0', 'margin-bottom': '0' });
+        }
+    }
+
+    function applyPreset(preset) {
+        var range = getPresetRange(preset);
+        $('#from_date_job').val(range.from);
+        $('#until_date_job').val(range.until);
+        $('#until_date_job').attr('min', range.from);
+        setActivePreset(preset);
+        showCustomDateRange(false);
+        if (currentTab !== 'pending') {
+            table.ajax.reload();
+        }
+    }
+
+    // --- Initialize with 7 Days active ---
+    setActivePreset('7days');
+
+    // --- Preset button clicks ---
+    $('.date-preset-btn-reschedule').on('click', function() {
+        var preset = $(this).data('preset');
+        if (preset === 'custom') {
+            setActivePreset('custom');
+            showCustomDateRange(true);
+        } else {
+            applyPreset(preset);
+        }
+    });
+
+    // --- Apply custom date range ---
+    $('#applyCustomDateReschedule').on('click', function() {
+        setActivePreset('custom');
+        if (currentTab !== 'pending') {
+            table.ajax.reload();
+        }
+    });
+
+    // --- Reset to 7 Days default ---
+    $('#resetDateReschedule').on('click', function() {
+        applyPreset('7days');
+    });
+
     // === Current active tab state ===
     var currentTab = 'pending';
 
@@ -230,18 +328,14 @@ $(document).ready(function() {
     });
 
     // === Date filter validation ===
-    let form_date_until = $('#from_date_job').val();
-    $('#until_date_job').attr('min', form_date_until);
-
     $('#from_date_job').on('change', function() {
-        let fromDate = $(this).val();
+        var fromDate = $(this).val();
         $('#until_date_job').attr('min', fromDate);
     });
 
     $('#until_date_job').on('change', function() {
-        let untilDate = $(this).val();
-        let fromDate = $('#from_date_job').val();
-
+        var untilDate = $(this).val();
+        var fromDate = $('#from_date_job').val();
         if (untilDate < fromDate) {
             alert('Until Date cannot be earlier than From Date.');
             $(this).val(fromDate);
@@ -375,10 +469,11 @@ $(document).ready(function() {
         refreshPendingCount();
     }, 10000);
 
-    // === Date change triggers reload (only relevant for non-pending tabs) ===
+    // Date change in custom mode triggers reload
     $('#from_date_job, #until_date_job').on('change', function() {
         if (currentTab !== 'pending') {
-            table.ajax.reload();
+            setActivePreset('custom');
+            showCustomDateRange(true);
         }
     });
 

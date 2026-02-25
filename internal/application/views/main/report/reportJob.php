@@ -57,34 +57,37 @@ table#tableJobCustomer.dataTable thead th {
             </div>
         </div>
         <div class="px-5 py-4">
+            <!-- Preset date filter buttons -->
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class="text-sm font-medium text-gray-600 mr-1">Period:</span>
+                <button type="button" class="date-preset-btn-job rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1day">Today</button>
+                <button type="button" class="date-preset-btn-job rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="7days">7 Days</button>
+                <button type="button" class="date-preset-btn-job rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1month">1 Month</button>
+                <button type="button" class="date-preset-btn-job rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="custom">Custom</button>
+                <span class="mx-2 h-6 w-px bg-gray-300"></span>
+                <div>
+                    <select id="filterStatusJobReportperCustomer" class="rounded-full border border-gray-300 px-4 py-1.5 text-sm text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors cursor-pointer">
+                        <option value="all_status">All Status</option>
+                        <option value="awaiting_job">Awaiting Driver</option>
+                        <option value="ongoing_job">Ongoing Job</option>
+                        <option value="finished">Finished Job</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Custom date range (hidden by default) -->
             <form id="formFilterJobReportperCustomer" method="GET" action="">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                    <!-- Customers -->
-                    <div class="my-1">
-                        <label for="filterFromDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">From Date:</label>
-                         <input class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" type="date" id="filterFromDateJobReportperCustomer" name="from_date" value="<?= (isset($_GET['from_date'])) ?  $_GET['from_date'] : date('Y-m-d') ?>">
+                <div id="customDateRangeJob" class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 mb-3 overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0; margin-bottom: 0;">
+                    <div>
+                        <label for="filterFromDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                        <input class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" type="date" id="filterFromDateJobReportperCustomer" name="from_date" value="<?= date('Y-m-d', strtotime('-6 days')) ?>">
                     </div>
-
-                    <div class="my-1">
-                        <label for="filterUntilDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">Until Date:</label>
-                         <input class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" type="date" id="filterUntilDateJobReportperCustomer" name="until_date" value="<?= (isset($_GET['until_date'])) ?  $_GET['until_date'] : date('Y-m-d') ?>">
+                    <div>
+                        <label for="filterUntilDateJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">Until Date</label>
+                        <input class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" type="date" id="filterUntilDateJobReportperCustomer" name="until_date" value="<?= date('Y-m-d') ?>">
                     </div>
-
-                    <!-- Jobs -->
-                    <div class="my-1">
-                        <label for="filterStatusJobReportperCustomer" class="block text-sm font-medium text-gray-700 mb-1">Status Job:</label>
-                        <select id="filterStatusJobReportperCustomer" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors">
-                            <option value="all_status">-- All Status --</option>
-                            <option value="awaiting_job">Awaiting Driver</option>
-                            <option value="ongoing_job">Ongoing Job</option>
-                            <option value="finished">Finished Job</option>
-                        </select>
-                    </div>
-
-                    <!-- Button -->
-                    <div class="self-end my-1 d-flex">
-                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Filter</button>
-                        <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterJobReportperCustomer">Reset</button>
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors cursor-pointer"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Apply</button>
+                        <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer" id="resetFilterJobReportperCustomer">Reset</button>
                     </div>
                 </div>
             </form>
@@ -445,25 +448,95 @@ table#tableJobCustomer.dataTable thead th {
     // Job Report per Customer
     $(document).ready(function() {
 
-        let form_date_until = $('#filterFromDateJobReportperCustomer').val();
-        $('#filterUntilDateJobReportperCustomer').attr('min', form_date_until);
+        // --- Date preset helpers ---
+        function formatDate(date) {
+            return date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0');
+        }
 
-        // bayunovandrie
-        $('#filterFromDateJobReportperCustomer').on('change', function() {
-            let fromDate = $(this).val();
-            $('#filterUntilDateJobReportperCustomer').attr('min', fromDate); // batas bawah until date
-        });
+        function getPresetRange(preset) {
+            var today = new Date();
+            var from = new Date();
+            switch (preset) {
+                case '1day':
+                    break;
+                case '7days':
+                    from.setDate(today.getDate() - 6);
+                    break;
+                case '1month':
+                    from.setDate(today.getDate() - 30);
+                    break;
+            }
+            return { from: formatDate(from), until: formatDate(today) };
+        }
 
-        $('#filterUntilDateJobReportperCustomer').on('change', function() {
-            let untilDate = $(this).val();
-            let fromDate = $('#filterFromDateJobReportperCustomer').val();
+        function setActivePreset(preset) {
+            $('.date-preset-btn-job').each(function() {
+                if ($(this).data('preset') === preset) {
+                    $(this).removeClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50')
+                           .addClass('bg-primary border-primary text-white');
+                } else {
+                    $(this).removeClass('bg-primary border-primary text-white')
+                           .addClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50');
+                }
+            });
+        }
 
-            if (untilDate < fromDate) {
-                alert('Until Date cannot be earlier than From Date.');
-                $(this).val(fromDate); // reset jadi sama dengan from date
+        function showCustomDateRange(show) {
+            var el = $('#customDateRangeJob');
+            if (show) {
+                el.css({ 'max-height': '200px', 'opacity': '1', 'margin-bottom': '0.75rem' });
+            } else {
+                el.css({ 'max-height': '0', 'opacity': '0', 'margin-bottom': '0' });
+            }
+        }
+
+        function applyPreset(preset) {
+            var range = getPresetRange(preset);
+            $('#filterFromDateJobReportperCustomer').val(range.from);
+            $('#filterUntilDateJobReportperCustomer').val(range.until);
+            $('#filterUntilDateJobReportperCustomer').attr('min', range.from);
+            setActivePreset(preset);
+            showCustomDateRange(false);
+            table.ajax.reload();
+        }
+
+        // --- Initialize with 7 Days active ---
+        setActivePreset('7days');
+
+        // --- Preset button clicks ---
+        $('.date-preset-btn-job').on('click', function() {
+            var preset = $(this).data('preset');
+            if (preset === 'custom') {
+                setActivePreset('custom');
+                showCustomDateRange(true);
+            } else {
+                applyPreset(preset);
             }
         });
 
+        // --- Status dropdown change triggers reload ---
+        $('#filterStatusJobReportperCustomer').on('change', function() {
+            table.ajax.reload();
+        });
+
+        // --- Date input validation ---
+        $('#filterFromDateJobReportperCustomer').on('change', function() {
+            var fromDate = $(this).val();
+            $('#filterUntilDateJobReportperCustomer').attr('min', fromDate);
+        });
+
+        $('#filterUntilDateJobReportperCustomer').on('change', function() {
+            var untilDate = $(this).val();
+            var fromDate = $('#filterFromDateJobReportperCustomer').val();
+            if (untilDate < fromDate) {
+                alert('Until Date cannot be earlier than From Date.');
+                $(this).val(fromDate);
+            }
+        });
+
+        // --- DataTable setup ---
         let today = new Date();
         let now = `${(today.getMonth()+1).toString().padStart(2, '0')}_${today.getDate().toString().padStart(2, '0')}_${today.getFullYear()}`;
         let fileName = `Job_Report_per_Customer_Report_${now}`;
@@ -678,24 +751,20 @@ table#tableJobCustomer.dataTable thead th {
             });
         });
 
-        // Reload Otomatic
-        $('#filterCustomerJobReportperCustomer, #filterJobJobReportperCustomer').on('change', function() {
-            table.ajax.reload();
-        });
-
-        // Submit Filter
+        // Submit Filter (custom date range)
         $('#formFilterJobReportperCustomer').on('submit', function(e) {
             e.preventDefault();
+            setActivePreset('custom');
             table.ajax.reload();
         });
 
-        // Reset Filter
+        // Reset Filter — go back to 7 Days default
         $('#resetFilterJobReportperCustomer').on('click', function() {
-            $('#formFilterJobReportperCustomer')[0].reset();
+            $('#filterStatusJobReportperCustomer').val('all_status');
             $('#filterCustomerJobReportperCustomer').empty().append('<option value="">-- All Customers --</option>');
             loadAllCustomers();
             loadAllJobs();
-            $('#tableJobCustomer').DataTable().ajax.reload();
+            applyPreset('7days');
         });
 
     });

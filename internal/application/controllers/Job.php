@@ -664,9 +664,14 @@ class Job extends MY_Controller
 
         $this->db->where('RescheduledJob.StatusApproved', $statusValue);
 
-        if ($statusFilter !== 'pending' && !empty($dateFrom) && !empty($dateUntil)) {
-            $this->db->where('DATE(ListJob.JobDate) >=', $dateFrom);
-            $this->db->where('DATE(ListJob.JobDate) <=', $dateUntil);
+        if ($statusFilter !== 'pending') {
+            if (!empty($dateFrom) && !empty($dateUntil)) {
+                $this->db->where('DATE(ListJob.JobDate) >=', $dateFrom);
+                $this->db->where('DATE(ListJob.JobDate) <=', $dateUntil);
+            } else {
+                $this->db->where('DATE(ListJob.JobDate) >=', date('Y-m-d', strtotime('-6 days')));
+                $this->db->where('DATE(ListJob.JobDate) <=', date('Y-m-d'));
+            }
         }
 
         if ($role !== 1) {

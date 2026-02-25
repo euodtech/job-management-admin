@@ -75,7 +75,8 @@ class ReportJob extends MY_Controller
         $role = $this->session->userdata('Role');
         $companyID = (int)$this->session->userdata('CompanyID');
 
-        $indexBinds = [$dnow];
+        $dfrom = date("Y-m-d", strtotime("-6 days"));
+        $indexBinds = [$dfrom, $dnow];
         $companyFilter = "";
         if ($role != 1) {
             $companyFilter = " AND CompanyID = ?";
@@ -83,7 +84,7 @@ class ReportJob extends MY_Controller
         }
 
         $data['title'] = "Job Report";
-        $data['jobs'] = $this->M_Global->globalquery("SELECT * FROM ListJob WHERE DATE(JobDate) = ? " . $companyFilter, $indexBinds)->result_array();
+        $data['jobs'] = $this->M_Global->globalquery("SELECT * FROM ListJob WHERE DATE(JobDate) >= ? AND DATE(JobDate) <= ? " . $companyFilter, $indexBinds)->result_array();
 
         // Mengirim data ke view
         $this->render_page('main/report/reportJob', $data);
@@ -135,7 +136,10 @@ class ReportJob extends MY_Controller
         $binds = [];
 
         if (empty($filterFromDate)) {
-            $where[] = "DATE(lj.JobDate) = ?";
+            $dfrom = date("Y-m-d", strtotime("-6 days"));
+            $where[] = "DATE(lj.JobDate) >= ?";
+            $binds[] = $dfrom;
+            $where[] = "DATE(lj.JobDate) <= ?";
             $binds[] = $dnow;
         }
 

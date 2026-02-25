@@ -95,19 +95,28 @@
             </div>
         </div>
         <div class="px-5 py-4">
+            <!-- Preset date filter buttons -->
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class="text-sm font-medium text-gray-600 mr-1">Period:</span>
+                <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1day">Today</button>
+                <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="7days">7 Days</button>
+                <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="1month">1 Month</button>
+                <button type="button" class="date-preset-btn rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 cursor-pointer" data-preset="custom">Custom</button>
+            </div>
+            <!-- Custom date range (hidden by default) -->
             <form id="formFilterUserLoginActivityReport" method="GET" action="">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                <div id="customDateRange" class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 mb-3 overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0; margin-bottom: 0;">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                        <input type="date" name="from_UserLoginActivityReport" id="from_UserLoginActivityReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= (isset($_GET['from_UserLoginActivityReport'])) ? $_GET['from_UserLoginActivityReport'] : date('Y-m-01') ?>">
+                        <input type="date" name="from_UserLoginActivityReport" id="from_UserLoginActivityReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= date('Y-m-d', strtotime('-6 days')) ?>">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Until Date</label>
-                        <input type="date" name="until_UserLoginActivityReport" id="until_UserLoginActivityReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= (isset($_GET['until_UserLoginActivityReport'])) ? $_GET['until_UserLoginActivityReport'] : date('Y-m-d')?>" >
+                        <input type="date" name="until_UserLoginActivityReport" id="until_UserLoginActivityReport" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" value="<?= date('Y-m-d') ?>">
                     </div>
-                    <div class="self-end mt-3 flex items-end gap-2">
-                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Filter</button>
-                        <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" id="resetFilterUserLoginActivityReport">Reset</button>
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors cursor-pointer"><svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Apply</button>
+                        <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer" id="resetFilterUserLoginActivityReport">Reset</button>
                     </div>
                 </div>
             </form>
@@ -153,24 +162,91 @@
     // User Login Activity
     $(document).ready(function() {
 
-        let form_date_until = $('#from_UserLoginActivityReport').val();
-        $('#until_UserLoginActivityReport').attr('min', form_date_until);
+        // --- Date preset helpers ---
+        function formatDate(date) {
+            return date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0');
+        }
 
-        $('#from_UserLoginActivityReport').on('change', function() {
-            let fromDate = $(this).val();
-            $('#until_UserLoginActivityReport').attr('min', fromDate); // batas bawah until date
-        });
+        function getPresetRange(preset) {
+            var today = new Date();
+            var from = new Date();
+            switch (preset) {
+                case '1day':
+                    // today only
+                    break;
+                case '7days':
+                    from.setDate(today.getDate() - 6);
+                    break;
+                case '1month':
+                    from.setDate(today.getDate() - 30);
+                    break;
+            }
+            return { from: formatDate(from), until: formatDate(today) };
+        }
 
-        $('#until_UserLoginActivityReport').on('change', function() {
-            let untilDate = $(this).val();
-            let fromDate = $('#from_UserLoginActivityReport').val();
+        function setActivePreset(preset) {
+            $('.date-preset-btn').each(function() {
+                if ($(this).data('preset') === preset) {
+                    $(this).removeClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50')
+                           .addClass('bg-primary border-primary text-white');
+                } else {
+                    $(this).removeClass('bg-primary border-primary text-white')
+                           .addClass('border-gray-300 bg-white text-gray-700 hover:bg-gray-50');
+                }
+            });
+        }
 
-            if (untilDate < fromDate) {
-                alert('Until Date cannot be earlier than From Date.');
-                $(this).val(fromDate); // reset jadi sama dengan from date
+        function showCustomDateRange(show) {
+            var el = $('#customDateRange');
+            if (show) {
+                el.css({ 'max-height': '200px', 'opacity': '1', 'margin-bottom': '0.75rem' });
+            } else {
+                el.css({ 'max-height': '0', 'opacity': '0', 'margin-bottom': '0' });
+            }
+        }
+
+        function applyPreset(preset) {
+            var range = getPresetRange(preset);
+            $('#from_UserLoginActivityReport').val(range.from);
+            $('#until_UserLoginActivityReport').val(range.until);
+            $('#until_UserLoginActivityReport').attr('min', range.from);
+            setActivePreset(preset);
+            showCustomDateRange(false);
+            table.ajax.reload();
+        }
+
+        // --- Initialize with 7 Days active ---
+        setActivePreset('7days');
+
+        // --- Preset button clicks ---
+        $('.date-preset-btn').on('click', function() {
+            var preset = $(this).data('preset');
+            if (preset === 'custom') {
+                setActivePreset('custom');
+                showCustomDateRange(true);
+            } else {
+                applyPreset(preset);
             }
         });
 
+        // --- Date input validation ---
+        $('#from_UserLoginActivityReport').on('change', function() {
+            var fromDate = $(this).val();
+            $('#until_UserLoginActivityReport').attr('min', fromDate);
+        });
+
+        $('#until_UserLoginActivityReport').on('change', function() {
+            var untilDate = $(this).val();
+            var fromDate = $('#from_UserLoginActivityReport').val();
+            if (untilDate < fromDate) {
+                alert('Until Date cannot be earlier than From Date.');
+                $(this).val(fromDate);
+            }
+        });
+
+        // --- DataTable setup ---
         let today = new Date();
         let now = `${(today.getMonth()+1).toString().padStart(2, '0')}_${today.getDate().toString().padStart(2, '0')}_${today.getFullYear()}`;
         let fileName = `User_Login_Activity_${now}`;
@@ -180,7 +256,7 @@
             serverSide: true,
             order: [[1, 'asc']],
             columnDefs: [
-                { targets: [3, 4, 5, 6], orderable: false } // kolom 3–6 gak bisa di-sort
+                { targets: [3, 4, 5, 6], orderable: false }
             ],
             ajax: {
                 url: "<?= base_url('ReportDriver/UserLoginActivityReport') ?>",
@@ -197,50 +273,36 @@
                 {
                     "data": "CancelJob",
                     "className": "text-center",
-                    "render":  function(data, type, row) {
-
+                    "render": function(data, type, row) {
                         let total = 0;
                         let jobID = '';
-
-                        // Pastikan data itu array
                         if (Array.isArray(data) && data.length > 0) {
-                            // return "Yes";
-
                             data.forEach(element => {
-                                total += 1
+                                total += 1;
                                 jobID += element.JobID + ', ';
                             });
-
                             jobID = jobID.replace(/, $/, '');
                         } else {
-
                             jobID = 0;
-
                         }
-
-
-
-                        return `<button type='button' class='btn-tw-danger btn_detail_cancel_job' data-job-id='${jobID}' data-user-id='${row.UserID}' >${total}</button>`;
-
+                        return `<button type='button' class='btn-tw-danger btn_detail_cancel_job' data-job-id='${jobID}' data-user-id='${row.UserID}'>${total}</button>`;
                     }
                 },
                 { "data": "TotalJob", className: "text-center" },
                 {
                     "data": "CompleteJob",
                     "className": "text-center",
-                    "render" : function(data, type, row) {
+                    "render": function(data, type, row) {
                         return `<button type='button' class='btn-tw-primary btn_detail_complete_job' data-user-id='${row.UserID}' data-from-date='${row.FromDate}' data-until-date='${row.UntilDate}'>${data}</button>`;
-
                     }
                 },
                 {
                     "data": "OngoingJob",
-                    "className": "text-center" ,
-                    "render" : function(data, type, row) {
+                    "className": "text-center",
+                    "render": function(data, type, row) {
                         return `<button type='button' class='btn-tw-primary btn_detail_ongoing_job' data-user-id='${row.UserID}' data-from-date='${row.FromDate}' data-until-date='${row.UntilDate}'>${data}</button>`;
                     }
                 }
-
             ],
             responsive: false,
             pageLength: 10,
@@ -252,10 +314,10 @@
                     text: 'Excel',
                     title: `Rider Report (${today.getDate().toString().padStart(2, '0')}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getFullYear()})`,
                     filename: fileName,
-                    customize: function (xlsx) {
+                    customize: function(xlsx) {
                         try {
                             var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            $('row c t', sheet).each(function () {
+                            $('row c t', sheet).each(function() {
                                 var text = $(this).text();
                                 $(this).text('  ' + text + '  ');
                             });
@@ -274,23 +336,16 @@
             table.button(0).trigger();
         });
 
-        // Reload Otomatic
-        $('#from_UserLoginActivityReport, #until_UserLoginActivityReport').on('change', function() {
-            $('#tableUserLogin').DataTable().ajax.reload();
-        });
-
-        // Submit Filter
-        $('#formFilterUserLoginActivityReport').on('submit', function(e){
+        // Submit Filter (custom date range)
+        $('#formFilterUserLoginActivityReport').on('submit', function(e) {
             e.preventDefault();
+            setActivePreset('custom');
             table.ajax.reload();
         });
 
-        // Reset Filter
+        // Reset Filter — go back to 7 Days default
         $('#resetFilterUserLoginActivityReport').on('click', function() {
-            $('#formFilterUserLoginActivityReport')[0].reset();
-            $('#tableUserLogin').DataTable().ajax.reload();
-            const untilInput = document.querySelector('input[name="until_UserLoginActivityReport"]');
-            untilInput.removeAttribute("min");
+            applyPreset('7days');
         });
     });
 
