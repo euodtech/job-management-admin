@@ -733,7 +733,8 @@ table#tableJobCustomer.dataTable thead th {
                 dataType: 'json',
                 data: {
                     from_date: fromDate,
-                    until_date: untilDate
+                    until_date: untilDate,
+                    status_job: $('#filterStatusJobReportperCustomer').val()
                 },
                 success: function (res) {
                     Swal.close();

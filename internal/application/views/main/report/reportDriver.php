@@ -247,10 +247,6 @@
         });
 
         // --- DataTable setup ---
-        let today = new Date();
-        let now = `${(today.getMonth()+1).toString().padStart(2, '0')}_${today.getDate().toString().padStart(2, '0')}_${today.getFullYear()}`;
-        let fileName = `User_Login_Activity_${now}`;
-
         var table = $('#tableUserLogin').DataTable({
             processing: true,
             serverSide: true,
@@ -308,32 +304,39 @@
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
             dom: '<"d-flex justify-content-end align-items-center mb-2"f>rtip',
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: 'Excel',
-                    title: `Rider Report (${today.getDate().toString().padStart(2, '0')}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getFullYear()})`,
-                    filename: fileName,
-                    customize: function(xlsx) {
-                        try {
-                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            $('row c t', sheet).each(function() {
-                                var text = $(this).text();
-                                $(this).text('  ' + text + '  ');
-                            });
-                            $('col', sheet).attr('width', 25);
-                        } catch (e) {
-                            console.warn('Failed to modify Excel XML:', e.message);
-                        }
-                    },
-                },
-            ],
             searching: true,
         });
 
         // Export Excel
         $('#btn_export_driver_report').on('click', function() {
-            table.button(0).trigger();
+            Swal.fire({
+                title: 'Generating Excel...',
+                text: 'Please wait a moment',
+                didOpen: () => Swal.showLoading(),
+                allowOutsideClick: false
+            });
+
+            $.ajax({
+                url: '<?= base_url("ReportDriver/exportDriverExcel") ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    from_date: $('input[name="from_UserLoginActivityReport"]').val(),
+                    until_date: $('input[name="until_UserLoginActivityReport"]').val()
+                },
+                success: function(res) {
+                    Swal.close();
+                    if (res.status === true && res.file_url) {
+                        window.location.href = res.file_url;
+                    } else {
+                        Swal.fire('Failed', res.message || 'Could not generate file', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.close();
+                    Swal.fire('Error', 'Server error while generating file', 'error');
+                }
+            });
         });
 
         // Submit Filter (custom date range)

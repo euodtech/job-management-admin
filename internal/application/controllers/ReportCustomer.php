@@ -449,194 +449,400 @@ class ReportCustomer extends MY_Controller
 
     public function exportCustomerRetentionExcel()
     {
-        $role = $this->session->userdata('Role');
-        $companyID = $this->session->userdata('CompanyID');
+        try {
+            $role = $this->session->userdata('Role');
+            $companyID = $this->session->userdata('CompanyID');
 
-        // FILTER 
-        $customerID = $this->input->get('customerIDCustomerRetentionReport');
-        $totalJob = intval($this->input->get('totalJobCustomerRetentionReport'));
-        $from = $this->input->get('fromCustomerRetentionReport');
-        $until = $this->input->get('untilCustomerRetentionReport');
-        $retentionDays = intval($this->input->get('retentionDaysCustomerRetentionReport'));
-        $status = $this->input->get('statusCustomerRetentionReport');
+            // FILTER (POST-based, matching ReportJob pattern)
+            $customerID    = $this->input->post('customerIDCustomerRetentionReport');
+            $totalJob      = intval($this->input->post('totalJobCustomerRetentionReport'));
+            $from          = $this->input->post('fromCustomerRetentionReport');
+            $until         = $this->input->post('untilCustomerRetentionReport');
+            $retentionDays = intval($this->input->post('retentionDaysCustomerRetentionReport'));
+            $status        = $this->input->post('statusCustomerRetentionReport');
 
-        $fileName = $this->input->get('filename') ?: 'Customer_Retention_Report_' . date('m_d_Y');
-        $fileName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $fileName);
+            // Build applied filters description for the report header
+            $appliedFilters = [];
+            if (!empty($customerID)) {
+                $custRow = $this->db->get_where('Customer', ['CustomerID' => $customerID])->row();
+                $appliedFilters[] = 'Customer: ' . ($custRow ? $custRow->CustomerName : $customerID);
+            }
+            if (!empty($from))          $appliedFilters[] = 'From: ' . date('M d, Y', strtotime($from));
+            if (!empty($until))         $appliedFilters[] = 'Until: ' . date('M d, Y', strtotime($until));
+            if ($totalJob > 0)          $appliedFilters[] = 'Min Total Job: ' . $totalJob;
+            if ($retentionDays > 0)     $appliedFilters[] = 'Min Retention Days: ' . $retentionDays;
+            if (!empty($status))        $appliedFilters[] = 'Status: ' . $status;
+            if (empty($appliedFilters)) $appliedFilters[] = 'None (showing all data)';
 
-        $sql = "
-            SELECT 
-                c.CustomerID,
-                c.CustomerName,
-                lc.CompanyName,
-                COUNT(DISTINCT lj.JobID) AS TotalJob,
-                COALESCE(MIN(lj.JobDate), '-') AS FirstJob,
-                COALESCE(MAX(lj.JobDate), '-') AS LastJob,
-                DATEDIFF(CURDATE(), MIN(lj.JobDate)) AS RetentionDays,
-                CASE
-                    WHEN MAX(lj.JobDate) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) THEN 'Active'
-                    ELSE 'Inactive'
-                END AS StatusCustomer
-            FROM Customer c
-            LEFT JOIN ListJob lj ON c.CustomerID = lj.CustomerID
-            LEFT JOIN ListCompany lc ON lj.CompanyID = lc.ListCompanyID
-            WHERE 1=1
-        ";
+            // === Summary Query ===
+            $sql = "
+                SELECT
+                    c.CustomerID,
+                    c.CustomerName,
+                    lc.CompanyName,
+                    COUNT(DISTINCT lj.JobID) AS TotalJob,
+                    COALESCE(MIN(lj.JobDate), '-') AS FirstJob,
+                    COALESCE(MAX(lj.JobDate), '-') AS LastJob,
+                    DATEDIFF(CURDATE(), MIN(lj.JobDate)) AS RetentionDays,
+                    CASE
+                        WHEN MAX(lj.JobDate) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) THEN 'Active'
+                        ELSE 'Inactive'
+                    END AS StatusCustomer
+                FROM Customer c
+                LEFT JOIN ListJob lj ON c.CustomerID = lj.CustomerID
+                LEFT JOIN ListCompany lc ON lj.CompanyID = lc.ListCompanyID
+                WHERE 1=1
+            ";
 
-        if ($role != 1 && !empty($companyID)) {
-            $sql .= " AND lj.CompanyID = " . $this->db->escape($companyID);
-        }
-
-        // === Filter tambahan dari form ===
-        if (!empty($customerID)) {
-            $sql .= " AND c.CustomerID = " . $this->db->escape($customerID);
-        }
-
-        if (!empty($from) && !empty($until)) {
-            $sql .= " AND lj.JobDate BETWEEN " . $this->db->escape($from) . " AND " . $this->db->escape($until);
-        }
-        
-        $sql .= " GROUP BY c.CustomerID, c.CustomerName, lc.CompanyName";
-
-        $having = [];
-
-        if (!empty($totalJob)) {
-            $having[] = "TotalJob >= " . intval($totalJob);
-        }
-
-        if (!empty($retentionDays)) {
-            $having[] = "RetentionDays >= " . intval($retentionDays);
-        }
-
-        if (!empty($having)) {
-            $sql .= " HAVING " . implode(" AND ", $having);
-        }
-
-        // Status filter via wrapping query (same approach as DataTable)
-        $statusFilter = "";
-        if (!empty($status)) {
-            $statusFilter = " AND x.StatusCustomer = " . $this->db->escape($status);
-        }
-
-        $sql = "SELECT * FROM ({$sql}) x WHERE 1=1 {$statusFilter} ORDER BY TotalJob DESC";
-
-        $query = $this->db->query($sql);
-        $data = $query->result_array();
-
-        // === Header Excel ===
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=\"{$fileName}.xls\"");
-        header("Pragma: no-cache");
-        header("Expires: 0");
-
-        // === Tabel utama ===
-        echo "<table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse; font-family:Arial; font-size:26px;'>";
-        echo "<thead style='background-color:#d9ead3; font-weight:bold; font-size:28px;'>
-                <tr>
-                    <th>No</th>
-                    <th>Customer Name</th>
-                    <th>Company Name</th>
-                    <th>Total Job</th>
-                    <th>First Job</th>
-                    <th>Last Job</th>
-                    <th>Retention Days</th>
-                    <th>Status</th>
-                </tr>
-            </thead><tbody>";
-
-        $no = 1;
-        foreach ($data as $row) {
-            echo "<tr>
-                    <td style='text-align:center;'>$no</td>
-                    <td style='mso-number-format:\"\\@\";'>{$row['CustomerName']}</td>
-                    <td>{$row['CompanyName']}</td>
-                    <td style='text-align:center;'>{$row['TotalJob']}</td>
-                    <td>{$row['FirstJob']}</td>
-                    <td>{$row['LastJob']}</td>
-                    <td style='text-align:center;'>{$row['RetentionDays']}</td>
-                    <td>{$row['StatusCustomer']}</td>
-                </tr>";
-
-            $where = "WHERE lj.CustomerID = " . $this->db->escape($row['CustomerID']);
             if ($role != 1 && !empty($companyID)) {
-                $where .= " AND lj.CompanyID = " . $this->db->escape($companyID);
+                $sql .= " AND lj.CompanyID = " . $this->db->escape($companyID);
             }
-
+            if (!empty($customerID)) {
+                $sql .= " AND c.CustomerID = " . $this->db->escape($customerID);
+            }
             if (!empty($from) && !empty($until)) {
-                $where .= " AND lj.JobDate BETWEEN " . $this->db->escape($from) . " AND " . $this->db->escape($until);
+                $sql .= " AND lj.JobDate BETWEEN " . $this->db->escape($from) . " AND " . $this->db->escape($until);
             }
 
-            
-            // === Detail job ===
-            $detailQuery = $this->db->query("
-                SELECT 
+            $sql .= " GROUP BY c.CustomerID, c.CustomerName, lc.CompanyName";
+
+            $having = [];
+            if ($totalJob > 0)      $having[] = "TotalJob >= " . intval($totalJob);
+            if ($retentionDays > 0) $having[] = "RetentionDays >= " . intval($retentionDays);
+            if (!empty($having))    $sql .= " HAVING " . implode(" AND ", $having);
+
+            $statusFilter = "";
+            if (!empty($status)) {
+                $statusFilter = " AND x.StatusCustomer = " . $this->db->escape($status);
+            }
+
+            $sql = "SELECT * FROM ({$sql}) x WHERE 1=1 {$statusFilter} ORDER BY TotalJob DESC";
+            $summaryData = $this->db->query($sql)->result_array();
+
+            if (count($summaryData) == 0) {
+                throw new Exception('No customer data found matching the applied filters.');
+            }
+
+            // === Job Details Query (single batch query instead of N+1) ===
+            $customerIDs = array_column($summaryData, 'CustomerID');
+            $customerMap = [];
+            foreach ($summaryData as $row) {
+                $customerMap[$row['CustomerID']] = [
+                    'CustomerName' => $row['CustomerName'],
+                    'CompanyName'  => $row['CompanyName']
+                ];
+            }
+
+            $escapedIDs = implode(',', array_map('intval', $customerIDs));
+            $detailWhere = "WHERE lj.CustomerID IN ({$escapedIDs})";
+            if ($role != 1 && !empty($companyID)) {
+                $detailWhere .= " AND lj.CompanyID = " . $this->db->escape($companyID);
+            }
+            if (!empty($from) && !empty($until)) {
+                $detailWhere .= " AND lj.JobDate BETWEEN " . $this->db->escape($from) . " AND " . $this->db->escape($until);
+            }
+
+            $detailSQL = "
+                SELECT
+                    lj.CustomerID,
                     lj.JobName,
                     lj.JobDate,
                     lj.TypeJob,
                     lj.Status AS JobStatus,
                     lj.Notes,
                     lu.Fullname AS HandledBy,
-                    lc.CompanyName,
                     h.Reason AS CancelReason
                 FROM ListJob lj
                 LEFT JOIN ListUser lu ON lj.UserID = lu.UserID
-                LEFT JOIN ListCompany lc ON lj.CompanyID = lc.ListCompanyID
                 LEFT JOIN (
                     SELECT JobID, MAX(Reason) AS Reason
                     FROM HistoryCancelJob
                     GROUP BY JobID
                 ) h ON lj.JobID = h.JobID
-                $where
-                GROUP BY lj.JobID, lj.JobName, lj.JobDate, lj.TypeJob, lj.Status, lj.Notes, lu.Fullname, lc.CompanyName, h.Reason
-                ORDER BY lj.JobDate DESC
-            ");
+                {$detailWhere}
+                GROUP BY lj.JobID, lj.JobName, lj.JobDate, lj.TypeJob, lj.Status, lj.Notes, lu.Fullname, h.Reason
+                ORDER BY lj.CustomerID, lj.JobDate DESC
+            ";
+            $detailData = $this->db->query($detailSQL)->result_array();
 
-            $details = $detailQuery->result_array();
+            $typeJobMap = [1 => 'Line Interrupt', 2 => 'Reconnection', 3 => 'Short Circuit'];
+            $statusMap  = [1 => 'Ongoing', 2 => 'Finished Job'];
 
-            if (count($details) > 0) {
-                echo "<tr><td colspan='8' style='background:#f3f3f3; font-weight:bold;'>Job Details for {$row['CustomerName']}</td></tr>";
-                echo "<tr style='background-color:#e6f7ff; font-weight:bold;'>
-                        <td></td>
-                        <td>Job Name</td>
-                        <td>Job Date</td>
-                        <td>Type Job</td>
-                        <td>Status</td>
-                        <td>Notes</td>
-                        <td>Handled By</td>
-                        <td>Cancel Reason</td>
-                    </tr>";
+            // === Load PHPExcel & Create Workbook ===
+            $this->load->library('Excel');
+            $objPHPExcel = new Excel();
 
-                foreach ($details as $job) {
-                    // Ganti tipe job manual (tanpa match)
-                    $typeJob = '-';
-                    if ($job['TypeJob'] == 1) $typeJob = 'Line Interrupt';
-                    elseif ($job['TypeJob'] == 2) $typeJob = 'Reconnection';
-                    elseif ($job['TypeJob'] == 3) $typeJob = 'Short Circuit';
+            $objPHPExcel->getProperties()
+                ->setCreator('E-FMS System')
+                ->setTitle('Customer Retention Report')
+                ->setDescription('Generated on ' . date('Y-m-d H:i:s'));
 
-                    // Status job
-                    $jobStatus = '-';
-                    if ($job['JobStatus'] == 1) $jobStatus = 'Ongoing';
-                    elseif ($job['JobStatus'] == 2) $jobStatus = 'Finished Job';
+            // --- Reusable Style Arrays ---
+            $titleStyle = [
+                'font' => ['name' => 'Arial', 'bold' => true, 'size' => 16, 'color' => ['rgb' => '1F4E79']],
+                'alignment' => [
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                ]
+            ];
+            $subtitleStyle = [
+                'font' => ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => ['rgb' => '666666']],
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT]
+            ];
+            $filterInfoStyle = [
+                'font' => ['name' => 'Arial', 'size' => 9, 'color' => ['rgb' => '555555']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF9E6']],
+                'alignment' => [
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                ]
+            ];
+            $headerStyle = [
+                'font' => ['name' => 'Arial', 'bold' => true, 'size' => 10, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => '2E75B6']],
+                'alignment' => [
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                ],
+                'borders' => [
+                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '1A5276']]
+                ]
+            ];
+            $dataBorderStyle = [
+                'borders' => [
+                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => 'D5D8DC']]
+                ],
+                'alignment' => ['vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER]
+            ];
+            $centerAlign = [
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+            ];
+            $activeStatusStyle = [
+                'font' => ['bold' => true, 'color' => ['rgb' => '1E7E34']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'D4EDDA']],
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+            ];
+            $inactiveStatusStyle = [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'A71D2A']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8D7DA']],
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+            ];
+            $totalsStyle = [
+                'font' => ['bold' => true, 'size' => 10],
+                'borders' => [
+                    'top' => ['style' => PHPExcel_Style_Border::BORDER_MEDIUM, 'color' => ['rgb' => '2E75B6']]
+                ],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'EBF5FB']]
+            ];
 
-                    echo "<tr>
-                            <td></td>
-                            <td>{$job['JobName']}</td>
-                            <td>{$job['JobDate']}</td>
-                            <td>{$typeJob}</td>
-                            <td>{$jobStatus}</td>
-                            <td>{$job['Notes']}</td>
-                            <td>{$job['HandledBy']}</td>
-                            <td>{$job['CancelReason']}</td>
-                        </tr>";
+            // ============================
+            // SHEET 1: Customer Summary
+            // ============================
+            $sheet1 = $objPHPExcel->setActiveSheetIndex(0);
+            $sheet1->setTitle('Customer Summary');
+
+            // Row 1: Report Title
+            $sheet1->mergeCells('A1:H1');
+            $sheet1->setCellValue('A1', 'Customer Retention Report');
+            $sheet1->getStyle('A1:H1')->applyFromArray($titleStyle);
+            $sheet1->getRowDimension(1)->setRowHeight(30);
+
+            // Row 2: Generated timestamp
+            $sheet1->mergeCells('A2:H2');
+            $sheet1->setCellValue('A2', 'Generated: ' . date('F d, Y - h:i A'));
+            $sheet1->getStyle('A2:H2')->applyFromArray($subtitleStyle);
+
+            // Row 3: Applied filters
+            $sheet1->mergeCells('A3:H3');
+            $sheet1->setCellValue('A3', 'Filters: ' . implode(' | ', $appliedFilters));
+            $sheet1->getStyle('A3:H3')->applyFromArray($filterInfoStyle);
+            $sheet1->getRowDimension(3)->setRowHeight(22);
+
+            // Row 4: blank spacer
+
+            // Row 5: Column Headers
+            $headers = ['No', 'Customer Name', 'Company Name', 'Total Job', 'First Job', 'Last Job', 'Retention Days', 'Status'];
+            $col = 'A';
+            foreach ($headers as $header) {
+                $sheet1->setCellValue($col . '5', $header);
+                $col++;
+            }
+            $sheet1->getStyle('A5:H5')->applyFromArray($headerStyle);
+            $sheet1->getRowDimension(5)->setRowHeight(24);
+
+            // Data rows
+            $rowNum = 6;
+            $no = 1;
+            $totalJobSum = 0;
+            foreach ($summaryData as $row) {
+                $sheet1->setCellValue('A' . $rowNum, $no);
+                $sheet1->setCellValueExplicit('B' . $rowNum, $row['CustomerName'], PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('C' . $rowNum, $row['CompanyName'], PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValue('D' . $rowNum, intval($row['TotalJob']));
+                $sheet1->setCellValue('E' . $rowNum, ($row['FirstJob'] !== '-' && $row['FirstJob'] !== null) ? date('M d, Y', strtotime($row['FirstJob'])) : '-');
+                $sheet1->setCellValue('F' . $rowNum, ($row['LastJob'] !== '-' && $row['LastJob'] !== null) ? date('M d, Y', strtotime($row['LastJob'])) : '-');
+                $sheet1->setCellValue('G' . $rowNum, intval($row['RetentionDays']));
+                $sheet1->setCellValue('H' . $rowNum, $row['StatusCustomer']);
+
+                // Apply borders
+                $sheet1->getStyle("A{$rowNum}:H{$rowNum}")->applyFromArray($dataBorderStyle);
+
+                // Center-align specific columns
+                $sheet1->getStyle("A{$rowNum}")->applyFromArray($centerAlign);
+                $sheet1->getStyle("D{$rowNum}")->applyFromArray($centerAlign);
+                $sheet1->getStyle("G{$rowNum}")->applyFromArray($centerAlign);
+
+                // Color-code status
+                if ($row['StatusCustomer'] === 'Active') {
+                    $sheet1->getStyle("H{$rowNum}")->applyFromArray($activeStatusStyle);
+                } else {
+                    $sheet1->getStyle("H{$rowNum}")->applyFromArray($inactiveStatusStyle);
+                }
+
+                // Alternate row shading
+                if ($no % 2 === 0) {
+                    $sheet1->getStyle("A{$rowNum}:G{$rowNum}")->applyFromArray([
+                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                    ]);
+                }
+
+                $totalJobSum += intval($row['TotalJob']);
+                $no++;
+                $rowNum++;
+            }
+
+            // Totals row
+            $sheet1->mergeCells("A{$rowNum}:C{$rowNum}");
+            $sheet1->setCellValue("A{$rowNum}", 'Total');
+            $sheet1->setCellValue("D{$rowNum}", $totalJobSum);
+            $sheet1->setCellValue("E{$rowNum}", count($summaryData) . ' customer(s)');
+            $sheet1->getStyle("A{$rowNum}:H{$rowNum}")->applyFromArray($totalsStyle);
+            $sheet1->getStyle("A{$rowNum}")->applyFromArray($centerAlign);
+            $sheet1->getStyle("D{$rowNum}")->applyFromArray($centerAlign);
+
+            // Column widths
+            $sheet1->getColumnDimension('A')->setWidth(6);
+            $sheet1->getColumnDimension('B')->setAutoSize(true);
+            $sheet1->getColumnDimension('C')->setAutoSize(true);
+            $sheet1->getColumnDimension('D')->setWidth(12);
+            $sheet1->getColumnDimension('E')->setWidth(18);
+            $sheet1->getColumnDimension('F')->setWidth(18);
+            $sheet1->getColumnDimension('G')->setWidth(16);
+            $sheet1->getColumnDimension('H')->setWidth(14);
+
+            // ============================
+            // SHEET 2: Job Details
+            // ============================
+            $objPHPExcel->createSheet();
+            $sheet2 = $objPHPExcel->setActiveSheetIndex(1);
+            $sheet2->setTitle('Job Details');
+
+            // Row 1: Sheet Title
+            $sheet2->mergeCells('A1:J1');
+            $sheet2->setCellValue('A1', 'Job Details - Customer Retention Report');
+            $sheet2->getStyle('A1:J1')->applyFromArray($titleStyle);
+            $sheet2->getRowDimension(1)->setRowHeight(30);
+
+            // Row 2: Generated timestamp
+            $sheet2->mergeCells('A2:J2');
+            $sheet2->setCellValue('A2', 'Generated: ' . date('F d, Y - h:i A'));
+            $sheet2->getStyle('A2:J2')->applyFromArray($subtitleStyle);
+
+            // Row 3: blank spacer
+
+            // Row 4: Column Headers
+            $detailHeaders = ['No', 'Customer Name', 'Company', 'Job Name', 'Job Date', 'Type Job', 'Status', 'Notes', 'Handled By', 'Cancel Reason'];
+            $col = 'A';
+            foreach ($detailHeaders as $header) {
+                $sheet2->setCellValue($col . '4', $header);
+                $col++;
+            }
+            $sheet2->getStyle('A4:J4')->applyFromArray($headerStyle);
+            $sheet2->getRowDimension(4)->setRowHeight(24);
+
+            // Detail data rows
+            $rowNum = 5;
+            $no = 1;
+            foreach ($detailData as $job) {
+                $cid = $job['CustomerID'];
+                $custInfo = isset($customerMap[$cid]) ? $customerMap[$cid] : ['CustomerName' => '-', 'CompanyName' => '-'];
+
+                $typeJob   = isset($typeJobMap[$job['TypeJob']]) ? $typeJobMap[$job['TypeJob']] : ($job['TypeJob'] ?: '-');
+                $jobStatus = isset($statusMap[$job['JobStatus']]) ? $statusMap[$job['JobStatus']] : ($job['JobStatus'] ?: '-');
+
+                $sheet2->setCellValue('A' . $rowNum, $no);
+                $sheet2->setCellValueExplicit('B' . $rowNum, $custInfo['CustomerName'], PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('C' . $rowNum, $custInfo['CompanyName'], PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('D' . $rowNum, $job['JobName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValue('E' . $rowNum, !empty($job['JobDate']) ? date('M d, Y H:i', strtotime($job['JobDate'])) : '-');
+                $sheet2->setCellValue('F' . $rowNum, $typeJob);
+                $sheet2->setCellValue('G' . $rowNum, $jobStatus);
+                $sheet2->setCellValueExplicit('H' . $rowNum, $job['Notes'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('I' . $rowNum, $job['HandledBy'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('J' . $rowNum, $job['CancelReason'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+
+                // Apply borders and alignment
+                $sheet2->getStyle("A{$rowNum}:J{$rowNum}")->applyFromArray($dataBorderStyle);
+                $sheet2->getStyle("A{$rowNum}")->applyFromArray($centerAlign);
+                $sheet2->getStyle("F{$rowNum}")->applyFromArray($centerAlign);
+                $sheet2->getStyle("G{$rowNum}")->applyFromArray($centerAlign);
+
+                // Alternate row shading
+                if ($no % 2 === 0) {
+                    $sheet2->getStyle("A{$rowNum}:J{$rowNum}")->applyFromArray([
+                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                    ]);
+                }
+
+                $no++;
+                $rowNum++;
+            }
+
+            // Column widths for Sheet 2
+            $sheet2->getColumnDimension('A')->setWidth(6);
+            $sheet2->getColumnDimension('B')->setAutoSize(true);
+            $sheet2->getColumnDimension('C')->setAutoSize(true);
+            $sheet2->getColumnDimension('D')->setAutoSize(true);
+            $sheet2->getColumnDimension('E')->setWidth(20);
+            $sheet2->getColumnDimension('F')->setWidth(16);
+            $sheet2->getColumnDimension('G')->setWidth(14);
+            $sheet2->getColumnDimension('H')->setWidth(30);
+            $sheet2->getColumnDimension('I')->setAutoSize(true);
+            $sheet2->getColumnDimension('J')->setWidth(30);
+
+            // Set Sheet 1 as active when file is opened
+            $objPHPExcel->setActiveSheetIndex(0);
+
+            // === Save file ===
+            $saveDir = FCPATH . 'assets/dist/excel/';
+            if (!is_dir($saveDir)) {
+                if (!mkdir($saveDir, 0777, true)) {
+                    throw new Exception('Failed to create directory: ' . $saveDir);
                 }
             }
 
-            echo "<tr><td colspan='8' style='height:30px; background:white;'></td></tr>";
+            $fileName = 'Customer_Retention_Report_' . date('Ymd_His') . '.xlsx';
+            $filePath = $saveDir . $fileName;
 
-            $no++;
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save($filePath);
+
+            if (!file_exists($filePath)) {
+                throw new Exception('Failed to save Excel file at: ' . $filePath);
+            }
+
+            echo json_encode([
+                'status'   => true,
+                'message'  => 'File generated successfully.',
+                'file_url' => base_url('assets/dist/excel/' . $fileName)
+            ]);
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
         }
-
-        echo "</tbody></table>";
-        exit;
     }
 
 }

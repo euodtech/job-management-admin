@@ -401,19 +401,40 @@
             order: [[3, "desc"]],
         });
 
-        // Export Excel
+        // Export Excel via AJAX
         $('#btn_export_customer_retention').on('click', function() {
-            let params = {
-                customerIDCustomerRetentionReport: $('#customerSelectCustomerRetentionReport').val(),
-                totalJobCustomerRetentionReport: $('#totalJobInputCustomerRetentionReport').val(),
-                fromCustomerRetentionReport: $('input[name="fromCustomerRetentionReport"]').val(),
-                untilCustomerRetentionReport: $('input[name="untilCustomerRetentionReport"]').val(),
-                retentionDaysCustomerRetentionReport: $('#retentionDaysInputCustomerRetentionReport').val(),
-                statusCustomerRetentionReport: $('select[name="statusCustomerRetentionReport"]').val()
-            };
+            Swal.fire({
+                title: 'Generating Excel...',
+                text: 'Please wait a moment',
+                didOpen: () => Swal.showLoading(),
+                allowOutsideClick: false
+            });
 
-            let query = $.param(params);
-            window.location.href = "<?= base_url('ReportCustomer/exportCustomerRetentionExcel?') ?>" + query;
+            $.ajax({
+                url: '<?= base_url("ReportCustomer/exportCustomerRetentionExcel") ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    customerIDCustomerRetentionReport:    $('#customerSelectCustomerRetentionReport').val(),
+                    totalJobCustomerRetentionReport:      $('#totalJobInputCustomerRetentionReport').val(),
+                    fromCustomerRetentionReport:          $('input[name="fromCustomerRetentionReport"]').val(),
+                    untilCustomerRetentionReport:         $('input[name="untilCustomerRetentionReport"]').val(),
+                    retentionDaysCustomerRetentionReport: $('#retentionDaysInputCustomerRetentionReport').val(),
+                    statusCustomerRetentionReport:        $('select[name="statusCustomerRetentionReport"]').val()
+                },
+                success: function(res) {
+                    Swal.close();
+                    if (res.status === true && res.file_url) {
+                        window.location.href = res.file_url;
+                    } else {
+                        Swal.fire('Failed', res.message || 'Could not generate file', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.close();
+                    Swal.fire('Error', 'Server error while generating file', 'error');
+                }
+            });
         });
 
         // Reload Otomatic

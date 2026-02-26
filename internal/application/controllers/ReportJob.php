@@ -885,87 +885,332 @@ class ReportJob extends MY_Controller
         }
     }
 
-   public function export_job_report()
+    public function export_job_report()
     {
         try {
-
             $role = $this->session->userdata('Role');
-            $companyID =  $this->session->userdata('CompanyID');
-            
-            $from_date = $this->input->post('from_date');
+            $companyID = $this->session->userdata('CompanyID');
+
+            // Filter Parameters (POST)
+            $from_date  = $this->input->post('from_date');
             $until_date = $this->input->post('until_date');
+            $status_job = $this->input->post('status_job');
 
-            // --- Validasi tanggal ---
+            // Validate dates
             if (empty($from_date) || empty($until_date)) {
-                throw new Exception('Filter tanggal belum diisi.');
+                throw new Exception('Date filters are required.');
             }
 
-            $export_binds = [$from_date, $until_date];
-
-            $where_company = "";
-            if($role != 1) {
-                $where_company = " AND ListJob.CompanyID = ?";
-                $export_binds[] = (int)$companyID;
+            // Build applied filters description
+            $appliedFilters = [];
+            $appliedFilters[] = 'From: ' . date('M d, Y', strtotime($from_date));
+            $appliedFilters[] = 'Until: ' . date('M d, Y', strtotime($until_date));
+            if (!empty($status_job) && $status_job !== 'all_status') {
+                $statusLabels = [
+                    'awaiting_job' => 'Awaiting Driver',
+                    'ongoing_job'  => 'Ongoing',
+                    'finished'     => 'Finished'
+                ];
+                $appliedFilters[] = 'Status: ' . (isset($statusLabels[$status_job]) ? $statusLabels[$status_job] : $status_job);
+            }
+            if (empty($appliedFilters)) {
+                $appliedFilters[] = 'None (showing all data)';
             }
 
-            // --- Ambil data dari database ---
-            $query = "
-                SELECT * FROM ListJob
-                LEFT JOIN ListUser ON ListJob.UserID = ListUser.UserID
-                LEFT JOIN Customer ON ListJob.CustomerID = Customer.CustomerID
-                WHERE DATE(JobDate) >= ? AND DATE(JobDate) <= ? AND ListJob.Status = 2
-            " . $where_company;
+            // Build main query
+            $sql = "
+                SELECT lj.JobID, lj.JobName, lj.JobDate, lj.TypeJob, lj.Status, lj.Notes, lj.AssignWhen, lj.FinishWhen,
+                       c.CustomerName, lu.Fullname AS DriverName, lc.CompanyName
+                FROM ListJob lj
+                LEFT JOIN ListUser lu ON lj.UserID = lu.UserID
+                LEFT JOIN Customer c ON lj.CustomerID = c.CustomerID
+                LEFT JOIN ListCompany lc ON lj.CompanyID = lc.ListCompanyID
+                WHERE DATE(lj.JobDate) >= ? AND DATE(lj.JobDate) <= ?
+            ";
+            $binds = [$from_date, $until_date];
 
-            $jobs = $this->M_Global->globalquery($query, $export_binds)->result_array();
+            // Status filter
+            if (!empty($status_job) && $status_job !== 'all_status') {
+                if ($status_job === 'awaiting_job') {
+                    $sql .= " AND lj.Status IS NULL";
+                } elseif ($status_job === 'ongoing_job') {
+                    $sql .= " AND lj.Status = ?";
+                    $binds[] = 1;
+                } elseif ($status_job === 'finished') {
+                    $sql .= " AND lj.Status = ?";
+                    $binds[] = 2;
+                }
+            }
 
-            // $jobs = $this->db->query($query, [$from_date, $until_date])->result_array();
+            // Company filter for non-superadmin
+            if ($role != 1) {
+                $sql .= " AND lj.CompanyID = ?";
+                $binds[] = (int)$companyID;
+            }
+
+            $sql .= " ORDER BY lj.JobDate DESC";
+
+            $jobs = $this->M_Global->globalquery($sql, $binds)->result_array();
 
             if (count($jobs) == 0) {
-                throw new Exception('No finished jobs found between ' . date('M d, Y', strtotime($from_date)) . ' and ' . date('M d, Y', strtotime($until_date)) . '.');
+                throw new Exception('No jobs found between ' . date('M d, Y', strtotime($from_date)) . ' and ' . date('M d, Y', strtotime($until_date)) . '.');
             }
 
-            // --- Load library Excel ---
-            $this->load->library('Excel'); 
-            $objPHPExcel = new Excel(); 
-            $sheet = $objPHPExcel->setActiveSheetIndex(0);
+            // Domain maps
+            $typeJobMap = [1 => 'Line Interrupt', 2 => 'Reconnection', 3 => 'Short Circuit'];
+            $statusMap  = [NULL => 'Awaiting Driver', 1 => 'Ongoing', 2 => 'Finished'];
 
-            // --- Header Excel ---
-            $headers = ['No', 'Customer', 'Driver', 'Job Name', 'Job Date', 'Photo'];
+            // === Load PHPExcel & Create Workbook ===
+            $this->load->library('Excel');
+            $objPHPExcel = new Excel();
+
+            $objPHPExcel->getProperties()
+                ->setCreator('E-FMS System')
+                ->setTitle('Job Report')
+                ->setDescription('Generated on ' . date('Y-m-d H:i:s'));
+
+            // --- Reusable Style Arrays (copied from Customer Report reference) ---
+            $titleStyle = [
+                'font' => ['name' => 'Arial', 'bold' => true, 'size' => 16, 'color' => ['rgb' => '1F4E79']],
+                'alignment' => [
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                ]
+            ];
+            $subtitleStyle = [
+                'font' => ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => ['rgb' => '666666']],
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT]
+            ];
+            $filterInfoStyle = [
+                'font' => ['name' => 'Arial', 'size' => 9, 'color' => ['rgb' => '555555']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF9E6']],
+                'alignment' => [
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                ]
+            ];
+            $headerStyle = [
+                'font' => ['name' => 'Arial', 'bold' => true, 'size' => 10, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => '2E75B6']],
+                'alignment' => [
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                ],
+                'borders' => [
+                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '1A5276']]
+                ]
+            ];
+            $dataBorderStyle = [
+                'borders' => [
+                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => 'D5D8DC']]
+                ],
+                'alignment' => ['vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER]
+            ];
+            $centerAlign = [
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+            ];
+            $activeStatusStyle = [
+                'font' => ['bold' => true, 'color' => ['rgb' => '1E7E34']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'D4EDDA']],
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+            ];
+            $inactiveStatusStyle = [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'A71D2A']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8D7DA']],
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+            ];
+            $totalsStyle = [
+                'font' => ['bold' => true, 'size' => 10],
+                'borders' => [
+                    'top' => ['style' => PHPExcel_Style_Border::BORDER_MEDIUM, 'color' => ['rgb' => '2E75B6']]
+                ],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'EBF5FB']]
+            ];
+            $warningStatusStyle = [
+                'font' => ['bold' => true, 'color' => ['rgb' => '856404']],
+                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF3CD']],
+                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+            ];
+
+            // ============================
+            // SHEET 1: Job Summary
+            // ============================
+            $sheet1 = $objPHPExcel->setActiveSheetIndex(0);
+            $sheet1->setTitle('Job Summary');
+
+            // Row 1: Report Title
+            $sheet1->mergeCells('A1:H1');
+            $sheet1->setCellValue('A1', 'Job Report');
+            $sheet1->getStyle('A1:H1')->applyFromArray($titleStyle);
+            $sheet1->getRowDimension(1)->setRowHeight(30);
+
+            // Row 2: Generated timestamp
+            $sheet1->mergeCells('A2:H2');
+            $sheet1->setCellValue('A2', 'Generated: ' . date('F d, Y - h:i A'));
+            $sheet1->getStyle('A2:H2')->applyFromArray($subtitleStyle);
+
+            // Row 3: Applied filters
+            $sheet1->mergeCells('A3:H3');
+            $sheet1->setCellValue('A3', 'Filters: ' . implode(' | ', $appliedFilters));
+            $sheet1->getStyle('A3:H3')->applyFromArray($filterInfoStyle);
+            $sheet1->getRowDimension(3)->setRowHeight(22);
+
+            // Row 4: blank spacer
+
+            // Row 5: Column Headers
+            $headers = ['No', 'Job Name', 'Customer', 'Driver', 'Job Date', 'Type Job', 'Status', 'Company'];
             $col = 'A';
             foreach ($headers as $header) {
-                $sheet->setCellValue($col.'1', $header);
+                $sheet1->setCellValue($col . '5', $header);
                 $col++;
             }
+            $sheet1->getStyle('A5:H5')->applyFromArray($headerStyle);
+            $sheet1->getRowDimension(5)->setRowHeight(24);
 
-            foreach (range('A', 'E') as $columnID) {
-                $sheet->getColumnDimension($columnID)->setAutoSize(true);
+            // Data rows
+            $rowNum = 6;
+            $no = 1;
+            foreach ($jobs as $row) {
+                $typeJob   = isset($typeJobMap[$row['TypeJob']]) ? $typeJobMap[$row['TypeJob']] : ($row['TypeJob'] ?: '-');
+                $jobStatus = array_key_exists($row['Status'], $statusMap) ? $statusMap[$row['Status']] : ($row['Status'] ?: 'Awaiting Driver');
+
+                $sheet1->setCellValue('A' . $rowNum, $no);
+                $sheet1->setCellValueExplicit('B' . $rowNum, $row['JobName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('C' . $rowNum, $row['CustomerName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('D' . $rowNum, $row['DriverName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValue('E' . $rowNum, !empty($row['JobDate']) ? date('M d, Y H:i', strtotime($row['JobDate'])) : '-');
+                $sheet1->setCellValue('F' . $rowNum, $typeJob);
+                $sheet1->setCellValue('G' . $rowNum, $jobStatus);
+                $sheet1->setCellValueExplicit('H' . $rowNum, $row['CompanyName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+
+                // Apply borders
+                $sheet1->getStyle("A{$rowNum}:H{$rowNum}")->applyFromArray($dataBorderStyle);
+
+                // Center-align: No (A), Type Job (F), Status (G)
+                $sheet1->getStyle("A{$rowNum}")->applyFromArray($centerAlign);
+                $sheet1->getStyle("F{$rowNum}")->applyFromArray($centerAlign);
+                $sheet1->getStyle("G{$rowNum}")->applyFromArray($centerAlign);
+
+                // Color-code status
+                if ($jobStatus === 'Finished') {
+                    $sheet1->getStyle("G{$rowNum}")->applyFromArray($activeStatusStyle);
+                } elseif ($jobStatus === 'Ongoing') {
+                    $sheet1->getStyle("G{$rowNum}")->applyFromArray($warningStatusStyle);
+                } elseif ($jobStatus === 'Awaiting Driver') {
+                    $sheet1->getStyle("G{$rowNum}")->applyFromArray($inactiveStatusStyle);
+                }
+
+                // Alternate row shading
+                if ($no % 2 === 0) {
+                    $sheet1->getStyle("A{$rowNum}:F{$rowNum}")->applyFromArray([
+                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                    ]);
+                    $sheet1->getStyle("H{$rowNum}")->applyFromArray([
+                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                    ]);
+                }
+
+                $no++;
+                $rowNum++;
             }
 
-            $sheet->getColumnDimension('F')->setWidth(40);
+            // Totals row
+            $sheet1->mergeCells("A{$rowNum}:D{$rowNum}");
+            $sheet1->setCellValue("A{$rowNum}", 'Total');
+            $sheet1->setCellValue("E{$rowNum}", count($jobs) . ' job(s)');
+            $sheet1->getStyle("A{$rowNum}:H{$rowNum}")->applyFromArray($totalsStyle);
+            $sheet1->getStyle("A{$rowNum}")->applyFromArray($centerAlign);
 
-            // --- Isi Data Excel ---
-            $rowNum = 2;
+            // Column widths
+            $sheet1->getColumnDimension('A')->setWidth(6);
+            $sheet1->getColumnDimension('B')->setAutoSize(true);
+            $sheet1->getColumnDimension('C')->setAutoSize(true);
+            $sheet1->getColumnDimension('D')->setAutoSize(true);
+            $sheet1->getColumnDimension('E')->setWidth(20);
+            $sheet1->getColumnDimension('F')->setWidth(16);
+            $sheet1->getColumnDimension('G')->setWidth(16);
+            $sheet1->getColumnDimension('H')->setAutoSize(true);
+
+            // ============================
+            // SHEET 2: Job Details with Photos
+            // ============================
+            $objPHPExcel->createSheet();
+            $sheet2 = $objPHPExcel->setActiveSheetIndex(1);
+            $sheet2->setTitle('Job Details with Photos');
+
+            // Row 1: Sheet Title
+            $sheet2->mergeCells('A1:K1');
+            $sheet2->setCellValue('A1', 'Job Details - Job Report');
+            $sheet2->getStyle('A1:K1')->applyFromArray($titleStyle);
+            $sheet2->getRowDimension(1)->setRowHeight(30);
+
+            // Row 2: Generated timestamp
+            $sheet2->mergeCells('A2:K2');
+            $sheet2->setCellValue('A2', 'Generated: ' . date('F d, Y - h:i A'));
+            $sheet2->getStyle('A2:K2')->applyFromArray($subtitleStyle);
+
+            // Row 3: blank spacer
+
+            // Row 4: Column Headers
+            $detailHeaders = ['No', 'Job Name', 'Customer', 'Driver', 'Job Date', 'Type Job', 'Status', 'Notes', 'Assign Date', 'Finish Date', 'Photo'];
+            $col = 'A';
+            foreach ($detailHeaders as $header) {
+                $sheet2->setCellValue($col . '4', $header);
+                $col++;
+            }
+            $sheet2->getStyle('A4:K4')->applyFromArray($headerStyle);
+            $sheet2->getRowDimension(4)->setRowHeight(24);
+
+            // Detail data rows
+            $rowNum = 5;
             $no = 1;
-            foreach ($jobs as $job) {
+            foreach ($jobs as $row) {
+                $jobID     = $row['JobID'];
+                $typeJob   = isset($typeJobMap[$row['TypeJob']]) ? $typeJobMap[$row['TypeJob']] : ($row['TypeJob'] ?: '-');
+                $jobStatus = array_key_exists($row['Status'], $statusMap) ? $statusMap[$row['Status']] : ($row['Status'] ?: 'Awaiting Driver');
 
-                $jobID = $job['JobID'];
+                $sheet2->setCellValue('A' . $rowNum, $no);
+                $sheet2->setCellValueExplicit('B' . $rowNum, $row['JobName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('C' . $rowNum, $row['CustomerName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('D' . $rowNum, $row['DriverName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValue('E' . $rowNum, !empty($row['JobDate']) ? date('M d, Y H:i', strtotime($row['JobDate'])) : '-');
+                $sheet2->setCellValue('F' . $rowNum, $typeJob);
+                $sheet2->setCellValue('G' . $rowNum, $jobStatus);
+                $sheet2->setCellValueExplicit('H' . $rowNum, $row['Notes'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValue('I' . $rowNum, !empty($row['AssignWhen']) ? date('M d, Y H:i', strtotime($row['AssignWhen'])) : '-');
+                $sheet2->setCellValue('J' . $rowNum, !empty($row['FinishWhen']) ? date('M d, Y H:i', strtotime($row['FinishWhen'])) : '-');
 
-                $sheet->setCellValue('A'.$rowNum, $no++);
-                $sheet->setCellValue('B'.$rowNum, $job['CustomerName']);
-                $sheet->setCellValue('C'.$rowNum, $job['Fullname']);
-                $sheet->setCellValue('D'.$rowNum, $job['JobName']);
-                $sheet->setCellValue('E'.$rowNum, date('d M Y H:i', strtotime($job['JobDate'])));
-                // --- Tambahkan gambar per data ---
+                // Apply borders and alignment
+                $sheet2->getStyle("A{$rowNum}:K{$rowNum}")->applyFromArray($dataBorderStyle);
+                $sheet2->getStyle("A{$rowNum}")->applyFromArray($centerAlign);
+                $sheet2->getStyle("F{$rowNum}")->applyFromArray($centerAlign);
+                $sheet2->getStyle("G{$rowNum}")->applyFromArray($centerAlign);
 
-                $dataGambar = $this->M_Global->globalquery("SELECT * FROM ListJobDetail WHERE ListJobID = ? ", [(int)$jobID])->result_array();
+                // Color-code status
+                if ($jobStatus === 'Finished') {
+                    $sheet2->getStyle("G{$rowNum}")->applyFromArray($activeStatusStyle);
+                } elseif ($jobStatus === 'Ongoing') {
+                    $sheet2->getStyle("G{$rowNum}")->applyFromArray($warningStatusStyle);
+                } elseif ($jobStatus === 'Awaiting Driver') {
+                    $sheet2->getStyle("G{$rowNum}")->applyFromArray($inactiveStatusStyle);
+                }
+
+                // Alternate row shading
+                if ($no % 2 === 0) {
+                    $sheet2->getStyle("A{$rowNum}:F{$rowNum}")->applyFromArray([
+                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                    ]);
+                    $sheet2->getStyle("H{$rowNum}:K{$rowNum}")->applyFromArray([
+                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                    ]);
+                }
+
+                // Photo embedding
+                $dataGambar = $this->M_Global->globalquery("SELECT * FROM ListJobDetail WHERE ListJobID = ?", [(int)$jobID])->result_array();
 
                 $offsetY = 0;
-                
                 foreach ($dataGambar as $gambar) {
-    // nama file (tanpa domain)
-                    $imageFile = basename($gambar['Photo']); // misal hasilnya "job_24_1761110012_0.png"
-                    
-                    // path absolut di server
+                    $imageFile = basename($gambar['Photo']);
                     $imagePath = FCPATH . '../api/storage/app/finished_jobs/' . $imageFile;
 
                     if (file_exists($imagePath)) {
@@ -974,52 +1219,65 @@ class ReportJob extends MY_Controller
                         $objDrawing->setDescription('Job Image');
                         $objDrawing->setPath($imagePath);
                         $objDrawing->setHeight(60);
-                        $objDrawing->setCoordinates('F' . $rowNum);
+                        $objDrawing->setCoordinates('K' . $rowNum);
                         $objDrawing->setOffsetY($offsetY);
-                        $objDrawing->setWorksheet($sheet);
+                        $objDrawing->setWorksheet($sheet2);
 
-                        $offsetY += 65; // jarak antar gambar
-                    } else {
-                        throw new Exception("File not found at: " . $imagePath);
+                        $offsetY += 65;
                     }
+                    // If file doesn't exist, just skip it
                 }
 
+                // Set row height to accommodate photos
+                $sheet2->getRowDimension($rowNum)->setRowHeight(max(50, count($dataGambar) * 55));
 
-                // --- Atur tinggi baris agar gambar muat ---
-                $sheet->getRowDimension($rowNum)->setRowHeight(max(50, count($dataGambar) * 55));
+                $no++;
                 $rowNum++;
-                
             }
 
-            // --- Folder tujuan ---
+            // Column widths for Sheet 2
+            $sheet2->getColumnDimension('A')->setWidth(6);
+            $sheet2->getColumnDimension('B')->setAutoSize(true);
+            $sheet2->getColumnDimension('C')->setAutoSize(true);
+            $sheet2->getColumnDimension('D')->setAutoSize(true);
+            $sheet2->getColumnDimension('E')->setWidth(20);
+            $sheet2->getColumnDimension('F')->setWidth(16);
+            $sheet2->getColumnDimension('G')->setWidth(16);
+            $sheet2->getColumnDimension('H')->setWidth(30);
+            $sheet2->getColumnDimension('I')->setWidth(20);
+            $sheet2->getColumnDimension('J')->setWidth(20);
+            $sheet2->getColumnDimension('K')->setWidth(40);
+
+            // Set Sheet 1 as active when file is opened
+            $objPHPExcel->setActiveSheetIndex(0);
+
+            // === Save file ===
             $saveDir = FCPATH . 'assets/dist/excel/';
             if (!is_dir($saveDir)) {
                 if (!mkdir($saveDir, 0777, true)) {
-                    throw new Exception('Gagal membuat folder: ' . $saveDir);
+                    throw new Exception('Failed to create directory: ' . $saveDir);
                 }
             }
 
-            $fileName = 'Report_Job_' . date('Ymd_His') . '.xlsx';
+            $fileName = 'Job_Report_' . date('Ymd_His') . '.xlsx';
             $filePath = $saveDir . $fileName;
 
-            // --- Simpan file Excel ---
             $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
             $objWriter->save($filePath);
 
             if (!file_exists($filePath)) {
-                throw new Exception('Gagal menyimpan file Excel di: ' . $filePath);
+                throw new Exception('Failed to save Excel file at: ' . $filePath);
             }
 
-            // --- Jika berhasil ---
             echo json_encode([
-                'status' => true,
-                'message' => 'File berhasil dibuat.',
+                'status'   => true,
+                'message'  => 'File generated successfully.',
                 'file_url' => base_url('assets/dist/excel/' . $fileName)
             ]);
 
         } catch (Exception $e) {
             echo json_encode([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Error: ' . $e->getMessage()
             ]);
         }
