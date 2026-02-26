@@ -354,6 +354,8 @@
             }
         });
 
+        var silentSearchRetention = false;
+
         var table = $('#tableCustomerRetentionReport').DataTable({
             processing: true,
             serverSide: true,
@@ -395,10 +397,19 @@
             dom: '<"d-flex justify-content-end align-items-center mb-2"f>rtip',
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "Search:",
             },
             order: [[3, "desc"]],
+        });
+
+        $('#tableCustomerRetentionReport').on('search.dt', function() { silentSearchRetention = true; });
+        $('#tableCustomerRetentionReport').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchRetention) {
+                e.stopPropagation();
+                if (!processing) silentSearchRetention = false;
+            }
         });
 
         // Export Excel via AJAX
@@ -592,6 +603,8 @@
             }
         });
 
+        var silentSearchEngagement = false;
+
         $('#tableCustomerEngagement').DataTable({
             processing: true,
             serverSide: true,
@@ -643,10 +656,19 @@
             ],
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "🔍 Search:",
             },
             order: [[2, "desc"]]
+        });
+
+        $('#tableCustomerEngagement').on('search.dt', function() { silentSearchEngagement = true; });
+        $('#tableCustomerEngagement').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchEngagement) {
+                e.stopPropagation();
+                if (!processing) silentSearchEngagement = false;
+            }
         });
 
         // Reload Otomatic

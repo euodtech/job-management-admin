@@ -84,20 +84,10 @@ class ReportDriver extends MY_Controller
             $binds[] = (int)$companyID;
         }
         
-        // if (!empty($searchValue)) {
-        //     $searchValueEscaped = $this->db->escape_like_str($searchValue);
-        //     $sql .= " AND (
-        //         sub.Fullname LIKE '%$searchValueEscaped%' OR
-        //         sub.Email LIKE '%$searchValueEscaped%'
-        //     )";
-        // }
-
-        // if (!empty($fromDate)) {
-        //     $sql .= " AND sub.LastLogin >= '$fromDate 00:00:00'";  // Memastikan waktu mulai
-        // }
-        // if (!empty($untilDate)) {
-        //     $sql .= " AND sub.LastLogin <= '$untilDate 23:59:59'";  // Memastikan waktu akhir
-        // }
+        if (!empty($searchValue)) {
+            $searchValueEscaped = $this->db->escape_like_str($searchValue);
+            $where[] = "(ListUser.Fullname LIKE '%" . $searchValueEscaped . "%' OR ListUser.Email LIKE '%" . $searchValueEscaped . "%')";
+        }
 
         if (!empty($where)) {
             $sql .= " WHERE " . implode(' AND ', $where);

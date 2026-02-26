@@ -610,6 +610,8 @@ table#tableJobCustomer.dataTable thead th {
         //     }
         // });
 
+        var silentSearchJobCustomer = false;
+
         var table = $('#tableJobCustomer').DataTable({
             processing: true,
             serverSide: true,
@@ -709,10 +711,19 @@ table#tableJobCustomer.dataTable thead th {
 
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "Search:"
             },
             order: [[1, "desc"]]
+        });
+
+        $('#tableJobCustomer').on('search.dt', function() { silentSearchJobCustomer = true; });
+        $('#tableJobCustomer').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchJobCustomer) {
+                e.stopPropagation();
+                if (!processing) silentSearchJobCustomer = false;
+            }
         });
 
         // Export Excel
@@ -791,6 +802,8 @@ table#tableJobCustomer.dataTable thead th {
                 });
             }
         });
+
+        var silentSearchJobCompliance = false;
 
         var table = $('#tableJobCompliance').DataTable({
             processing: true,
@@ -889,10 +902,19 @@ table#tableJobCustomer.dataTable thead th {
             ],
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "Search:"
             },
             order: [[3, "desc"]]
+        });
+
+        $('#tableJobCompliance').on('search.dt', function() { silentSearchJobCompliance = true; });
+        $('#tableJobCompliance').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchJobCompliance) {
+                e.stopPropagation();
+                if (!processing) silentSearchJobCompliance = false;
+            }
         });
 
         // Reload Otomatic
@@ -994,6 +1016,8 @@ table#tableJobCustomer.dataTable thead th {
         }
 
 
+        var silentSearchJobAssignment = false;
+
         $('#tableJobAssignment').DataTable({
             processing: true,
             serverSide: true,
@@ -1055,10 +1079,19 @@ table#tableJobCustomer.dataTable thead th {
             ],
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "Search:",
             },
             order: [[4, "desc"]]
+        });
+
+        $('#tableJobAssignment').on('search.dt', function() { silentSearchJobAssignment = true; });
+        $('#tableJobAssignment').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchJobAssignment) {
+                e.stopPropagation();
+                if (!processing) silentSearchJobAssignment = false;
+            }
         });
 
         // Reload Otomatic
@@ -1150,6 +1183,8 @@ table#tableJobCustomer.dataTable thead th {
             loadCustomerNamesJobCompletionStatusReport();
         }
 
+        var silentSearchJobCompletion = false;
+
         $('#tableJobCompletion').DataTable({
             processing: true,
             serverSide: true,
@@ -1209,10 +1244,19 @@ table#tableJobCustomer.dataTable thead th {
             ],
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "Search:",
             },
             order: [[4, "desc"]]
+        });
+
+        $('#tableJobCompletion').on('search.dt', function() { silentSearchJobCompletion = true; });
+        $('#tableJobCompletion').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchJobCompletion) {
+                e.stopPropagation();
+                if (!processing) silentSearchJobCompletion = false;
+            }
         });
 
         // Reload Otomatic
@@ -1242,6 +1286,8 @@ table#tableJobCustomer.dataTable thead th {
         let today = new Date();
         let now = `${(today.getMonth()+1).toString().padStart(2, '0')}_${today.getDate().toString().padStart(2, '0')}_${today.getFullYear()}`;
         let fileName = `Job_Timeline_Report_${now}`;
+
+        var silentSearchJobTimeline = false;
 
         $('#tableJobTimeline').DataTable({
             processing: true,
@@ -1290,10 +1336,19 @@ table#tableJobCustomer.dataTable thead th {
             ],
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "Search:",
             },
             order: [[1, "desc"]]
+        });
+
+        $('#tableJobTimeline').on('search.dt', function() { silentSearchJobTimeline = true; });
+        $('#tableJobTimeline').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchJobTimeline) {
+                e.stopPropagation();
+                if (!processing) silentSearchJobTimeline = false;
+            }
         });
     });
 
@@ -1362,6 +1417,8 @@ table#tableJobCustomer.dataTable thead th {
             loadCustomerNames();
         }
 
+
+        var silentSearchJobEvidence = false;
 
         $('#tableJobEvidenceReport').DataTable({
             processing: true,
@@ -1488,10 +1545,19 @@ table#tableJobCustomer.dataTable thead th {
             ],
             ordering: true,
             searching: true,
+            searchDelay: 500,
             language: {
                 search: "Search:",
             },
             order: [[4, "desc"]]
+        });
+
+        $('#tableJobEvidenceReport').on('search.dt', function() { silentSearchJobEvidence = true; });
+        $('#tableJobEvidenceReport').on('processing.dt', function(e, settings, processing) {
+            if (silentSearchJobEvidence) {
+                e.stopPropagation();
+                if (!processing) silentSearchJobEvidence = false;
+            }
         });
 
         // Reload Otomatic

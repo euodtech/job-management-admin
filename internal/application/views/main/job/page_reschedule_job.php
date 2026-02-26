@@ -344,6 +344,8 @@ $(document).ready(function() {
 
     // Silent reload flag: suppresses the loading overlay during background auto-refresh
     var silentReload = false;
+    // Silent search flag: suppresses the loading overlay during search typing
+    var silentSearch = false;
 
     var table = $('#tableJobRider').DataTable({
         processing: false,
@@ -444,22 +446,30 @@ $(document).ready(function() {
         paging: true,
         autoWidth: true,
         scrollX: true,
+        searchDelay: 500,
     });
 
     // Track whether the DataTable is currently processing a request.
     var isProcessing = false;
 
     // Intercept the processing event on this specific table.
-    // When silentReload is true, stop propagation so the global overlay handler
-    // in footer.php never fires. This keeps background refreshes seamless.
+    // When silentReload or silentSearch is true, stop propagation so the global
+    // overlay handler in footer.php never fires. This keeps background refreshes
+    // and search-while-typing seamless.
     $('#tableJobRider').on('processing.dt', function(e, settings, processing) {
         isProcessing = processing;
-        if (silentReload) {
+        if (silentReload || silentSearch) {
             e.stopPropagation();
             if (!processing) {
                 silentReload = false;
+                silentSearch = false;
             }
         }
+    });
+
+    // Suppress loading overlay when the user types in the search box
+    $('#tableJobRider').on('search.dt', function() {
+        silentSearch = true;
     });
 
     setInterval(function() {

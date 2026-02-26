@@ -247,6 +247,8 @@
         });
 
         // --- DataTable setup ---
+        var silentSearch = false;
+
         var table = $('#tableUserLogin').DataTable({
             processing: true,
             serverSide: true,
@@ -305,6 +307,16 @@
             lengthMenu: [10, 25, 50, 100],
             dom: '<"d-flex justify-content-end align-items-center mb-2"f>rtip',
             searching: true,
+            searchDelay: 500,
+        });
+
+        // Suppress loading overlay when the user types in the search box
+        $('#tableUserLogin').on('search.dt', function() { silentSearch = true; });
+        $('#tableUserLogin').on('processing.dt', function(e, settings, processing) {
+            if (silentSearch) {
+                e.stopPropagation();
+                if (!processing) silentSearch = false;
+            }
         });
 
         // Export Excel
