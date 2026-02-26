@@ -1,4 +1,15 @@
 <style>
+    /* Fix Select2 arrow positioning: bootstrap4 theme sets top:50% + absolute,
+       while the global override sets h-10, pushing arrow outside the box */
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+        top: 0 !important;
+        height: 100% !important;
+    }
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b {
+        top: 50% !important;
+        transform: translateY(-50%);
+    }
+
     table#tableJobRider.dataTable thead th {
         text-align: center !important;
     }
