@@ -13,11 +13,11 @@
                 </tr>
                 <tr>
                     <th class="px-4 py-2 text-left text-gray-600">Job Create</th>
-                    <td class="px-4 py-2">: <?= return_date_format($detail[0]['created_at']) ?></td>
+                    <td class="px-4 py-2">: <?= return_date_format_with_time($detail[0]['created_at']) ?></td>
                 </tr>
                 <tr>
                     <th class="px-4 py-2 text-left text-gray-600">Job Date</th>
-                    <td class="px-4 py-2">: <?= return_date_format($detail[0]['JobDate']) ?></td>
+                    <td class="px-4 py-2">: <?= return_date_format_with_time($detail[0]['JobDate']) ?></td>
                 </tr>
             </tbody>
         </table>

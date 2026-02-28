@@ -8,6 +8,20 @@ if (!function_exists('return_date_format')) {
     }
 
 
+    function return_date_format_with_time($value)
+    {
+        if (empty($value)) return '-';
+        $timestamp = strtotime($value);
+        if ($timestamp === false) return '-';
+        $date = date("M j, Y", $timestamp);
+        $time = date("H:i:s", $timestamp);
+        // Hide time for legacy date-only values (stored as midnight)
+        if ($time === '00:00:00') {
+            return $date;
+        }
+        return $date . '<br><span class="text-xs text-gray-400">' . date("h:i A", $timestamp) . '</span>';
+    }
+
     function return_date_format_detail($value)
     {
         // Pastikan value bisa diparse jadi date

@@ -389,7 +389,13 @@ $('.custom-file-input').on('change', function() {
                 {
                     data: 'created_at',
                     render: function(data) {
-                        return moment(data).format('D MMMM YYYY', 'Do MMM YYY', 'fr');
+                        if (!data) return '-';
+                        var d = moment(data);
+                        var result = d.format('D MMM YYYY');
+                        if (d.hours() !== 0 || d.minutes() !== 0) {
+                            result += '<br><span class="text-xs text-gray-400">' + d.format('hh:mm A') + '</span>';
+                        }
+                        return result;
                     }
                 },
                 {

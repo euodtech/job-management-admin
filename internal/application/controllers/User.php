@@ -83,7 +83,7 @@ class User extends MY_Controller
 
         try {
             if (empty($_FILES['import_excel']['tmp_name'])) {
-                echo json_encode(['status' => 'error', 'message' => 'Tidak ada file yang diupload.']);
+                echo json_encode(['status' => false, 'message' => 'No file was uploaded.']);
                 return;
             }
 
@@ -91,100 +91,163 @@ class User extends MY_Controller
             $objPHPExcel = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
             $sheetData = $objPHPExcel->getActiveSheet()->toArray(null, true, true, true);
 
-            $totalInsertData = 1;
-            $totalData = 1;
+            // Company & subscription (fetched once, outside loop)
+            $companyID = $this->session->userdata('CompanyID');
 
-            $email_ready = [];
-            $email_invalid = [];
+            $companyInfo = $this->M_Global->globalquery(
+                "SELECT CompanySubscribe FROM ListCompany WHERE ListCompanyID = ?",
+                [$companyID]
+            )->row_array();
+            $companySubscribe = $companyInfo['CompanySubscribe'] ?? 1;
+
+            $totalInserted  = 0;
+            $email_ready    = [];
+            $email_invalid  = [];
+            $role_invalid   = [];
+            $phone_invalid  = [];
+
+            $this->db->trans_start();
 
             foreach ($sheetData as $key => $row) {
-                if ($key == 1) continue; // HEADER
+                if ($key == 1) continue; // Skip header row
 
+                // Skip empty rows
                 if (empty($row['A']) && empty($row['B']) && empty($row['C']) && empty($row['D'])) {
                     continue;
                 }
 
-                $companyID = $this->session->userdata('CompanyID');
-                $email = trim($row['B']);
+                // Column mapping: A=Full Name, B=User Role, C=Email, D=Phone Number
+                $fullname = trim($row['A']);
+                $userRole = strtolower(trim($row['B']));
+                $email    = strtolower(trim($row['C']));
+                $phoneRaw = trim($row['D']);
 
-                // VALIDASI EMAIL FORMAT
+                // Validate email format
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $email_invalid[] = $email;
+                    $email_invalid[] = $email ?: "(Row $key: empty)";
                     continue;
                 }
 
-                // CEK EMAIL SUDAH ADA DI DB
-                $queryCheck = "SELECT * FROM ListUser
-                    WHERE ListCompanyID = ? AND Email = ?";
-                $dataCheck = $this->M_Global->globalquery($queryCheck, [$companyID, $email])->result_array();
-
-                if (count($dataCheck) == 0) {
-
-                    // INSERT LOGIN DULU
-                    $insert_data_login = [
-                        'Fullname' => $row['A'],
-                        'Email'    => $email,
-                        "Password" => password_hash("12345", PASSWORD_BCRYPT),
-                        "Role"     => 2,
-                    ];
-
-                    $user_login_id = $this->M_Global->insertid($insert_data_login, "UserLogin");
-
-                    // INSERT LIST USER
-                    $insertData = [
-                        'Fullname'          => $row['A'],
-                        'ListCompanyID'     => $companyID,
-                        'Email'             => $email,
-                        'PhoneNumber'       => $row['C'],
-                        'StatusActive'      => 0,
-                        'Category'          => $row['D'],
-                        'Rank'              => $row['E'],
-                        'License'           => $row['F'],
-                        'LicenseValidUntil' => $row['G'],
-                        "UserLoginID"       => $user_login_id,
-                        'created_at'        => date('Y-m-d H:i:s')
-                    ];
-
-                    $this->M_Global->insert($insertData, "ListUser");
-                    $totalInsertData++;
-
-                } else {
-                    // EMAIL DUPLIKAT
-                    $email_ready[] = $email;
+                // Validate User Role
+                if (!in_array($userRole, ['monitor', 'field'], true)) {
+                    $role_invalid[] = "Row $key: \"" . htmlspecialchars($row['B']) . "\"";
+                    continue;
                 }
 
-                $totalData++;
+                // Enforce subscription-based role (Basic = monitor only)
+                if ($companySubscribe == 1) {
+                    $userRole = 'monitor';
+                }
+
+                // Normalize PH phone number (matching create())
+                $digits = preg_replace('/\D/', '', $phoneRaw);
+                $phone  = null;
+
+                if (strlen($digits) === 11 && substr($digits, 0, 2) === '09') {
+                    $phone = '+63' . substr($digits, 1);
+                } elseif (strlen($digits) === 10 && substr($digits, 0, 1) === '9') {
+                    $phone = '+63' . $digits;
+                } elseif (strlen($digits) === 12 && substr($digits, 0, 2) === '63') {
+                    $phone = '+' . $digits;
+                }
+
+                if ($phone === null) {
+                    $phone_invalid[] = "Row $key: \"" . htmlspecialchars($phoneRaw) . "\"";
+                    continue;
+                }
+
+                // Check duplicate email (matching create() — with deleted_at filter)
+                $exists = $this->M_Global->globalquery(
+                    "SELECT 1 FROM ListUser WHERE Email = ? AND ListCompanyID = ? AND deleted_at IS NULL",
+                    [$email, $companyID]
+                )->row_array();
+
+                if ($exists) {
+                    $email_ready[] = $email;
+                    continue;
+                }
+
+                // Insert ListUser (matching create())
+                $this->M_Global->insert([
+                    'Fullname'      => $fullname,
+                    'ListCompanyID' => $companyID,
+                    'Email'         => $email,
+                    'PhoneNumber'   => $phone,
+                    'UserRole'      => $userRole,
+                    'StatusActive'  => 0,
+                    'created_at'    => date('Y-m-d H:i:s')
+                ], 'ListUser');
+
+                // Insert UserLogin (matching create())
+                $loginID = $this->M_Global->insertid([
+                    'Fullname' => $fullname,
+                    'Email'    => $email,
+                    'Password' => password_hash('12345678', PASSWORD_BCRYPT),
+                    'Role'     => 2
+                ], 'UserLogin');
+
+                // Link login to user (matching create())
+                $this->M_Global->globalquery(
+                    "UPDATE ListUser SET UserLoginID = ? WHERE Email = ? AND ListCompanyID = ?",
+                    [$loginID, $email, $companyID]
+                );
+
+                $totalInserted++;
             }
 
-            // ===========================
-            //   HANDLE RESPONSE
-            // ===========================
+            $this->db->trans_complete();
 
-            if (empty($email_ready) && empty($email_invalid)) {
+            if ($this->db->trans_status() === FALSE) {
                 echo json_encode([
-                    'status' => true,
-                    'label' => 'success',
-                    'message' => 'Success Insert All Data'
+                    'status' => false,
+                    'message' => 'Database transaction failed. No riders were imported.'
+                ]);
+                return;
+            }
+
+            // Build response
+            $hasErrors = !empty($email_ready) || !empty($email_invalid) || !empty($role_invalid) || !empty($phone_invalid);
+
+            if (!$hasErrors) {
+                echo json_encode([
+                    'status'  => true,
+                    'label'   => 'success',
+                    'message' => "Successfully imported $totalInserted rider(s)."
                 ]);
             } else {
-
                 $messages = [];
+
+                if ($totalInserted > 0) {
+                    array_unshift($messages, "Successfully imported <strong>$totalInserted</strong> rider(s).");
+                }
 
                 if (!empty($email_ready)) {
                     $messages[] =
-                        "Already in use: <br><strong>" .
+                        "Email already in use: <br><strong>" .
                         implode("</strong>, <strong>", $email_ready) . "</strong>";
                 }
 
                 if (!empty($email_invalid)) {
                     $messages[] =
-                        "Invalid format: <br><strong>" .
+                        "Invalid email format: <br><strong>" .
                         implode("</strong>, <strong>", $email_invalid) . "</strong>";
                 }
 
+                if (!empty($role_invalid)) {
+                    $messages[] =
+                        "Invalid User Role (must be 'monitor' or 'field'): <br><strong>" .
+                        implode("</strong>, <strong>", $role_invalid) . "</strong>";
+                }
+
+                if (!empty($phone_invalid)) {
+                    $messages[] =
+                        "Invalid phone number: <br><strong>" .
+                        implode("</strong>, <strong>", $phone_invalid) . "</strong>";
+                }
+
                 echo json_encode([
-                    'status' => true,
-                    'label' => 'warning',
+                    'status'  => true,
+                    'label'   => ($totalInserted > 0) ? 'warning' : 'error',
                     'message' => implode("<br><br>", $messages)
                 ]);
             }
@@ -192,7 +255,7 @@ class User extends MY_Controller
         } catch (Exception $e) {
             echo json_encode([
                 'status' => false,
-                'message' => 'Gagal membaca file Excel: ' . $e->getMessage()
+                'message' => 'Failed to read Excel file: ' . $e->getMessage()
             ]);
         }
     }
@@ -537,6 +600,71 @@ class User extends MY_Controller
 
         // Return JSON
         echo json_encode($dataReturn ?: []);
+    }
+
+
+    public function generate_rider_template()
+    {
+        $this->load->library('Excel');
+
+        $spreadsheet = new Excel();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Rider Template');
+
+        // Headers
+        $headers = ['Full Name', 'User Role', 'Email', 'Phone Number'];
+        foreach ($headers as $col => $header) {
+            $cell = chr(65 + $col) . '1';
+            $sheet->setCellValue($cell, $header);
+        }
+
+        // Header styling
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => '333333']],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'E5E7EB'],
+            ],
+            'borders' => [
+                'bottom' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+            ],
+        ];
+        $sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
+
+        // User Role dropdown validation (column B)
+        $validation = $sheet->getDataValidation('B2:B1000');
+        $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+        $validation->setFormula1('"monitor,field"');
+        $validation->setAllowBlank(false);
+        $validation->setShowDropDown(true);
+        $validation->setShowErrorMessage(true);
+        $validation->setErrorTitle('Invalid Role');
+        $validation->setError('User Role must be "monitor" or "field".');
+
+        // Sample data
+        $sampleData = [
+            ['Juan Dela Cruz', 'monitor', 'juan.delacruz@email.com', '09171234567'],
+            ['Maria Santos', 'field', 'maria.santos@email.com', '09189876543'],
+        ];
+
+        foreach ($sampleData as $rowIndex => $row) {
+            foreach ($row as $col => $value) {
+                $cell = chr(65 + $col) . ($rowIndex + 2);
+                $sheet->setCellValue($cell, $value);
+            }
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'D') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Save to static file
+        $savePath = FCPATH . 'assets/dist/Example Excel Upload Rider.xlsx';
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save($savePath);
+
+        echo json_encode(['status' => true, 'message' => 'Template generated successfully.']);
     }
 
 

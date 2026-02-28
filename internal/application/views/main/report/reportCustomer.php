@@ -503,8 +503,14 @@
         function formatDate(dateStr) {
             if (!dateStr || dateStr === '-') return '-';
             const date = new Date(dateStr);
-            const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
-            return date.toLocaleDateString('en-US', options);
+            const dateOptions = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
+            const formattedDate = date.toLocaleDateString('en-US', dateOptions);
+            if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+                const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+                const formattedTime = date.toLocaleTimeString('en-US', timeOptions);
+                return formattedDate + ' - ' + formattedTime;
+            }
+            return formattedDate;
         }
 
         function getStatusBadge(status) {

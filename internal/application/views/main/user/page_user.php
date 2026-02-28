@@ -409,6 +409,13 @@ $(document).ready(function() {
 
         var formData = new FormData($('#import_excel_form')[0]);
 
+        // Append CSRF token (global $.ajaxSetup beforeSend is overridden by the local one below)
+        var csrfName = $('meta[name="csrf-name"]').attr('content');
+        var csrfHash = $('meta[name="csrf-token"]').attr('content');
+        if (csrfName && csrfHash) {
+            formData.append(csrfName, csrfHash);
+        }
+
         $.ajax({
             url: '<?= base_url("User/import_excel"); ?>',
             type: 'POST',

@@ -33,9 +33,9 @@
                             }
                         ?>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format($val['JobDate']) ?></td>
-                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format($val['AssignWhen']) ?></td>
-                    <td class="px-4 py-3 <?= ($type_job == 1) ? 'hidden' : '' ?>"><?= return_date_format($val['FinishWhen']) ?></td>
+                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format_with_time($val['JobDate']) ?></td>
+                    <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format_with_time($val['AssignWhen']) ?></td>
+                    <td class="px-4 py-3 whitespace-nowrap <?= ($type_job == 1) ? 'hidden' : '' ?>"><?= return_date_format_with_time($val['FinishWhen']) ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

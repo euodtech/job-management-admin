@@ -366,7 +366,16 @@ function returnDateFormatDetailJS(value) {
     const day = String(date.getDate()).padStart(2, '0');
     const monthName = months[date.getMonth()];
     const year = date.getFullYear();
-    return dayName + ', ' + day + ' ' + monthName + ' ' + year;
+    var result = dayName + ', ' + day + ' ' + monthName + ' ' + year;
+    if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+        const hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const h12 = hours % 12 || 12;
+        const time = String(h12).padStart(2, '0') + ':' + minutes + ' ' + ampm;
+        result += ' - ' + time;
+    }
+    return result;
 }
 
 $(document).ready(function() {
@@ -495,7 +504,13 @@ $(document).ready(function() {
                 data: "JobDate",
                 className: "whitespace-nowrap",
                 render: function(data) {
-                    return data ? moment(data).format('DD MMM YYYY') : '-';
+                    if (!data) return '-';
+                    var d = moment(data);
+                    var result = d.format('DD MMM YYYY');
+                    if (d.hours() !== 0 || d.minutes() !== 0) {
+                        result += '<br><span class="text-xs text-gray-400">' + d.format('hh:mm A') + '</span>';
+                    }
+                    return result;
                 }
             },
             {

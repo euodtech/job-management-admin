@@ -645,17 +645,26 @@ table#tableJobCustomer.dataTable thead th {
                         if (!data || data === '-') return '-';
 
                         const date = new Date(data);
-                        const options = {
-                            weekday: 'long',   // Nama hari
+                        const dateOptions = {
+                            weekday: 'short',
                             day: '2-digit',
-                            month: 'long',     // Nama bulan lengkap
+                            month: 'short',
                             year: 'numeric'
                         };
+                        const timeOptions = {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        };
 
-                        const formattedDate = date.toLocaleDateString('en-US', options);
-
-                        // Tambahkan style agar tidak wrap
-                         return '<span style="white-space: nowrap;">' + formattedDate + '</span>';
+                        const formattedDate = date.toLocaleDateString('en-US', dateOptions);
+                        var html = '<span style="white-space: nowrap;">' + formattedDate;
+                        if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+                            const formattedTime = date.toLocaleTimeString('en-US', timeOptions);
+                            html += '<br><span class="text-xs text-gray-400">' + formattedTime + '</span>';
+                        }
+                        html += '</span>';
+                        return html;
                     }
                 },
                 { data: "JobName" },

@@ -89,14 +89,6 @@ class AuthController extends Controller {
 
                     DB::commit();
 
-                    $logoUrl = null;
-                    if ($customer->CompanyLogo) {
-                        $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'http';
-                        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
-                        // $logoUrl = $scheme . '://' . $host . $request->getBaseUrl() . '/myapi/company-logo/' . $customer->CompanyLogo;
-                        $logoUrl = $scheme . '://' . $host . $request->getBaseUrl() . '/be-fms/internal/assets/dist/img/company_logo/' . $customer->CompanyLogo;
-                    }
-
                     $return = [
                         "UserID" => $customer->UserID,
                         "ApiKey" => $customer->ApiKey,
@@ -106,10 +98,9 @@ class AuthController extends Controller {
                         "CompanyLabel" => ($customer->CompanySubscribe == 1) ? "Basic" : "Pro",
                         "HasTraxroot" => !empty($customer->username_traxroot),
                         "UserRole" => $customer->UserRole,
-                        // "CompanyLogo" => $logoUrl,
-                        "CompanyLogo" => $customer->CompanyLogo 
-                            ? env('COMPANY_LOGO_BASE_URL', 'http://localhost/be-fms/internal/assets/dist/img/company_logo/') . $customer->CompanyLogo                 
-                            : null,  
+                        "CompanyLogo" => $customer->CompanyLogo
+                            ? url('myapi/company-logo/' . $customer->CompanyLogo)
+                            : null,
                     ];
 
                     return response()->json([
@@ -203,80 +194,38 @@ class AuthController extends Controller {
     public function logout(Request $request)
     {
         try {
-            // Validate input
-            $this->validate($request, [
-                'user_id' => 'required|integer'
-            ]);
+            // Use the authenticated user stored by middleware
+            $user = $request->attributes->get('authenticated_user');
 
-            // Sanitize input
-            $userID = (int) $request->input('user_id');
-
-            // Validate user ID
-            if ($userID <= 0) {
-                return response()->json([
-                    'Success' => false,
-                    'Message' => 'Invalid user ID'
-                ], 400);
-            }
-
-            // Find user
-            $user = UserLogin::where('UserID', $userID)->first();
-
-            if ($user) {
-
-                // Start transaction
-                DB::beginTransaction();
-
-                // Clear API key
-                $user->ApiKey = null;
-
-                //$user->logout_datetime = date("Y-m-d H:i:s");
-
-                $saved = $user->save();
-
-                if ($saved) {
-
-                    DB::commit();
-
-                    return response()->json([
-                        'Success' => true,
-                        'Message' => "Berhasil keluar"
-                    ], 200);
-
-                } else {
-
-                    DB::rollBack();
-
-                    Log::warning('Logout save failed', [
-                        'user_id' => $userID
-                    ]);
-
-                    return response()->json([
-                        'Success' => false,
-                        'Message' => "Gagal keluar"
-                    ], 500);
-
-                }
-
-            } else {
+            if (!$user) {
                 return response()->json([
                     'Success' => false,
                     'Message' => 'User not found'
                 ], 404);
             }
 
-        } catch (ValidationException $e) {
-            return response()->json([
-                'Success' => false,
-                'Message' => 'Validation failed',
-                'Errors' => $e->errors()
-            ], 422);
+            // Clear API key
+            $user->ApiKey = null;
+            $saved = $user->save();
+
+            if ($saved) {
+                return response()->json([
+                    'Success' => true,
+                    'Message' => "Berhasil keluar"
+                ], 200);
+            } else {
+                Log::warning('Logout save failed', [
+                    'user_login_id' => $user->UserLoginID
+                ]);
+
+                return response()->json([
+                    'Success' => false,
+                    'Message' => "Gagal keluar"
+                ], 500);
+            }
 
         } catch (\Exception $e) {
-            DB::rollBack();
-
             Log::error('Logout Error: ' . $e->getMessage(), [
-                'user_id' => $userID ?? 'unknown',
                 'trace' => $e->getTraceAsString()
             ]);
 

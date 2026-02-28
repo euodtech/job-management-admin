@@ -368,14 +368,26 @@ $(document).ready(function() {
                 data: "JobDate",
                 className: "text-center whitespace-nowrap",
                 render: function(data) {
-                    return data ? moment(data).format('DD MMM YYYY') : '-';
+                    if (!data) return '-';
+                    var d = moment(data);
+                    var result = d.format('DD MMM YYYY');
+                    if (d.hours() !== 0 || d.minutes() !== 0) {
+                        result += '<br><span class="text-xs text-gray-400">' + d.format('hh:mm A') + '</span>';
+                    }
+                    return result;
                 }
             },
             {
                 data: "RequestDateJob",
                 className: "text-center whitespace-nowrap",
                 render: function(data) {
-                    return data ? moment(data).format('DD MMM YYYY') : '-';
+                    if (!data) return '-';
+                    var d = moment(data);
+                    var result = d.format('DD MMM YYYY');
+                    if (d.hours() !== 0 || d.minutes() !== 0) {
+                        result += '<br><span class="text-xs text-gray-400">' + d.format('hh:mm A') + '</span>';
+                    }
+                    return result;
                 }
              },
             {

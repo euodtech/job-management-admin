@@ -236,7 +236,7 @@ class Job extends MY_Controller
 
             $data[] = [
                 "no" => $no++,
-                "JobDate" => return_date_format($row['JobDate']),
+                "JobDate" => $row['JobDate'],
                 "JobName" => $row['JobName'],
                 "CustomerName" => $row['CustomerName'],
                 "Address" => $row['Address'],
@@ -416,6 +416,16 @@ class Job extends MY_Controller
     {
         // Sanitize input
         $jobID = (int) $this->input->post('job_id');
+        $typeJob = (int) $this->input->post('type_job');
+
+        // Map type_job to the correct route
+        $typeRoutes = [
+            1 => 'line-interruption-job',
+            2 => 'reconnection-job',
+            3 => 'short-circuit-job',
+            4 => 'disconnection-job',
+        ];
+        $redirectRoute = isset($typeRoutes[$typeJob]) ? $typeRoutes[$typeJob] : 'job-list';
 
         // Validate input
         if ($jobID <= 0) {
@@ -423,7 +433,7 @@ class Job extends MY_Controller
                 'message',
                 '<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Invalid job ID!</div>'
             );
-            redirect(base_url('job-list'));
+            redirect(base_url($redirectRoute));
             return;
         }
 
@@ -445,7 +455,7 @@ class Job extends MY_Controller
             );
         }
 
-        redirect(base_url('job-list'));
+        redirect(base_url($redirectRoute));
     }
 
 
@@ -595,7 +605,7 @@ class Job extends MY_Controller
 
             $data[] = [
                 "no" => $no++,
-                "JobDate" => return_date_format($row['JobDate']),
+                "JobDate" => $row['JobDate'],
                 "JobName" => $row['JobName'],
                 "CustomerName" => $row['CustomerName'],
                 "Address" => $row['Address'],
@@ -605,8 +615,8 @@ class Job extends MY_Controller
                 "JobID" => $jobID,
                 "StatusCancelJob" => $cancelJob,
                 "StatusReschedule" => $rescheduleJob,
-                "AssignWhen" => return_date_format($row['AssignWhen']),
-                "FinishWhen" => return_date_format($row['FinishWhen'])
+                "AssignWhen" => $row['AssignWhen'],
+                "FinishWhen" => $row['FinishWhen']
             ];
         }
 
@@ -712,8 +722,8 @@ class Job extends MY_Controller
 
             $data[] = [
                 "no" => $no++,
-                "JobDate" => return_date_format($row['JobDate']),
-                "RequestDateJob" => return_date_format($row['RescheduledDateJob']),
+                "JobDate" => $row['JobDate'],
+                "RequestDateJob" => $row['RescheduledDateJob'],
                 "Fullname" => $row['Fullname'],
                 "JobName" => $row['JobName'],
                 "Reason" => $row['Reason'],

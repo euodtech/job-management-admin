@@ -214,7 +214,7 @@
 
 <!-- Add/Edit Job Modal -->
 <div id="modal" class="hs-overlay hidden fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="modalAddLabel">
-    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-4xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
         <div class="w-full flex flex-col bg-white border border-gray-200 shadow-lg rounded-xl pointer-events-auto">
 
             <!-- Header -->
@@ -227,73 +227,82 @@
             </div>
 
             <!-- Body -->
-            <div class="p-4 overflow-y-auto">
+            <div class="p-4 overflow-y-auto max-h-[70vh]">
                 <form id="formAddUser" method="post">
+                    <input type="hidden" id="job_id" name="job_id" class="form-control">
+                    <input type="hidden" class="form-control" id="customer_id" name="customer_id">
 
-                    <h5 class="text-base font-semibold text-gray-800">Job Information: </h5>
-                    <hr class="my-3 border-gray-200">
-                    <div class="form-group mb-4">
-                        <input type="hidden" id="job_id" name="job_id" class="form-control">
-                        <label for="job_name" class="block text-sm font-medium text-gray-700 mb-1">Job Name</label>
-                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="job_name" name="job_name"
-                            placeholder="Enter Job Name">
-                        <span class="inline-error" id="error-job_name"></span>
-                    </div>
-                    <div class="form-group mb-4">
-                        <label for="type_job" class="block text-sm font-medium text-gray-700 mb-1">Type Job</label>
-                        <select class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2bs4" name="type_job" id="type_job" disabled required>
-                            <option value="">--- Select Type Job ---</option>
-                            <option value="1">Line Interrupt</option>
-                            <option value="2">Reconnection</option>
-                            <option value="3">Short Circuit</option>
-                            <option value="4">Disconnection</option>
-                        </select>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+                        <!-- Left Column: Job Info + Customer Fields -->
+                        <div>
+                            <h5 class="text-base font-semibold text-gray-800">Job Information</h5>
+                            <hr class="my-3 border-gray-200">
+                            <div class="form-group mb-4">
+                                <label for="job_name" class="block text-sm font-medium text-gray-700 mb-1">Job Name</label>
+                                <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="job_name" name="job_name"
+                                    placeholder="Enter Job Name">
+                                <span class="inline-error" id="error-job_name"></span>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="type_job" class="block text-sm font-medium text-gray-700 mb-1">Type Job</label>
+                                <select class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm select2bs4" name="type_job" id="type_job" disabled required>
+                                    <option value="">--- Select Type Job ---</option>
+                                    <option value="1">Line Interrupt</option>
+                                    <option value="2">Reconnection</option>
+                                    <option value="3">Short Circuit</option>
+                                    <option value="4">Disconnection</option>
+                                </select>
+                                <input type="hidden" name="type_job_input" id="type_job_input">
+                                <span class="inline-error" id="error-type_job"></span>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="job_date" class="block text-sm font-medium text-gray-700 mb-1">Date Job</label>
+                                <input type="date" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="job_date" name="job_date" value="<?= date('Y-m-d') ?>"
+                                    placeholder="Enter Job Date">
+                                <span class="inline-error" id="error-job_date"></span>
+                            </div>
 
-                        <input type="hidden" name="type_job_input" id="type_job_input">
-                        <span class="inline-error" id="error-type_job"></span>
-                    </div>
-                    <div class="form-group mb-4">
-                        <label for="job_date" class="block text-sm font-medium text-gray-700 mb-1">Date Job</label>
-                        <input type="date" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="job_date" name="job_date" value="<?= date('Y-m-d') ?>"
-                            placeholder="Enter Job Date">
-                        <span class="inline-error" id="error-job_date"></span>
-                    </div>
-
-                    <hr class="my-3 border-gray-200">
-                    <h5 class="text-base font-semibold text-gray-800">Customer Information: </h5>
-                    <hr class="my-3 border-gray-200">
-                    <div class="form-group mb-4">
-                        <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-                        <input type="hidden" class="form-control" id="customer_id" name="customer_id">
-                        <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_name" name="customer_name"
-                            placeholder="Enter Customer Name">
-                        <span class="inline-error" id="error-customer_name"></span>
-                    </div>
-                    <div class="form-group mb-4">
-                        <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
-                        <input type="email" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_email" name="customer_email"
-                            placeholder="Enter Customer Email">
-                        <span class="inline-error" id="error-customer_email"></span>
-                    </div>
-                    <div class="form-group mb-4">
-                        <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <div class="flex">
-                            <span class="input-group-text-tw inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
-                            <input type="text" class="tw-input block w-full rounded-r-lg rounded-l-none border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="phone_number" name="phone_number"
-                                placeholder="Enter Phone Number">
+                            <h5 class="text-base font-semibold text-gray-800 mt-2">Customer Information</h5>
+                            <hr class="my-3 border-gray-200">
+                            <div class="form-group mb-4">
+                                <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                                <input type="text" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_name" name="customer_name"
+                                    placeholder="Enter Customer Name">
+                                <span class="inline-error" id="error-customer_name"></span>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
+                                <input type="email" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="customer_email" name="customer_email"
+                                    placeholder="Enter Customer Email">
+                                <span class="inline-error" id="error-customer_email"></span>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <div class="flex">
+                                    <span class="input-group-text-tw inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600">+63</span>
+                                    <input type="text" class="tw-input block w-full rounded-r-lg rounded-l-none border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors" id="phone_number" name="phone_number"
+                                        placeholder="Enter Phone Number">
+                                </div>
+                                <span class="inline-error" id="error-phone_number"></span>
+                            </div>
                         </div>
-                        <span class="inline-error" id="error-phone_number"></span>
-                    </div>
-                    <div class="form-group mb-4">
-                        <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                        <textarea name="address" id="address" rows="5" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"></textarea>
-                        <span class="inline-error" id="error-address"></span>
-                    </div>
-                    <div class="form-group mb-4 mt-3">
-                        <label for="map" class="block text-sm font-medium text-gray-700 mb-1">Select Location on Map</label>
-                        <div id="map" style="width: 100%; height: 300px; border-radius: 8px; border: 1px solid #ccc;"></div>
-                        <input type="hidden" id="latitude" name="latitude">
-                        <input type="hidden" id="longitude" name="longitude">
+
+                        <!-- Right Column: Location -->
+                        <div>
+                            <h5 class="text-base font-semibold text-gray-800">Location</h5>
+                            <hr class="my-3 border-gray-200">
+                            <div class="form-group mb-4">
+                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <textarea name="address" id="address" rows="3" class="tw-input block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"></textarea>
+                                <span class="inline-error" id="error-address"></span>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="map" class="block text-sm font-medium text-gray-700 mb-1">Select Location on Map</label>
+                                <div id="map" style="width: 100%; height: 280px; border-radius: 8px; border: 1px solid #ccc;"></div>
+                                <input type="hidden" id="latitude" name="latitude">
+                                <input type="hidden" id="longitude" name="longitude">
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -325,6 +334,7 @@
             <div class="p-4 overflow-y-auto">
                 <form id="formDelete" method="post">
                     <input type="hidden" id="job_id" name="job_id">
+                    <input type="hidden" id="delete_type_job" name="type_job" value="<?= $type_job ?>">
                     <span>Do You Sure To delete Job Name : <strong id="job_name"></strong></span>
                 </form>
             </div>
@@ -694,7 +704,16 @@ function returnDateFormatDetailJS(value) {
     const day = String(date.getDate()).padStart(2, '0');
     const monthName = months[date.getMonth()];
     const year = date.getFullYear();
-    return dayName + ', ' + day + ' ' + monthName + ' ' + year;
+    var result = dayName + ', ' + day + ' ' + monthName + ' ' + year;
+    if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+        const hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const h12 = hours % 12 || 12;
+        const time = String(h12).padStart(2, '0') + ':' + minutes + ' ' + ampm;
+        result += ' - ' + time;
+    }
+    return result;
 }
 
 $(document).ready(function() {
@@ -788,7 +807,13 @@ $(document).ready(function() {
                 data: "JobDate",
                 className: "whitespace-nowrap",
                 render: function(data) {
-                    return data ? moment(data).format('DD MMM YYYY') : '-';
+                    if (!data) return '-';
+                    var d = moment(data);
+                    var result = d.format('DD MMM YYYY');
+                    if (d.hours() !== 0 || d.minutes() !== 0) {
+                        result += '<br><span class="text-xs text-gray-400">' + d.format('hh:mm A') + '</span>';
+                    }
+                    return result;
                 }
             },
             {

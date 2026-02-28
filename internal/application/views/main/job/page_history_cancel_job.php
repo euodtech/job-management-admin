@@ -16,7 +16,7 @@
                 <td class="px-4 py-3"><?= $no++; ?></td>
                 <td class="px-4 py-3"><?= $val['Fullname'] ?></td>
                 <td class="px-4 py-3"><?= $val['Reason'] ?></td>
-                <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format($val['created_at']) ?></td>
+                <td class="px-4 py-3 whitespace-nowrap"><?= return_date_format_with_time($val['created_at']) ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
