@@ -438,9 +438,14 @@ $(document).ready(function() {
                 Swal.close();
 
                 if(response.status) {
+                    var icon = (response.label === 'error') ? 'error' :
+                               (response.label === 'warning') ? 'warning' : 'success';
+                    var title = (response.label === 'error') ? 'Upload Failed!' :
+                                (response.label === 'warning') ? 'Upload Completed with Warnings' : 'Upload Successful!';
+
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Upload Successful!',
+                        icon: icon,
+                        title: title,
                         html: response.message,
                         showConfirmButton: true,
                         confirmButtonText: 'OK',

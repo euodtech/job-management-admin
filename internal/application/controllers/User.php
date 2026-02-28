@@ -117,10 +117,10 @@ class User extends MY_Controller
                 }
 
                 // Column mapping: A=Full Name, B=User Role, C=Email, D=Phone Number
-                $fullname = trim($row['A']);
-                $userRole = strtolower(trim($row['B']));
-                $email    = strtolower(trim($row['C']));
-                $phoneRaw = trim($row['D']);
+                $fullname = trim($row['A'] ?? '');
+                $userRole = strtolower(trim($row['B'] ?? ''));
+                $email    = strtolower(trim($row['C'] ?? ''));
+                $phoneRaw = trim($row['D'] ?? '');
 
                 // Validate email format
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -130,7 +130,7 @@ class User extends MY_Controller
 
                 // Validate User Role
                 if (!in_array($userRole, ['monitor', 'field'], true)) {
-                    $role_invalid[] = "Row $key: \"" . htmlspecialchars($row['B']) . "\"";
+                    $role_invalid[] = "Row $key: \"" . htmlspecialchars($row['B'] ?? '') . "\"";
                     continue;
                 }
 
@@ -152,7 +152,7 @@ class User extends MY_Controller
                 }
 
                 if ($phone === null) {
-                    $phone_invalid[] = "Row $key: \"" . htmlspecialchars($phoneRaw) . "\"";
+                    $phone_invalid[] = "Row $key: \"" . htmlspecialchars($phoneRaw ?? '') . "\"";
                     continue;
                 }
 
