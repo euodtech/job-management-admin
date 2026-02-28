@@ -214,8 +214,8 @@ class AuthController extends Controller {
             // Validate user ID
             if ($userID <= 0) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid user ID'
+                    'Success' => false,
+                    'Message' => 'Invalid user ID'
                 ], 400);
             }
 
@@ -239,8 +239,8 @@ class AuthController extends Controller {
                     DB::commit();
 
                     return response()->json([
-                        'success' => true,
-                        'message' => "Berhasil keluar"
+                        'Success' => true,
+                        'Message' => "Berhasil keluar"
                     ], 200);
 
                 } else {
@@ -252,24 +252,24 @@ class AuthController extends Controller {
                     ]);
 
                     return response()->json([
-                        'success' => false,
-                        'message' => "Gagal keluar"
+                        'Success' => false,
+                        'Message' => "Gagal keluar"
                     ], 500);
 
                 }
 
             } else {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'User not found'
+                    'Success' => false,
+                    'Message' => 'User not found'
                 ], 404);
             }
 
         } catch (ValidationException $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'Success' => false,
+                'Message' => 'Validation failed',
+                'Errors' => $e->errors()
             ], 422);
 
         } catch (\Exception $e) {
@@ -281,8 +281,8 @@ class AuthController extends Controller {
             ]);
 
             return response()->json([
-                'success' => false,
-                'message' => 'An error occurred during logout'
+                'Success' => false,
+                'Message' => 'An error occurred during logout'
             ], 500);
         }
     }
@@ -426,8 +426,8 @@ class AuthController extends Controller {
 
             if (!password_verify($request->input('current_password'), $user->Password)) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Current password is incorrect',
+                    'Success' => false,
+                    'Message' => 'Current password is incorrect',
                 ], 401);
             }
 
@@ -435,8 +435,8 @@ class AuthController extends Controller {
             $user->save();
 
             return response()->json([
-                'success' => true,
-                'message' => 'Password changed successfully',
+                'Success' => true,
+                'Message' => 'Password changed successfully',
             ], 200);
 
         } catch (ValidationException $e) {
@@ -444,8 +444,8 @@ class AuthController extends Controller {
             $firstMessage = collect($errors)->flatten()->first();
 
             return response()->json([
-                'success' => false,
-                'message' => $firstMessage,
+                'Success' => false,
+                'Message' => $firstMessage,
             ], 422);
 
         } catch (\Exception $e) {
@@ -454,8 +454,8 @@ class AuthController extends Controller {
             ]);
 
             return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while changing password',
+                'Success' => false,
+                'Message' => 'An error occurred while changing password',
             ], 500);
         }
     }
@@ -640,8 +640,8 @@ class AuthController extends Controller {
                         $message->to($email)
                             ->from(env('MAIL_FROM_ADDRESS', 'noreply@efms.com'), env('MAIL_FROM_NAME', 'E-FMS'))
                             ->subject('Password Reset Request')
-                            ->setBody($bodyNya, 'text/html')
-                            ->addPart(strip_tags($bodyNya), 'text/plain');
+                            ->html($bodyNya)
+                            ->text(strip_tags($bodyNya));
                     });
 
                     return response()->json([

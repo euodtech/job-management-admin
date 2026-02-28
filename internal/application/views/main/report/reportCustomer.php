@@ -333,6 +333,12 @@
 
 <script>
 
+    $(document).ready(function() {
+        $.fn.dataTable.ext.errMode = 'none';
+        $(document).on('error.dt', function(e, settings, techNote, message) {
+            console.error('DataTables error:', message);
+        });
+    });
 
     // Customer Retention Report
     // Customer Retention Report
@@ -389,6 +395,9 @@
                 },
                 { data: "Action", className: "text-center whitespace-nowrap align-middle" }
             ],
+            columnDefs: [
+                { targets: [0, 4, 5], orderable: false }
+            ],
             responsive: false,
             pageLength: 10,
             rowReorder: {
@@ -404,7 +413,7 @@
             order: [[3, "desc"]],
         });
 
-        $('#tableCustomerRetentionReport').on('search.dt', function() { silentSearchRetention = true; });
+        $('#tableCustomerRetentionReport_wrapper').on('input', '.dataTables_filter input', function() { silentSearchRetention = true; });
         $('#tableCustomerRetentionReport').on('processing.dt', function(e, settings, processing) {
             if (silentSearchRetention) {
                 e.stopPropagation();
@@ -608,6 +617,9 @@
         $('#tableCustomerEngagement').DataTable({
             processing: true,
             serverSide: true,
+            columnDefs: [
+                { targets: [0], orderable: false }
+            ],
             ajax: {
                 url: "<?= base_url('ReportCustomer/CustomerEngagementReport') ?>",
                 type: "GET",
@@ -663,7 +675,7 @@
             order: [[2, "desc"]]
         });
 
-        $('#tableCustomerEngagement').on('search.dt', function() { silentSearchEngagement = true; });
+        $('#tableCustomerEngagement_wrapper').on('input', '.dataTables_filter input', function() { silentSearchEngagement = true; });
         $('#tableCustomerEngagement').on('processing.dt', function(e, settings, processing) {
             if (silentSearchEngagement) {
                 e.stopPropagation();

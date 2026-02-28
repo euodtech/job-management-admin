@@ -13,7 +13,7 @@ class RescheduleJobModel extends Model
 
     protected $fillable = [
         'JobID', 'CurrentDateJob', 'RescheduledDateJob', 'Reason',
-        'StatusApproved', 'created_at'
+        'StatusApproved', 'ReasonReject', 'created_at'
     ];
 
 }

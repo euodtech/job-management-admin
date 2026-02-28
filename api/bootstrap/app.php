@@ -81,10 +81,7 @@ $app->singleton(
 
  $app->register(App\Providers\AppServiceProvider::class);
  $app->register(App\Providers\AuthServiceProvider::class);
- //$app->register(App\Providers\Intervention\Image\ImageServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Mail\MailServiceProvider::class);
-$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 $app->register(Intervention\Image\ImageServiceProvider::class);
 $app->configure('mail');
 $app->alias('mailer', Illuminate\Mail\Mailer::class);

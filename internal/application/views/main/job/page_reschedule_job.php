@@ -468,7 +468,10 @@ $(document).ready(function() {
     });
 
     // Suppress loading overlay when the user types in the search box
-    $('#tableJobRider').on('search.dt', function() {
+    // NOTE: We listen on the actual search input (not search.dt) because
+    // DataTables fires search.dt internally during sort/redraw, which would
+    // incorrectly set silentSearch=true and prevent the overlay from hiding.
+    $('#tableJobRider_wrapper').on('input', '.dataTables_filter input', function() {
         silentSearch = true;
     });
 

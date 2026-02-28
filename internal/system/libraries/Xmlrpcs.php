@@ -6,7 +6,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2014 - 2019, British Columbia Institute of Technology
+ * Copyright (c) 2019 - 2022, CodeIgniter Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
  * @author	EllisLab Dev Team
  * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
  * @copyright	Copyright (c) 2014 - 2019, British Columbia Institute of Technology (https://bcit.ca/)
+ * @copyright	Copyright (c) 2019 - 2022, CodeIgniter Foundation (https://codeigniter.com/)
  * @license	https://opensource.org/licenses/MIT	MIT License
  * @link	https://codeigniter.com
  * @since	Version 1.0.0
@@ -56,7 +57,7 @@ if ( ! class_exists('CI_Xmlrpc', FALSE))
  * @subpackage	Libraries
  * @category	XML-RPC
  * @author		EllisLab Dev Team
- * @link		https://codeigniter.com/user_guide/libraries/xmlrpc.html
+ * @link		https://codeigniter.com/userguide3/libraries/xmlrpc.html
  */
 class CI_Xmlrpcs extends CI_Xmlrpc {
 
@@ -233,9 +234,8 @@ class CI_Xmlrpcs extends CI_Xmlrpc {
 
 		$parser = xml_parser_create($this->xmlrpc_defencoding);
 		$parser_object = new XML_RPC_Message('filler');
-		$pname = (string) $parser;
 
-		$parser_object->xh[$pname] = array(
+		$parser_object->xh = array(
 			'isf' => 0,
 			'isf_reason' => '',
 			'params' => array(),
@@ -244,10 +244,9 @@ class CI_Xmlrpcs extends CI_Xmlrpc {
 			'method' => ''
 		);
 
-		xml_set_object($parser, $parser_object);
 		xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, TRUE);
-		xml_set_element_handler($parser, 'open_tag', 'closing_tag');
-		xml_set_character_data_handler($parser, 'character_data');
+		xml_set_element_handler($parser, [$parser_object, 'open_tag'], [$parser_object, 'closing_tag']);
+		xml_set_character_data_handler($parser, [$parser_object, 'character_data']);
 		//xml_set_default_handler($parser, 'default_handler');
 
 		//-------------------------------------
@@ -264,7 +263,7 @@ class CI_Xmlrpcs extends CI_Xmlrpc {
 				xml_get_current_line_number($parser)));
 			xml_parser_free($parser);
 		}
-		elseif ($parser_object->xh[$pname]['isf'])
+		elseif ($parser_object->xh['isf'])
 		{
 			return new XML_RPC_Response(0, $this->xmlrpcerr['invalid_return'], $this->xmlrpcstr['invalid_return']);
 		}
@@ -272,17 +271,17 @@ class CI_Xmlrpcs extends CI_Xmlrpc {
 		{
 			xml_parser_free($parser);
 
-			$m = new XML_RPC_Message($parser_object->xh[$pname]['method']);
+			$m = new XML_RPC_Message($parser_object->xh['method']);
 			$plist = '';
 
-			for ($i = 0, $c = count($parser_object->xh[$pname]['params']); $i < $c; $i++)
+			for ($i = 0, $c = count($parser_object->xh['params']); $i < $c; $i++)
 			{
 				if ($this->debug === TRUE)
 				{
-					$plist .= $i.' - '.print_r(get_object_vars($parser_object->xh[$pname]['params'][$i]), TRUE).";\n";
+					$plist .= $i.' - '.print_r(get_object_vars($parser_object->xh['params'][$i]), TRUE).";\n";
 				}
 
-				$m->addParam($parser_object->xh[$pname]['params'][$i]);
+				$m->addParam($parser_object->xh['params'][$i]);
 			}
 
 			if ($this->debug === TRUE)
@@ -348,7 +347,7 @@ class CI_Xmlrpcs extends CI_Xmlrpc {
 				return new XML_RPC_Response(0, $this->xmlrpcerr['unknown_method'], $this->xmlrpcstr['unknown_method']);
 			}
 		}
-		elseif (($objectCall && ! is_callable(array($method_parts[0], $method_parts[1])))
+		elseif (($objectCall && ( ! method_exists($method_parts[0], $method_parts[1]) OR ! (new ReflectionMethod($method_parts[0], $method_parts[1]))->isPublic()))
 			OR ( ! $objectCall && ! is_callable($this->methods[$methName]['function']))
 		)
 		{
@@ -550,8 +549,8 @@ class CI_Xmlrpcs extends CI_Xmlrpc {
 	 */
 	public function multicall_error($err)
 	{
-		$str = is_string($err) ? $this->xmlrpcstr["multicall_${err}"] : $err->faultString();
-		$code = is_string($err) ? $this->xmlrpcerr["multicall_${err}"] : $err->faultCode();
+		$str = is_string($err) ? $this->xmlrpcstr["multicall_$err"] : $err->faultString();
+		$code = is_string($err) ? $this->xmlrpcerr["multicall_$err"] : $err->faultCode();
 
 		$struct['faultCode'] = new XML_RPC_Values($code, 'int');
 		$struct['faultString'] = new XML_RPC_Values($str, 'string');

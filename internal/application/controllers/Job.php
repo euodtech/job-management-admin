@@ -666,11 +666,11 @@ class Job extends MY_Controller
 
         if ($statusFilter !== 'pending') {
             if (!empty($dateFrom) && !empty($dateUntil)) {
-                $this->db->where('DATE(ListJob.JobDate) >=', $dateFrom);
-                $this->db->where('DATE(ListJob.JobDate) <=', $dateUntil);
+                $this->db->where('DATE(RescheduledJob.created_at) >=', $dateFrom);
+                $this->db->where('DATE(RescheduledJob.created_at) <=', $dateUntil);
             } else {
-                $this->db->where('DATE(ListJob.JobDate) >=', date('Y-m-d', strtotime('-6 days')));
-                $this->db->where('DATE(ListJob.JobDate) <=', date('Y-m-d'));
+                $this->db->where('DATE(RescheduledJob.created_at) >=', date('Y-m-d', strtotime('-6 days')));
+                $this->db->where('DATE(RescheduledJob.created_at) <=', date('Y-m-d'));
             }
         }
 
@@ -764,7 +764,7 @@ class Job extends MY_Controller
             $this->db->trans_begin();
 
             $data_reschedule = $this->db->query(
-                'SELECT JobID FROM RescheduledJob WHERE RescheduledID = ? FOR UPDATE',
+                'SELECT JobID, RescheduledDateJob FROM RescheduledJob WHERE RescheduledID = ? FOR UPDATE',
                 [$reschedule_id]
             )->row_array();
 
@@ -775,6 +775,7 @@ class Job extends MY_Controller
             }
 
             $jobID = (int) $data_reschedule['JobID'];
+            $newDate = $data_reschedule['RescheduledDateJob'];
 
             // Also lock the job row
             $this->db->query('SELECT JobID FROM ListJob WHERE JobID = ? FOR UPDATE', [$jobID]);
@@ -783,7 +784,10 @@ class Job extends MY_Controller
                     ->update('RescheduledJob', ['StatusApproved' => 2]);
 
             $this->db->where('JobID', $jobID)
-                    ->update('ListJob', ['Status' => 3]);
+                    ->update('ListJob', [
+                        'Status'  => 3,
+                        'JobDate' => $newDate
+                    ]);
 
             $this->db->trans_commit();
 
@@ -807,22 +811,10 @@ class Job extends MY_Controller
                 return;
             }
 
-            $jobID = (int) $data_reschedule['JobID'];
-
-            // Also lock the job row
-            $this->db->query('SELECT JobID FROM ListJob WHERE JobID = ? FOR UPDATE', [$jobID]);
-
             $this->db->where('RescheduledID', $reschedule_id)
                     ->update('RescheduledJob', [
                         'StatusApproved' => 3,
                         'ReasonReject'   => $reasonReject
-                    ]);
-
-            $this->db->where('JobID', $jobID)
-                    ->update('ListJob', [
-                        'UserID'     => null,
-                        'Status'     => null,
-                        'AssignWhen' => null
                     ]);
 
             $this->db->trans_commit();
@@ -1201,6 +1193,14 @@ class Job extends MY_Controller
 
         $currentDate = date('Y-m-d', strtotime($job['JobDate']));
 
+        // Auto-reject any pending reschedule requests for this job
+        $this->db->where('JobID', $jobID)
+                  ->where('StatusApproved', 1)
+                  ->update('RescheduledJob', [
+                      'StatusApproved' => 3,
+                      'ReasonReject'   => 'Overridden by admin reschedule'
+                  ]);
+
         // Insert auto-approved reschedule record
         $this->db->insert('RescheduledJob', [
             'JobID'              => $jobID,
@@ -1211,10 +1211,11 @@ class Job extends MY_Controller
             'created_at'         => date('Y-m-d H:i:s')
         ]);
 
-        // Update job date
+        // Update job date and set Status to 3 (driver stays flexible)
         $this->db->where('JobID', $jobID)
                   ->update('ListJob', [
-                      'JobDate' => $newDate
+                      'JobDate' => $newDate,
+                      'Status'  => 3
                   ]);
 
         $this->db->trans_commit();

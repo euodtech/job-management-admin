@@ -88,7 +88,7 @@ class User extends MY_Controller
             }
 
             $filePath = $_FILES['import_excel']['tmp_name'];
-            $objPHPExcel = PHPExcel_IOFactory::load($filePath);
+            $objPHPExcel = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
             $sheetData = $objPHPExcel->getActiveSheet()->toArray(null, true, true, true);
 
             $totalInsertData = 1;

@@ -17,6 +17,7 @@ class Curl
 
 	protected $_ci;                 // CodeIgniter instance
 	protected $response = '';       // Contains the cURL response for debug
+	protected $last_response = ''; // Stores last successful response
 	protected $session;             // Contains the cURL handler for a session
 	protected $url;                 // URL of the session
 	protected $options = array();   // Populates curl_setopt_array
@@ -280,7 +281,7 @@ class Curl
 		}
 
 		// Only set follow location if not running securely
-		if (!ini_get('safe_mode') && !ini_get('open_basedir')) {
+		if (!ini_get('open_basedir')) {
 			// Ok, follow location is not set already so lets set it to true
 			if (!isset($this->options[CURLOPT_FOLLOWLOCATION])) {
 				$this->options[CURLOPT_FOLLOWLOCATION] = TRUE;

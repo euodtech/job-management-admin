@@ -338,63 +338,63 @@ class ReportDriver extends MY_Controller
             $titleStyle = [
                 'font' => ['name' => 'Arial', 'bold' => true, 'size' => 16, 'color' => ['rgb' => '1F4E79']],
                 'alignment' => [
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ]
             ];
             $subtitleStyle = [
                 'font' => ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => ['rgb' => '666666']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT]
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT]
             ];
             $filterInfoStyle = [
                 'font' => ['name' => 'Arial', 'size' => 9, 'color' => ['rgb' => '555555']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF9E6']],
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF9E6']],
                 'alignment' => [
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ]
             ];
             $headerStyle = [
                 'font' => ['name' => 'Arial', 'bold' => true, 'size' => 10, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => '2E75B6']],
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2E75B6']],
                 'alignment' => [
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ],
                 'borders' => [
-                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '1A5276']]
+                    'allborders' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => '1A5276']]
                 ]
             ];
             $dataBorderStyle = [
                 'borders' => [
-                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => 'D5D8DC']]
+                    'allborders' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D5D8DC']]
                 ],
-                'alignment' => ['vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER]
+                'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER]
             ];
             $centerAlign = [
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
             $activeStatusStyle = [
                 'font' => ['bold' => true, 'color' => ['rgb' => '1E7E34']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'D4EDDA']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'D4EDDA']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
             $inactiveStatusStyle = [
                 'font' => ['bold' => true, 'color' => ['rgb' => 'A71D2A']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8D7DA']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8D7DA']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
             $warningStatusStyle = [
                 'font' => ['bold' => true, 'color' => ['rgb' => '856404']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF3CD']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF3CD']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
             $totalsStyle = [
                 'font' => ['bold' => true, 'size' => 10],
                 'borders' => [
-                    'top' => ['style' => PHPExcel_Style_Border::BORDER_MEDIUM, 'color' => ['rgb' => '2E75B6']]
+                    'top' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM, 'color' => ['rgb' => '2E75B6']]
                 ],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'EBF5FB']]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'EBF5FB']]
             ];
 
             // ============================
@@ -441,8 +441,8 @@ class ReportDriver extends MY_Controller
             $cancelJobSum = 0;
             foreach ($summaryData as $row) {
                 $sheet1->setCellValue('A' . $rowNum, $no);
-                $sheet1->setCellValueExplicit('B' . $rowNum, $row['Fullname'], PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet1->setCellValueExplicit('C' . $rowNum, $row['Email'], PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('B' . $rowNum, $row['Fullname'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('C' . $rowNum, $row['Email'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet1->setCellValue('D' . $rowNum, intval($row['TotalJob']));
                 $sheet1->setCellValue('E' . $rowNum, intval($row['CompleteJob']));
                 $sheet1->setCellValue('F' . $rowNum, intval($row['OngoingJob']));
@@ -461,7 +461,7 @@ class ReportDriver extends MY_Controller
                 // Alternate row shading
                 if ($no % 2 === 0) {
                     $sheet1->getStyle("A{$rowNum}:G{$rowNum}")->applyFromArray([
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
                     ]);
                 }
 
@@ -535,13 +535,13 @@ class ReportDriver extends MY_Controller
                 $jobStatus = isset($statusMap[$job['JobStatus']]) ? $statusMap[$job['JobStatus']] : 'Awaiting Driver';
 
                 $sheet2->setCellValue('A' . $rowNum, $no);
-                $sheet2->setCellValueExplicit('B' . $rowNum, $job['DriverName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet2->setCellValueExplicit('C' . $rowNum, $job['CustomerName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet2->setCellValueExplicit('D' . $rowNum, $job['JobName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('B' . $rowNum, $job['DriverName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('C' . $rowNum, $job['CustomerName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('D' . $rowNum, $job['JobName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet2->setCellValue('E' . $rowNum, !empty($job['JobDate']) ? date('M d, Y H:i', strtotime($job['JobDate'])) : '-');
                 $sheet2->setCellValue('F' . $rowNum, $typeJob);
                 $sheet2->setCellValue('G' . $rowNum, $jobStatus);
-                $sheet2->setCellValueExplicit('H' . $rowNum, $job['Notes'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('H' . $rowNum, $job['Notes'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet2->setCellValue('I' . $rowNum, !empty($job['AssignWhen']) ? date('M d, Y H:i', strtotime($job['AssignWhen'])) : '-');
                 $sheet2->setCellValue('J' . $rowNum, !empty($job['FinishWhen']) ? date('M d, Y H:i', strtotime($job['FinishWhen'])) : '-');
 
@@ -563,7 +563,7 @@ class ReportDriver extends MY_Controller
                 // Alternate row shading
                 if ($no % 2 === 0) {
                     $sheet2->getStyle("A{$rowNum}:J{$rowNum}")->applyFromArray([
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
                     ]);
                 }
 
@@ -620,11 +620,11 @@ class ReportDriver extends MY_Controller
                 $typeJob = isset($typeJobMap[$job['TypeJob']]) ? $typeJobMap[$job['TypeJob']] : ($job['TypeJob'] ?: '-');
 
                 $sheet3->setCellValue('A' . $rowNum, $no);
-                $sheet3->setCellValueExplicit('B' . $rowNum, $job['DriverName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet3->setCellValueExplicit('C' . $rowNum, $job['JobName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet3->setCellValueExplicit('B' . $rowNum, $job['DriverName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet3->setCellValueExplicit('C' . $rowNum, $job['JobName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet3->setCellValue('D' . $rowNum, !empty($job['JobDate']) ? date('M d, Y H:i', strtotime($job['JobDate'])) : '-');
                 $sheet3->setCellValue('E' . $rowNum, $typeJob);
-                $sheet3->setCellValueExplicit('F' . $rowNum, $job['Reason'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet3->setCellValueExplicit('F' . $rowNum, $job['Reason'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet3->setCellValue('G' . $rowNum, !empty($job['CancelDate']) ? date('M d, Y H:i', strtotime($job['CancelDate'])) : '-');
 
                 // Apply borders and alignment
@@ -635,7 +635,7 @@ class ReportDriver extends MY_Controller
                 // Alternate row shading
                 if ($no % 2 === 0) {
                     $sheet3->getStyle("A{$rowNum}:G{$rowNum}")->applyFromArray([
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
                     ]);
                 }
 
@@ -666,7 +666,7 @@ class ReportDriver extends MY_Controller
             $fileName = 'Rider_Report_' . date('Ymd_His') . '.xlsx';
             $filePath = $saveDir . $fileName;
 
-            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
             $objWriter->save($filePath);
 
             if (!file_exists($filePath)) {

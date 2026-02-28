@@ -29,13 +29,11 @@ class ApiToken extends MY_Controller
         // Jika token belum ada, login otomatis
         if (!$token) {
 
-            $url = 'https://connect.traxroot.com/api/Token'; 
-            
+            $url = 'https://connect.traxroot.com/api/Token';
+
             $data = array(
                 'userName'  => $this->session->userdata('traxroot_username'),
                 'password'  => $this->session->userdata('traxroot_password'),
-                // 'userName'  => $this->config->item('traxroot_username'),
-                // 'password'  => $this->config->item('traxroot_password'),
                 'subUserId' => 0,
                 'language'  => 'en'
             );
@@ -45,6 +43,7 @@ class ApiToken extends MY_Controller
             $ch = curl_init($url);
 
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $this->_applySslOptions($ch);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -53,6 +52,14 @@ class ApiToken extends MY_Controller
             ));
 
             $response = curl_exec($ch);
+
+            if ($response === false) {
+                $curlErr = curl_error($ch);
+                curl_close($ch);
+                log_message('error', 'Traxroot token cURL error: ' . $curlErr);
+                return false;
+            }
+
             curl_close($ch);
 
             $result = json_decode($response, true);
@@ -61,7 +68,7 @@ class ApiToken extends MY_Controller
                 $token = $result['accessToken'];
                 $this->session->set_userdata('api_access_token', $token);
             } else {
-                // log_message('error', 'Gagal login ke API pihak ketiga: ' . json_encode($result));
+                log_message('error', 'Traxroot token request failed. Response: ' . substr($response, 0, 500));
                 return false;
             }
         }
@@ -88,6 +95,7 @@ class ApiToken extends MY_Controller
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $this->_applySslOptions($ch);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 
         $defaultHeaders = array(
@@ -121,6 +129,7 @@ class ApiToken extends MY_Controller
 
         if ($body === false) {
             $curlErr = curl_error($ch);
+            log_message('error', 'Traxroot requestCurl failed for ' . $url . ': ' . $curlErr);
         }
 
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -163,6 +172,7 @@ class ApiToken extends MY_Controller
         foreach ($urls as $key => $url) {
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $this->_applySslOptions($ch);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Authorization: Bearer ' . $token,
@@ -199,5 +209,18 @@ class ApiToken extends MY_Controller
 
         curl_multi_close($mh);
         return $results;
+    }
+
+    private function _applySslOptions($ch)
+    {
+        $caFile = ini_get('curl.cainfo');
+        if (empty($caFile) || !file_exists($caFile)) {
+            $fallback = 'C:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
+            if (file_exists($fallback)) {
+                curl_setopt($ch, CURLOPT_CAINFO, $fallback);
+            }
+        }
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     }
 }

@@ -2,16 +2,12 @@
 
 if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-require_once('PHPExcel.php');
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
-class Excel extends PHPExcel{
+class Excel extends Spreadsheet {
 
     public function __construct(){
-
         parent::__construct();
-
     }
 
 }
-
-?>

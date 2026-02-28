@@ -159,6 +159,13 @@
 
 <script>
 
+    $(document).ready(function() {
+        $.fn.dataTable.ext.errMode = 'none';
+        $(document).on('error.dt', function(e, settings, techNote, message) {
+            console.error('DataTables error:', message);
+        });
+    });
+
     // User Login Activity
     $(document).ready(function() {
 
@@ -254,7 +261,7 @@
             serverSide: true,
             order: [[1, 'asc']],
             columnDefs: [
-                { targets: [3, 4, 5, 6], orderable: false }
+                { targets: [0, 3, 4, 5, 6], orderable: false }
             ],
             ajax: {
                 url: "<?= base_url('ReportDriver/UserLoginActivityReport') ?>",
@@ -311,7 +318,10 @@
         });
 
         // Suppress loading overlay when the user types in the search box
-        $('#tableUserLogin').on('search.dt', function() { silentSearch = true; });
+        // NOTE: We listen on the actual search input (not search.dt) because
+        // DataTables fires search.dt internally during sort/redraw, which would
+        // incorrectly set silentSearch=true and prevent the overlay from hiding.
+        $('#tableUserLogin_wrapper').on('input', '.dataTables_filter input', function() { silentSearch = true; });
         $('#tableUserLogin').on('processing.dt', function(e, settings, processing) {
             if (silentSearch) {
                 e.stopPropagation();

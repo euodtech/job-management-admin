@@ -21,10 +21,9 @@ class DapaController extends Controller
 		$test = JobModel::where('status', 2)->get();
 
 		return response()->json([
-			"status" => "success",
-			"message" =>
-			"Job berhasil ditambahkan",
-			"data" => $test
+			"Success" => true,
+			"Message" => "Job berhasil ditambahkan",
+			"Data" => $test
 		]);
 	}
 
@@ -60,10 +59,9 @@ class DapaController extends Controller
 		]);
 
 		return response()->json([
-			"status" => "success",
-			"message" =>
-			"Job berhasil ditambahkan",
-			"data" => $job
+			"Success" => true,
+			"Message" => "Job berhasil ditambahkan",
+			"Data" => $job
 		], 201);
 	}
 
@@ -74,15 +72,15 @@ class DapaController extends Controller
 
 		if ($job) {
 			return response()->json([
-				"status" => "success",
-				"message" => "Job berhasil dihapus",
-				"data" => $job
+				"Success" => true,
+				"Message" => "Job berhasil dihapus",
+				"Data" => $job
 			], 200);
 		} else {
 			return response()->json([
-				"status"  => "error",
-				"message" => "Job tidak ditemukan",
-				"data" => false
+				"Success" => false,
+				"Message" => "Job tidak ditemukan",
+				"Data" => false
 			], 404);
 		}
 	}
@@ -93,18 +91,18 @@ class DapaController extends Controller
 
 		if (!$job) {
 			return response()->json([
-				"status"  => "error",
-				"message" => "Data dengan ID $id tidak ditemukan",
-				"data"    => null
+				"Success" => false,
+				"Message" => "Data dengan ID $id tidak ditemukan",
+				"Data"    => null
 			], 404);
 		}
 
 		$job->update($request->only(['JobName', 'UserID', 'TypeJob', 'CustomerID', 'CreatedBy']));
 
 		return response()->json([
-			"status"  => "success",
-			"message" => "Data berhasil diupdate",
-			"data"    => $job
+			"Success" => true,
+			"Message" => "Data berhasil diupdate",
+			"Data"    => $job
 		], 200);
 	}
 }

@@ -396,17 +396,17 @@ class ReportJob extends MY_Controller
         $toAssignAt   = $this->input->get('toAssignAt');
 
         $columns = [
-            0 => 'j.JobID',
-            1 => 'j.JobName',
-            2 => 'c.CustomerName',
-            3 => 'j.created_at',
-            4 => 'j.AssignWhen',
-            5 => 'sub.DurationMinutes'
+            0 => null,               // "No" - not sortable
+            1 => 'JobName',
+            2 => 'CustomerName',
+            3 => 'created_at',
+            4 => 'AssignWhen',
+            5 => 'DurationMinutes'
         ];
 
-        $orderColIndex = $request['order'][0]['column'] ?? 3;
+        $orderColIndex = intval($request['order'][0]['column'] ?? 3);
         $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
-        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'j.created_at';
+        $orderCol = (isset($columns[$orderColIndex]) && $columns[$orderColIndex] !== null) ? $columns[$orderColIndex] : 'created_at';
         $orderBy = $orderCol . " " . $orderDir;
 
         $role = $this->session->userdata('Role');
@@ -524,16 +524,16 @@ class ReportJob extends MY_Controller
         $jobDateUntil = $request['jobDateUntil'] ?? '';
         
         $columns = [
-            0 => 'j.JobID',
-            1 => 'j.JobName',
-            2 => 'c.CustomerName',
-            3 => 'j.Status',
-            4 => 'j.JobDate'
+            0 => null,              // "No" - not sortable
+            1 => 'JobName',
+            2 => 'CustomerName',
+            3 => 'Status',
+            4 => 'JobDate'
         ];
 
-        $orderColIndex = $request['order'][0]['column'] ?? 4;
+        $orderColIndex = intval($request['order'][0]['column'] ?? 4);
         $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
-        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'j.JobDate';
+        $orderCol = (isset($columns[$orderColIndex]) && $columns[$orderColIndex] !== null) ? $columns[$orderColIndex] : 'JobDate';
         $orderBy = $orderCol . " " . $orderDir;
 
         $role = $this->session->userdata('Role');
@@ -643,14 +643,14 @@ class ReportJob extends MY_Controller
         $searchValue = $request['search']['value'] ?? '';
 
         $columns = [
-            0 => 'no',
+            0 => null,              // "No" - not sortable
             1 => 'JobDate',
             2 => 'TotalJob'
         ];
 
-        $orderColIndex = $request['order'][0]['column'] ?? 0;
+        $orderColIndex = intval($request['order'][0]['column'] ?? 1);
         $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'DESC') ? 'DESC' : 'ASC';
-        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'no';
+        $orderCol = (isset($columns[$orderColIndex]) && $columns[$orderColIndex] !== null) ? $columns[$orderColIndex] : 'JobDate';
         $orderBy = $orderCol . " " . $orderDir;
 
         $role = $this->session->userdata('Role');
@@ -721,22 +721,18 @@ class ReportJob extends MY_Controller
         $untilDateFilter = $request['untilDateFilter'] ?? '';
 
         $columns = [
-            0 => 'no',
+            0 => null,              // "No" - not sortable
             1 => 'JobName',
             2 => 'CustomerName',
             3 => 'TotalPhoto',
             4 => 'LastPhotoDate',
-            5 => 'Photos'
+            5 => null               // "Photos" - not sortable (JSON blob)
         ];
 
-        $orderColIndex = $request['order'][0]['column'] ?? 4;
+        $orderColIndex = intval($request['order'][0]['column'] ?? 4);
         $orderDir = (isset($request['order'][0]['dir']) && strtoupper($request['order'][0]['dir']) === 'ASC') ? 'ASC' : 'DESC';
-        $orderCol = isset($columns[$orderColIndex]) ? $columns[$orderColIndex] : 'LastPhotoDate';
+        $orderCol = (isset($columns[$orderColIndex]) && $columns[$orderColIndex] !== null) ? $columns[$orderColIndex] : 'LastPhotoDate';
         $orderBy = $orderCol . " " . $orderDir;
-
-        if ($orderCol === 'no') {
-            $orderBy = "LastPhotoDate DESC";
-        }
 
         $role = $this->session->userdata('Role');
         $companyID = (int)$this->session->userdata('CompanyID');
@@ -973,63 +969,63 @@ class ReportJob extends MY_Controller
             $titleStyle = [
                 'font' => ['name' => 'Arial', 'bold' => true, 'size' => 16, 'color' => ['rgb' => '1F4E79']],
                 'alignment' => [
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ]
             ];
             $subtitleStyle = [
                 'font' => ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => ['rgb' => '666666']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT]
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT]
             ];
             $filterInfoStyle = [
                 'font' => ['name' => 'Arial', 'size' => 9, 'color' => ['rgb' => '555555']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF9E6']],
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF9E6']],
                 'alignment' => [
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                    'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ]
             ];
             $headerStyle = [
                 'font' => ['name' => 'Arial', 'bold' => true, 'size' => 10, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => '2E75B6']],
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2E75B6']],
                 'alignment' => [
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-                    'vertical'   => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ],
                 'borders' => [
-                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => '1A5276']]
+                    'allborders' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => '1A5276']]
                 ]
             ];
             $dataBorderStyle = [
                 'borders' => [
-                    'allborders' => ['style' => PHPExcel_Style_Border::BORDER_THIN, 'color' => ['rgb' => 'D5D8DC']]
+                    'allborders' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D5D8DC']]
                 ],
-                'alignment' => ['vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER]
+                'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER]
             ];
             $centerAlign = [
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
             $activeStatusStyle = [
                 'font' => ['bold' => true, 'color' => ['rgb' => '1E7E34']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'D4EDDA']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'D4EDDA']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
             $inactiveStatusStyle = [
                 'font' => ['bold' => true, 'color' => ['rgb' => 'A71D2A']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8D7DA']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8D7DA']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
             $totalsStyle = [
                 'font' => ['bold' => true, 'size' => 10],
                 'borders' => [
-                    'top' => ['style' => PHPExcel_Style_Border::BORDER_MEDIUM, 'color' => ['rgb' => '2E75B6']]
+                    'top' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM, 'color' => ['rgb' => '2E75B6']]
                 ],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'EBF5FB']]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'EBF5FB']]
             ];
             $warningStatusStyle = [
                 'font' => ['bold' => true, 'color' => ['rgb' => '856404']],
-                'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF3CD']],
-                'alignment' => ['horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER]
+                'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'FFF3CD']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
             ];
 
             // ============================
@@ -1075,13 +1071,13 @@ class ReportJob extends MY_Controller
                 $jobStatus = array_key_exists($row['Status'], $statusMap) ? $statusMap[$row['Status']] : ($row['Status'] ?: 'Awaiting Driver');
 
                 $sheet1->setCellValue('A' . $rowNum, $no);
-                $sheet1->setCellValueExplicit('B' . $rowNum, $row['JobName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet1->setCellValueExplicit('C' . $rowNum, $row['CustomerName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet1->setCellValueExplicit('D' . $rowNum, $row['DriverName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('B' . $rowNum, $row['JobName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('C' . $rowNum, $row['CustomerName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('D' . $rowNum, $row['DriverName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet1->setCellValue('E' . $rowNum, !empty($row['JobDate']) ? date('M d, Y H:i', strtotime($row['JobDate'])) : '-');
                 $sheet1->setCellValue('F' . $rowNum, $typeJob);
                 $sheet1->setCellValue('G' . $rowNum, $jobStatus);
-                $sheet1->setCellValueExplicit('H' . $rowNum, $row['CompanyName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet1->setCellValueExplicit('H' . $rowNum, $row['CompanyName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
                 // Apply borders
                 $sheet1->getStyle("A{$rowNum}:H{$rowNum}")->applyFromArray($dataBorderStyle);
@@ -1103,10 +1099,10 @@ class ReportJob extends MY_Controller
                 // Alternate row shading
                 if ($no % 2 === 0) {
                     $sheet1->getStyle("A{$rowNum}:F{$rowNum}")->applyFromArray([
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
                     ]);
                     $sheet1->getStyle("H{$rowNum}")->applyFromArray([
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
                     ]);
                 }
 
@@ -1170,13 +1166,13 @@ class ReportJob extends MY_Controller
                 $jobStatus = array_key_exists($row['Status'], $statusMap) ? $statusMap[$row['Status']] : ($row['Status'] ?: 'Awaiting Driver');
 
                 $sheet2->setCellValue('A' . $rowNum, $no);
-                $sheet2->setCellValueExplicit('B' . $rowNum, $row['JobName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet2->setCellValueExplicit('C' . $rowNum, $row['CustomerName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet2->setCellValueExplicit('D' . $rowNum, $row['DriverName'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('B' . $rowNum, $row['JobName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('C' . $rowNum, $row['CustomerName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('D' . $rowNum, $row['DriverName'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet2->setCellValue('E' . $rowNum, !empty($row['JobDate']) ? date('M d, Y H:i', strtotime($row['JobDate'])) : '-');
                 $sheet2->setCellValue('F' . $rowNum, $typeJob);
                 $sheet2->setCellValue('G' . $rowNum, $jobStatus);
-                $sheet2->setCellValueExplicit('H' . $rowNum, $row['Notes'] ?: '-', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet2->setCellValueExplicit('H' . $rowNum, $row['Notes'] ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet2->setCellValue('I' . $rowNum, !empty($row['AssignWhen']) ? date('M d, Y H:i', strtotime($row['AssignWhen'])) : '-');
                 $sheet2->setCellValue('J' . $rowNum, !empty($row['FinishWhen']) ? date('M d, Y H:i', strtotime($row['FinishWhen'])) : '-');
 
@@ -1198,10 +1194,10 @@ class ReportJob extends MY_Controller
                 // Alternate row shading
                 if ($no % 2 === 0) {
                     $sheet2->getStyle("A{$rowNum}:F{$rowNum}")->applyFromArray([
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
                     ]);
                     $sheet2->getStyle("H{$rowNum}:K{$rowNum}")->applyFromArray([
-                        'fill' => ['type' => PHPExcel_Style_Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+                        'fill' => ['type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
                     ]);
                 }
 
@@ -1214,7 +1210,7 @@ class ReportJob extends MY_Controller
                     $imagePath = FCPATH . '../api/storage/app/finished_jobs/' . $imageFile;
 
                     if (file_exists($imagePath)) {
-                        $objDrawing = new PHPExcel_Worksheet_Drawing();
+                        $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                         $objDrawing->setName('Job Image');
                         $objDrawing->setDescription('Job Image');
                         $objDrawing->setPath($imagePath);
@@ -1262,7 +1258,7 @@ class ReportJob extends MY_Controller
             $fileName = 'Job_Report_' . date('Ymd_His') . '.xlsx';
             $filePath = $saveDir . $fileName;
 
-            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
             $objWriter->save($filePath);
 
             if (!file_exists($filePath)) {

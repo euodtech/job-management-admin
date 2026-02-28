@@ -130,8 +130,6 @@ class JobController extends Controller {
        $userID = $request->input('user_id');
        $jobID = $request->input('job_id');
 
-       $apiKey = $request->query('x-key');
-
         $dataLogin = DriverModel::where('UserID', $userID)->first();
 
         DB::beginTransaction();
@@ -218,13 +216,12 @@ class JobController extends Controller {
             ->get();
 
         $return = [];
+        $today = date('Y-m-d');
 
         foreach ($dataJob as $val) {
-            // Default kosong dulu
             $typeJobName = null;
 
             $createdBy = UserLogin::where("UserLoginID" , $val->CreatedBy)->first('Fullname');
-
             $val->CreatedBy = $createdBy->Fullname;
 
             if ($val->TypeJob == "1") {
@@ -235,10 +232,32 @@ class JobController extends Controller {
                 $typeJobName = "Short Circuit";
             }
 
-            // Tambahkan langsung ke object
             $val->TypeJobName = $typeJobName;
 
-            // Push ke hasil
+            // Attach latest reschedule info
+            $latestReschedule = RescheduleJobModel::where('JobID', $val->JobID)
+                ->orderBy('RescheduledID', 'DESC')
+                ->first();
+
+            if ($latestReschedule) {
+                $val->RescheduleStatus = (int) $latestReschedule->StatusApproved;
+                $val->RescheduledDateJob = $latestReschedule->RescheduledDateJob;
+                $val->ReasonReject = $latestReschedule->ReasonReject;
+
+                $canFinish = false;
+                if ($latestReschedule->StatusApproved == 3) {
+                    $canFinish = true;
+                } elseif ($latestReschedule->StatusApproved == 2 && $val->JobDate <= $today) {
+                    $canFinish = true;
+                }
+                $val->CanFinish = $canFinish;
+            } else {
+                $val->RescheduleStatus = null;
+                $val->RescheduledDateJob = null;
+                $val->ReasonReject = null;
+                $val->CanFinish = ($val->Status == 1) ? true : null;
+            }
+
             $return[] = $val;
         }
 
@@ -246,12 +265,10 @@ class JobController extends Controller {
             "Success" => true,
             "Data" => $return
         ]);
-
     }
 
     public function reschedule_job(Request $request, $jobID)
     {
-
         $this->validate($request, [
             'notes' => 'required',
             'new_date' => 'required'
@@ -274,11 +291,33 @@ class JobController extends Controller {
                 ], 404);
             }
 
+            // Job must be ongoing (1) or already rescheduled (3) to request reschedule
+            if (!in_array($dataJob->Status, [1, 3])) {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "Job is not in a valid state for rescheduling"
+                ]);
+            }
+
             if ($request->input('new_date') <= $dataJob->JobDate) {
                 DB::rollBack();
                 return response()->json([
                     "Success" => false,
                     "Message" => "Request Date must be greater than the current job date."
+                ]);
+            }
+
+            // Block if there's already a pending reschedule for this job
+            $pendingReschedule = RescheduleJobModel::where('JobID', $jobID)
+                ->where('StatusApproved', 1)
+                ->first();
+
+            if ($pendingReschedule) {
+                DB::rollBack();
+                return response()->json([
+                    "Success" => false,
+                    "Message" => "A reschedule request is already pending approval."
                 ]);
             }
 
@@ -294,10 +333,14 @@ class JobController extends Controller {
             $createdData = RescheduleJobModel::create($dataCreateReschedule);
 
             if ($createdData) {
+                // Move job to Status 3 so the driver can accept other jobs
+                $dataJob->update(["Status" => 3]);
+
                 DB::commit();
                 return response()->json([
                     "Success" => true,
-                    "Message" => "Success Request Reschedule Job"
+                    "Message" => "Success Request Reschedule Job",
+                    "Data" => ["RescheduledID" => $createdData->RescheduledID]
                 ]);
             } else {
                 DB::rollBack();
@@ -335,8 +378,8 @@ class JobController extends Controller {
         // Validate required data
         if ($jobId <= 0 || empty($images)) {
             return response()->json([
-                'success' => false,
-                'message' => 'job_id and images are required'
+                'Success' => false,
+                'Message' => 'job_id and images are required'
             ], 400);
         }
 
@@ -362,8 +405,8 @@ class JobController extends Controller {
                 if ($imageData === false || empty($imageData)) {
                     \Log::error("Invalid base64 image at index $index");
                     return response()->json([
-                        'success' => false,
-                        'message' => "Invalid base64 image at position " . ($index + 1)
+                        'Success' => false,
+                        'Message' => "Invalid base64 image at position " . ($index + 1)
                     ], 400);
                 }
 
@@ -373,8 +416,8 @@ class JobController extends Controller {
 
                 if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/jpg'])) {
                     return response()->json([
-                        'success' => false,
-                        'message' => "File at position " . ($index + 1) . " is not a valid image"
+                        'Success' => false,
+                        'Message' => "File at position " . ($index + 1) . " is not a valid image"
                     ], 400);
                 }
 
@@ -394,15 +437,15 @@ class JobController extends Controller {
             } catch (\Exception $e) {
                 \Log::error("Error processing image $index: " . $e->getMessage());
                 return response()->json([
-                    'success' => false,
-                    'message' => "Error processing image at position " . ($index + 1) . ": " . $e->getMessage()
+                    'Success' => false,
+                    'Message' => "Error processing image at position " . ($index + 1) . ": " . $e->getMessage()
                 ], 400);
             }
         }
 
         $authUser = $this->getAuthenticatedUser($request);
         if (!$authUser) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            return response()->json(['Success' => false, 'Message' => 'Unauthorized'], 401);
         }
 
         DB::beginTransaction();
@@ -412,11 +455,56 @@ class JobController extends Controller {
             if (!$dataJob || $dataJob->CompanyID !== $authUser->ListCompanyID) {
                 DB::rollBack();
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Job not found'
+                    'Success' => false,
+                    'Message' => 'Job not found'
                 ], 404);
             }
 
+            // Status validation
+            if ($dataJob->Status === null) {
+                DB::rollBack();
+                return response()->json([
+                    'Success' => false,
+                    'Message' => 'Job is not assigned'
+                ], 400);
+            }
+
+            if ($dataJob->Status == 2) {
+                DB::rollBack();
+                return response()->json([
+                    'Success' => false,
+                    'Message' => 'Job is already finished'
+                ], 400);
+            }
+
+            // Status 3: check reschedule conditions
+            if ($dataJob->Status == 3) {
+                $latestReschedule = RescheduleJobModel::where('JobID', $jobId)
+                    ->orderBy('RescheduledID', 'DESC')
+                    ->first();
+
+                if ($latestReschedule) {
+                    if ($latestReschedule->StatusApproved == 1) {
+                        DB::rollBack();
+                        return response()->json([
+                            'Success' => false,
+                            'Message' => 'Reschedule is pending admin approval'
+                        ], 400);
+                    }
+
+                    if ($latestReschedule->StatusApproved == 2 && $dataJob->JobDate > date('Y-m-d')) {
+                        DB::rollBack();
+                        return response()->json([
+                            'Success' => false,
+                            'Message' => 'Cannot finish until ' . date('d M Y', strtotime($dataJob->JobDate))
+                        ], 400);
+                    }
+                }
+                // StatusApproved == 3 (rejected): allow finish
+                // StatusApproved == 2 AND JobDate <= today: allow finish
+            }
+
+            // Status 1 or validated Status 3: allow finish
             $dataJob->update([
                 "Status" => 2,
                 "Notes" => $notes,
@@ -440,14 +528,65 @@ class JobController extends Controller {
             DB::rollBack();
             Log::error('finished_job Error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while finishing the job'
+                'Success' => false,
+                'Message' => 'An error occurred while finishing the job'
             ], 500);
         }
 
         return response()->json([
-            'success' => true,
-            'message' => 'This Job is finished',
+            'Success' => true,
+            'Message' => 'This Job is finished',
+        ]);
+    }
+
+    public function reschedule_status(Request $request, $jobID)
+    {
+        $authUser = $this->getAuthenticatedUser($request);
+        if (!$authUser) {
+            return response()->json(["Success" => false, "Message" => "Unauthorized"], 401);
+        }
+
+        $dataJob = JobModel::where('JobID', $jobID)
+            ->where('CompanyID', $authUser->ListCompanyID)
+            ->first();
+
+        if (!$dataJob) {
+            return response()->json([
+                "Success" => false,
+                "Message" => "Job Not Found"
+            ], 404);
+        }
+
+        $latestReschedule = RescheduleJobModel::where('JobID', $jobID)
+            ->orderBy('RescheduledID', 'DESC')
+            ->first();
+
+        if (!$latestReschedule) {
+            return response()->json([
+                "Success" => true,
+                "Data" => null
+            ]);
+        }
+
+        $statusLabels = [1 => 'pending', 2 => 'approved', 3 => 'rejected'];
+        $canFinish = false;
+
+        if ($latestReschedule->StatusApproved == 3) {
+            $canFinish = true;
+        } elseif ($latestReschedule->StatusApproved == 2 && $dataJob->JobDate <= date('Y-m-d')) {
+            $canFinish = true;
+        }
+
+        return response()->json([
+            "Success" => true,
+            "Data" => [
+                "RescheduledID" => $latestReschedule->RescheduledID,
+                "StatusApproved" => (int) $latestReschedule->StatusApproved,
+                "StatusLabel" => $statusLabels[$latestReschedule->StatusApproved] ?? 'unknown',
+                "RescheduledDateJob" => $latestReschedule->RescheduledDateJob,
+                "ReasonReject" => $latestReschedule->ReasonReject,
+                "CanFinish" => $canFinish
+            ]
         ]);
     }
 

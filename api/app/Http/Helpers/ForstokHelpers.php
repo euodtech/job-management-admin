@@ -78,7 +78,7 @@ class ForstokHelpers
 
         $jsonDataChange = json_encode($dansParsedAry);
 
-        $addOrder = new client();
+        $addOrder = new Client();
 
         $headersOrder = [
             'Content-Type' => 'application/json',

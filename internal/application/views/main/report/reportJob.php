@@ -445,6 +445,14 @@ table#tableJobCustomer.dataTable thead th {
 
 
 <script>
+    // Global DataTables error handler - prevents infinite loading on AJAX errors
+    $(document).ready(function() {
+        $.fn.dataTable.ext.errMode = 'none';
+        $(document).on('error.dt', function(e, settings, techNote, message) {
+            console.error('DataTables error:', message);
+        });
+    });
+
     // Job Report per Customer
     $(document).ready(function() {
 
@@ -718,7 +726,7 @@ table#tableJobCustomer.dataTable thead th {
             order: [[1, "desc"]]
         });
 
-        $('#tableJobCustomer').on('search.dt', function() { silentSearchJobCustomer = true; });
+        $('#tableJobCustomer_wrapper').on('input', '.dataTables_filter input', function() { silentSearchJobCustomer = true; });
         $('#tableJobCustomer').on('processing.dt', function(e, settings, processing) {
             if (silentSearchJobCustomer) {
                 e.stopPropagation();
@@ -808,6 +816,9 @@ table#tableJobCustomer.dataTable thead th {
         var table = $('#tableJobCompliance').DataTable({
             processing: true,
             serverSide: true,
+            columnDefs: [
+                { targets: [0, 6], orderable: false }
+            ],
             ajax: {
                 url: "<?= base_url('ReportJob/JobComplianceReport') ?>",
                 type: "GET",
@@ -909,7 +920,7 @@ table#tableJobCustomer.dataTable thead th {
             order: [[3, "desc"]]
         });
 
-        $('#tableJobCompliance').on('search.dt', function() { silentSearchJobCompliance = true; });
+        $('#tableJobCompliance_wrapper').on('input', '.dataTables_filter input', function() { silentSearchJobCompliance = true; });
         $('#tableJobCompliance').on('processing.dt', function(e, settings, processing) {
             if (silentSearchJobCompliance) {
                 e.stopPropagation();
@@ -1021,6 +1032,9 @@ table#tableJobCustomer.dataTable thead th {
         $('#tableJobAssignment').DataTable({
             processing: true,
             serverSide: true,
+            columnDefs: [
+                { targets: [0], orderable: false }
+            ],
             ajax: {
                 url: "<?= base_url('ReportJob/JobAssignmentEfficiencyReport') ?>",
                 type: "GET",
@@ -1086,7 +1100,7 @@ table#tableJobCustomer.dataTable thead th {
             order: [[4, "desc"]]
         });
 
-        $('#tableJobAssignment').on('search.dt', function() { silentSearchJobAssignment = true; });
+        $('#tableJobAssignment_wrapper').on('input', '.dataTables_filter input', function() { silentSearchJobAssignment = true; });
         $('#tableJobAssignment').on('processing.dt', function(e, settings, processing) {
             if (silentSearchJobAssignment) {
                 e.stopPropagation();
@@ -1188,6 +1202,9 @@ table#tableJobCustomer.dataTable thead th {
         $('#tableJobCompletion').DataTable({
             processing: true,
             serverSide: true,
+            columnDefs: [
+                { targets: [0], orderable: false }
+            ],
             ajax: {
                 url: "<?= base_url('ReportJob/JobCompletionStatusReport') ?>",
                 type: "GET",
@@ -1251,7 +1268,7 @@ table#tableJobCustomer.dataTable thead th {
             order: [[4, "desc"]]
         });
 
-        $('#tableJobCompletion').on('search.dt', function() { silentSearchJobCompletion = true; });
+        $('#tableJobCompletion_wrapper').on('input', '.dataTables_filter input', function() { silentSearchJobCompletion = true; });
         $('#tableJobCompletion').on('processing.dt', function(e, settings, processing) {
             if (silentSearchJobCompletion) {
                 e.stopPropagation();
@@ -1292,6 +1309,9 @@ table#tableJobCustomer.dataTable thead th {
         $('#tableJobTimeline').DataTable({
             processing: true,
             serverSide: true,
+            columnDefs: [
+                { targets: [0], orderable: false }
+            ],
             ajax: {
                 url: "<?= base_url('ReportJob/JobTimelineReport') ?>",
                 type: "GET"
@@ -1343,7 +1363,7 @@ table#tableJobCustomer.dataTable thead th {
             order: [[1, "desc"]]
         });
 
-        $('#tableJobTimeline').on('search.dt', function() { silentSearchJobTimeline = true; });
+        $('#tableJobTimeline_wrapper').on('input', '.dataTables_filter input', function() { silentSearchJobTimeline = true; });
         $('#tableJobTimeline').on('processing.dt', function(e, settings, processing) {
             if (silentSearchJobTimeline) {
                 e.stopPropagation();
@@ -1487,6 +1507,7 @@ table#tableJobCustomer.dataTable thead th {
                 }
             ],
             columnDefs: [
+                { targets: [0, 5], orderable: false },
                 {
                     targets: [2],
                     type: 'string',
@@ -1552,7 +1573,7 @@ table#tableJobCustomer.dataTable thead th {
             order: [[4, "desc"]]
         });
 
-        $('#tableJobEvidenceReport').on('search.dt', function() { silentSearchJobEvidence = true; });
+        $('#tableJobEvidenceReport_wrapper').on('input', '.dataTables_filter input', function() { silentSearchJobEvidence = true; });
         $('#tableJobEvidenceReport').on('processing.dt', function(e, settings, processing) {
             if (silentSearchJobEvidence) {
                 e.stopPropagation();

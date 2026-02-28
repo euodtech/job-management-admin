@@ -55,7 +55,7 @@ class Customer extends MY_Controller
         $filePath = $_FILES['import_excel']['tmp_name'];
 
         try {
-            $objPHPExcel = PHPExcel_IOFactory::load($filePath);
+            $objPHPExcel = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
             $sheet = $objPHPExcel->getActiveSheet();
             $highestRow = $sheet->getHighestRow();
 
