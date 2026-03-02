@@ -1207,7 +1207,8 @@ class ReportJob extends MY_Controller
                 $offsetY = 0;
                 foreach ($dataGambar as $gambar) {
                     $imageFile = basename($gambar['Photo']);
-                    $imagePath = FCPATH . '../api/storage/app/finished_jobs/' . $imageFile;
+                    $finishedJobsPath = getenv('API_FINISHED_JOBS_PATH') ?: (FCPATH . '../api/storage/app/finished_jobs/');
+                    $imagePath = $finishedJobsPath . $imageFile;
 
                     if (file_exists($imagePath)) {
                         $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();

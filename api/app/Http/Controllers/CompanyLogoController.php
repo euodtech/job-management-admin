@@ -13,10 +13,11 @@ class CompanyLogoController extends Controller
             return response()->json(['Success' => false, 'Message' => 'Invalid filename'], 400);
         }
 
-        $path = realpath(__DIR__ . '/../../../../internal/assets/dist/img/company_logo/' . $filename);
+        $logoDir = env('COMPANY_LOGO_DIR') ?: __DIR__ . '/../../../../assets/dist/img/company_logo';
+        $path = realpath($logoDir . '/' . $filename);
 
         // Ensure resolved path is still within the expected directory (prevent traversal)
-        $baseDir = realpath(__DIR__ . '/../../../../internal/assets/dist/img/company_logo');
+        $baseDir = realpath($logoDir);
         if ($path === false || $baseDir === false || strpos($path, $baseDir) !== 0) {
             return response()->json(['Success' => false, 'Message' => 'File not found'], 404);
         }

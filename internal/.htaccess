@@ -1,3 +1,37 @@
+# === Production Environment ===
+# Uncomment and fill these when deploying to Hostinger.
+# These are read by CI3 config files via getenv().
+# SetEnv CI_ENV production
+# SetEnv DB_HOST localhost
+# SetEnv DB_NAME u214574264_Efms
+# SetEnv DB_USERNAME u214574264_euodoo
+# SetEnv DB_PASSWORD CHANGE_ME
+# SetEnv CI_ENCRYPTION_KEY CHANGE_ME_32_CHAR_HEX
+# SetEnv TRAXROOT_USERNAME CHANGE_ME
+# SetEnv TRAXROOT_PASSWORD CHANGE_ME
+# SetEnv APP_API_URL https://jms.euodoo.com.ph/api/
+# SetEnv API_FINISHED_JOBS_PATH /home/u214574264/public_html/api/storage/app/finished_jobs/
+
+# === Block Sensitive Directories & Files ===
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block .env files
+    RewriteRule (^|/)\.env - [F,L]
+
+    # Block application internals
+    RewriteRule ^application/ - [F,L]
+    RewriteRule ^system/ - [F,L]
+    RewriteRule ^vendor/ - [F,L]
+    RewriteRule ^storage/ - [F,L]
+
+    # Block .git directory
+    RewriteRule ^\.git - [F,L]
+
+    # Block composer files
+    RewriteRule ^composer\.(json|lock)$ - [F,L]
+</IfModule>
+
 # === Security Headers ===
 <IfModule mod_headers.c>
     Header always set X-Frame-Options "SAMEORIGIN"

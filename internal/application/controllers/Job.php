@@ -277,7 +277,7 @@ class Job extends MY_Controller
         $data = $this->db->get()->result_array();
 
         // Prefix photo paths with API base URL
-        $apiBase = str_replace('/internal/', '/api/', base_url());
+        $apiBase = $this->config->item('base_api_url');
         foreach ($data as &$row) {
             if (!empty($row['Photo']) && strpos($row['Photo'], 'http') !== 0) {
                 $row['Photo'] = $apiBase . $row['Photo'];

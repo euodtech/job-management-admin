@@ -209,7 +209,7 @@
                 </button>
             </div>
             <div class="px-5 py-4">
-                <form id="formUpdateProfile" method="post">
+                <form id="formUpdateTraxroot" method="post">
                     <input type="hidden" id="company_id_profile" name="company_id">
                     <p id="traxroot-status" class="text-xs text-gray-400 mb-4"></p>
                     <div class="mb-4">
@@ -230,14 +230,12 @@
             </div>
             <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200">
                 <button class="inline-flex items-center gap-1.5 rounded-lg bg-gray-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-600 transition-colors" data-hs-overlay="#modal_update_profile">Close</button>
-                <button type="submit" form="formUpdateProfile" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Save</button>
+                <button type="submit" form="formUpdateTraxroot" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-light transition-colors">Save</button>
             </div>
         </div>
     </div>
 </div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
@@ -475,7 +473,10 @@ $(document).ready(function() {
         let companyID = $(this).data('company-id');
 
         showModal('#modal_update_profile');
-        $("#formUpdateProfile").attr("action", "<?= base_url('company/update-traxroot-profile') ?>");
+        $("#formUpdateTraxroot").attr("action", "<?= base_url('company/update-traxroot-profile') ?>");
+
+        // Set company ID directly — don't depend on AJAX for this
+        $('#company_id_profile').val(companyID);
 
         $('#username_traxroot').val('');
         $('#password_traxroot').val('');
@@ -486,13 +487,14 @@ $(document).ready(function() {
             data: { companyID: companyID },
             dataType: "json",
             success: function(res) {
-                $('#company_id_profile').val(res.ListCompanyID);
-                // Show status indicator (credentials are never exposed)
-                if (res.has_traxroot == 1) {
+                if (res && res.has_traxroot == 1) {
                     $('#traxroot-status').html('<i class="fa-solid fa-circle-check text-green-500"></i> Traxroot credentials are configured.');
                 } else {
                     $('#traxroot-status').html('<i class="fa-solid fa-circle-exclamation text-amber-500"></i> No Traxroot credentials set yet.');
                 }
+            },
+            error: function() {
+                $('#traxroot-status').html('<i class="fa-solid fa-circle-exclamation text-amber-500"></i> Could not fetch credential status.');
             }
         });
     });
