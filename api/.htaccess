@@ -4,6 +4,7 @@
     </IfModule>
 
     RewriteEngine On
+    RewriteBase /api/
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -13,9 +14,11 @@
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ - [L]
 
-    # Route everything else to public/ subdirectory
-    RewriteCond %{REQUEST_URI} !^/api/public/
-    RewriteRule ^(.*)$ public/$1 [L]
+    # Let direct /api/public/ requests be handled by public/.htaccess
+    RewriteRule ^public(/.*)?$ - [L]
+
+    # Route everything else through index.php (single .htaccess, no chain)
+    RewriteRule ^(.*)$ index.php [L]
 </IfModule>
 
 # Block sensitive files from direct access
