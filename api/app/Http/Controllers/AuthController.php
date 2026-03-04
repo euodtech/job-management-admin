@@ -65,12 +65,15 @@ class AuthController extends Controller {
                     DB::beginTransaction();
 
                     // Update API key and last login
+                    $updateData = [
+                        'ApiKey' => $api_key,
+                        'LastLogin' => date('Y-m-d H:i:s'),
+                    ];
+                    if (!empty($firebaseToken)) {
+                        $updateData['FirebaseToken'] = $firebaseToken;
+                    }
                     UserLogin::where('Email', $email)
-                        ->update([
-                            'ApiKey' => $api_key,
-                            'FirebaseToken' => $firebaseToken,
-                            "LastLogin" => date('Y-m-d H:i:s')
-                        ]);
+                        ->update($updateData);
 
                     // Get full customer data
                     $customer = UserLogin::leftJoin('ListUser', 'UserLogin.UserLoginID', '=', 'ListUser.UserLoginID')
@@ -191,6 +194,49 @@ class AuthController extends Controller {
         }
     }
 
+    public function update_fcm_token(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'fcm_token' => 'required|string|max:255',
+            ]);
+
+            $user = $request->attributes->get('authenticated_user');
+
+            if (!$user) {
+                return response()->json([
+                    'Success' => false,
+                    'Message' => 'User not found',
+                ], 404);
+            }
+
+            $user->FirebaseToken = $request->input('fcm_token');
+            $user->save();
+
+            return response()->json([
+                'Success' => true,
+                'Message' => 'FCM token updated successfully',
+            ], 200);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'Success' => false,
+                'Message' => 'Validation failed',
+                'Errors' => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('update_fcm_token Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'Success' => false,
+                'Message' => 'An error occurred while updating FCM token',
+            ], 500);
+        }
+    }
+
     public function logout(Request $request)
     {
         try {
@@ -204,8 +250,9 @@ class AuthController extends Controller {
                 ], 404);
             }
 
-            // Clear API key
+            // Clear API key and FCM token
             $user->ApiKey = null;
+            $user->FirebaseToken = null;
             $saved = $user->save();
 
             if ($saved) {

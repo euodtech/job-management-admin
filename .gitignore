@@ -1,3 +1,4 @@
 .playwright-mcp/
 api/.env
 internal/application/config/development/
+firebase-service-account.json

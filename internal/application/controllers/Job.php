@@ -16,6 +16,7 @@ class Job extends MY_Controller
         $this->load->model('M_Global');
         $this->load->helper('idr_helper');
         $this->load->helper('date_format_helper');
+        $this->load->helper('fcm');
     }
 
     public function historyCancelJob()
@@ -330,6 +331,24 @@ class Job extends MY_Controller
         $job = $this->M_Global->insert($data_create, "ListJob");
 
         if ($job === "success") {
+            $newJobID = $this->db->insert_id();
+
+            // Notify all active drivers in the company about the new job
+            try {
+                $tokens = get_company_driver_fcm_tokens($data_create['CompanyID']);
+                if (!empty($tokens)) {
+                    send_fcm_to_multiple(
+                        $tokens,
+                        'New Job Available',
+                        $data_create['JobName'] . ' - ' . $data_create['JobDate'],
+                        $newJobID,
+                        'new_job'
+                    );
+                }
+            } catch (\Throwable $e) {
+                log_message('error', 'FCM notification failed in create(): ' . $e->getMessage());
+            }
+
             $this->session->set_flashdata(
                 'message',
                 '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Job created successfully</div>'
@@ -787,8 +806,11 @@ class Job extends MY_Controller
             $jobID = (int) $data_reschedule['JobID'];
             $newDate = $data_reschedule['RescheduledDateJob'];
 
-            // Also lock the job row
-            $this->db->query('SELECT JobID FROM ListJob WHERE JobID = ? FOR UPDATE', [$jobID]);
+            // Also lock the job row and get details for notification
+            $jobRow = $this->db->query(
+                'SELECT JobID, JobName, UserID FROM ListJob WHERE JobID = ? FOR UPDATE',
+                [$jobID]
+            )->row_array();
 
             $this->db->where('RescheduledID', $reschedule_id)
                     ->update('RescheduledJob', ['StatusApproved' => 2]);
@@ -800,6 +822,25 @@ class Job extends MY_Controller
                     ]);
 
             $this->db->trans_commit();
+
+            // Notify the driver that their reschedule was approved
+            try {
+                if (!empty($jobRow['UserID'])) {
+                    $fcm_token = get_driver_fcm_token($jobRow['UserID']);
+                    if ($fcm_token) {
+                        $jobLabel = !empty($jobRow['JobName']) ? $jobRow['JobName'] : 'Job #' . $jobID;
+                        send_fcm_notification(
+                            $fcm_token,
+                            'Reschedule Approved',
+                            $jobLabel . ' rescheduled to ' . $newDate,
+                            $jobID,
+                            'reschedule_approved'
+                        );
+                    }
+                }
+            } catch (\Throwable $e) {
+                log_message('error', 'FCM notification failed in reschedule approve: ' . $e->getMessage());
+            }
 
             redirect(base_url('reschedule-job'));
 
@@ -828,6 +869,35 @@ class Job extends MY_Controller
                     ]);
 
             $this->db->trans_commit();
+
+            // Notify the driver that their reschedule was rejected
+            try {
+                $rejectedJobID = (int) $data_reschedule['JobID'];
+                $jobInfoQuery = $this->db->select('JobName, UserID')
+                                    ->from('ListJob')
+                                    ->where('JobID', $rejectedJobID)
+                                    ->get();
+
+                if ($jobInfoQuery) {
+                    $jobInfo = $jobInfoQuery->row_array();
+                    if (!empty($jobInfo['UserID'])) {
+                        $fcm_token = get_driver_fcm_token($jobInfo['UserID']);
+                        if ($fcm_token) {
+                            $jobLabel = !empty($jobInfo['JobName']) ? $jobInfo['JobName'] : 'Job #' . $rejectedJobID;
+                            $reason = !empty($reasonReject) ? ': ' . $reasonReject : '';
+                            send_fcm_notification(
+                                $fcm_token,
+                                'Reschedule Rejected',
+                                $jobLabel . $reason,
+                                $rejectedJobID,
+                                'reschedule_rejected'
+                            );
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                log_message('error', 'FCM notification failed in reschedule reject: ' . $e->getMessage());
+            }
 
             redirect(base_url('reschedule-job'));
         }
@@ -946,7 +1016,7 @@ class Job extends MY_Controller
 
         // Lock the job row to prevent concurrent assignment
         $job = $this->db->query(
-            'SELECT JobID, CompanyID, Status FROM ListJob WHERE JobID = ? FOR UPDATE',
+            'SELECT JobID, CompanyID, Status, JobName FROM ListJob WHERE JobID = ? FOR UPDATE',
             [$jobID]
         )->row_array();
 
@@ -1007,6 +1077,23 @@ class Job extends MY_Controller
                   ]);
 
         $this->db->trans_commit();
+
+        // Notify the assigned driver
+        try {
+            $fcm_token = get_driver_fcm_token($driverID);
+            if ($fcm_token) {
+                send_fcm_notification(
+                    $fcm_token,
+                    'Job Assigned to You',
+                    !empty($job['JobName']) ? $job['JobName'] : 'Job #' . $jobID,
+                    $jobID,
+                    'job_assigned'
+                );
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'FCM notification failed in assignJob(): ' . $e->getMessage());
+        }
+
         echo json_encode(['success' => true, 'message' => 'Job assigned successfully.']);
     }
 
@@ -1027,7 +1114,7 @@ class Job extends MY_Controller
 
         // Lock the job row to prevent concurrent modification
         $job = $this->db->query(
-            'SELECT JobID, CompanyID, UserID, Status FROM ListJob WHERE JobID = ? FOR UPDATE',
+            'SELECT JobID, CompanyID, UserID, Status, JobName FROM ListJob WHERE JobID = ? FOR UPDATE',
             [$jobID]
         )->row_array();
 
@@ -1098,6 +1185,23 @@ class Job extends MY_Controller
                   ]);
 
         $this->db->trans_commit();
+
+        // Notify the new driver about the reassignment
+        try {
+            $fcm_token = get_driver_fcm_token($newDriverID);
+            if ($fcm_token) {
+                send_fcm_notification(
+                    $fcm_token,
+                    'Job Assigned to You',
+                    !empty($job['JobName']) ? $job['JobName'] : 'Job #' . $jobID,
+                    $jobID,
+                    'job_reassigned'
+                );
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'FCM notification failed in reassignJob(): ' . $e->getMessage());
+        }
+
         echo json_encode(['success' => true, 'message' => 'Job reassigned successfully.']);
     }
 

@@ -57,6 +57,9 @@ $router->group([
     // Change password
     $app->post('change-password', 'AuthController@change_password');
 
+    // Update FCM token
+    $app->post('update-fcm-token', 'AuthController@update_fcm_token');
+
     // Logout
     $app->post('logout', 'AuthController@logout');
 
