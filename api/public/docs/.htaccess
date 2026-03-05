@@ -1,0 +1,5 @@
+# Serve static files directly, bypass Lumen routing
+RewriteEngine Off
+
+# Ensure YAML files are served with correct MIME type
+AddType application/x-yaml .yaml .yml

@@ -6,7 +6,809 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
-    <script id="api-reference" data-url="./openapi.yaml"></script>
+    <script id="api-reference" type="application/json">
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "E-FMS API",
+    "description": "Electronic Fleet Management System API — consumed by the E-FMS Flutter mobile app.\n\n## Authentication\nAll protected endpoints require an **API key** obtained via the login endpoint.\nSend it as the `X-API-Key` header on every request.\n\n## Job Workflow\n```\nnull (unassigned) → 1 (active) → 2 (finished)\n                                → 3 (rescheduled) → approved/rejected → 2 (finished)\n```\n\n## Domain Enums\n\n| Job Status | Meaning |\n|------------|----------|\n| `null` | Unassigned |\n| `1` | Active / assigned |\n| `2` | Finished |\n| `3` | Rescheduled |\n\n| TypeJob | Name |\n|---------|------|\n| `1` | Line Interrupt |\n| `2` | Reconnection |\n| `3` | Short Circuit |\n| `4` | Disconnection |\n\n| Reschedule Status | Label |\n|-------------------|-------|\n| `1` | Pending |\n| `2` | Approved |\n| `3` | Rejected |",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Euodoo Technologies Inc.",
+      "url": "https://jms.euodoo.com.ph"
+    }
+  },
+  "servers": [
+    { "url": "https://jms.euodoo.com.ph/api/myapi", "description": "Production" },
+    { "url": "http://localhost:8000/myapi", "description": "Local development" }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Authentication & account management" },
+    { "name": "Jobs", "description": "Job listing, assignment, completion, and lifecycle" },
+    { "name": "User", "description": "User / driver profile" },
+    { "name": "Traxroot", "description": "GPS tracking proxy (Traxroot fleet API)" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Base64-encoded API key returned on login"
+      }
+    },
+    "schemas": {
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "Success": { "type": "boolean", "example": true },
+          "Message": { "type": "string", "example": "Operation successful" },
+          "Data": { "type": "object" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "Success": { "type": "boolean", "example": false },
+          "Message": { "type": "string", "example": "Error description" }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "Success": { "type": "boolean", "example": false },
+          "Message": { "type": "string", "example": "Validation failed" },
+          "Errors": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string" } },
+            "example": { "email": ["The email field is required."] }
+          }
+        }
+      },
+      "LoginData": {
+        "type": "object",
+        "properties": {
+          "UserID": { "type": "integer", "example": 123 },
+          "ApiKey": { "type": "string", "example": "base64_encoded_key" },
+          "Company": { "type": "string", "example": "Company Name" },
+          "CompanyID": { "type": "integer", "example": 456 },
+          "CompanyType": { "type": "integer", "example": 1 },
+          "CompanyLabel": { "type": "string", "enum": ["Basic", "Pro"], "example": "Basic" },
+          "HasTraxroot": { "type": "boolean", "example": true },
+          "UserRole": { "type": "integer", "example": 1 },
+          "CompanyLogo": { "type": "string", "format": "uri", "example": "https://jms.euodoo.com.ph/api/myapi/company-logo/logo.png" }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "Fullname": { "type": "string", "example": "John Doe" },
+          "Email": { "type": "string", "format": "email", "example": "john@example.com" },
+          "PhoneNumber": { "type": "string", "example": "+1234567890" }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "JobID": { "type": "integer", "example": 789 },
+          "JobName": { "type": "string", "example": "Line Maintenance" },
+          "CustomerID": { "type": "integer", "example": 101 },
+          "TypeJob": { "type": "string", "enum": ["1", "2", "3", "4"], "example": "1" },
+          "TypeJobName": { "type": "string", "enum": ["Line Interrupt", "Reconnection", "Short Circuit", "Disconnection"], "example": "Line Interrupt" },
+          "JobDate": { "type": "string", "format": "date", "example": "2026-03-01" },
+          "CreatedBy": { "type": "string", "example": "Admin Name" },
+          "Status": { "type": "integer", "nullable": true, "enum": [null, 1, 2, 3], "example": null },
+          "UserID": { "type": "integer", "nullable": true },
+          "CompanyID": { "type": "integer", "example": 456 },
+          "Notes": { "type": "string", "nullable": true }
+        }
+      },
+      "OngoingJob": {
+        "type": "object",
+        "properties": {
+          "JobID": { "type": "integer", "example": 789 },
+          "JobName": { "type": "string", "example": "Line Repair" },
+          "TypeJobName": { "type": "string", "example": "Reconnection" },
+          "Status": { "type": "integer", "enum": [1, 3], "example": 1 },
+          "JobDate": { "type": "string", "format": "date", "example": "2026-03-02" },
+          "CreatedBy": { "type": "string", "example": "Admin Name" },
+          "RescheduleStatus": { "type": "integer", "nullable": true, "enum": [null, 1, 2, 3], "description": "1=Pending, 2=Approved, 3=Rejected" },
+          "RescheduledDateJob": { "type": "string", "format": "date", "nullable": true },
+          "ReasonReject": { "type": "string", "nullable": true },
+          "CanFinish": { "type": "boolean", "description": "Whether the driver can mark this job as finished right now", "example": true }
+        }
+      },
+      "FinishedJob": {
+        "type": "object",
+        "properties": {
+          "JobID": { "type": "integer", "example": 789 },
+          "JobName": { "type": "string", "example": "Line Maintenance" },
+          "Status": { "type": "integer", "example": 2 },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ListDetailID": { "type": "integer", "example": 1 },
+                "ListJobID": { "type": "integer", "example": 789 },
+                "Photo": { "type": "string", "example": "storage/app/finished_jobs/job_789_abc123_0.png" },
+                "created_at": { "type": "string", "format": "date-time", "example": "2026-03-01 14:30:00" }
+              }
+            }
+          }
+        }
+      },
+      "RescheduleStatusData": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "RescheduledID": { "type": "integer", "example": 456 },
+          "StatusApproved": { "type": "integer", "enum": [1, 2, 3], "example": 1 },
+          "StatusLabel": { "type": "string", "enum": ["pending", "approved", "rejected"], "example": "pending" },
+          "RescheduledDateJob": { "type": "string", "format": "date", "example": "2026-03-05" },
+          "ReasonReject": { "type": "string", "nullable": true },
+          "CanFinish": { "type": "boolean", "example": false }
+        }
+      },
+      "TraxrootToken": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string", "example": "bearer_token_string" },
+          "token_type": { "type": "string", "example": "Bearer" },
+          "expires_in": { "type": "integer", "example": 3600 }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login",
+        "description": "Authenticate a driver and receive an API key.\n**Rate limit:** 5 attempts per minute.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "driver@company.com" },
+                  "password": { "type": "string", "minLength": 5, "example": "password123" },
+                  "firebasetoken": { "type": "string", "description": "FCM device token for push notifications", "example": "fcm_device_token" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Data": { "$ref": "#/components/schemas/LoginData" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "emailNotFound": { "summary": "Email not registered", "value": { "Success": false, "Message": "Email Not Found, Please Create Account" } },
+                  "wrongPassword": { "summary": "Wrong password", "value": { "Success": false, "Message": "Incorrect Password" } }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationErrorResponse" } } }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          }
+        }
+      }
+    },
+    "/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Forgot password",
+        "description": "Request a password reset email. Always returns success to prevent email enumeration.\n**Rate limit:** 3 attempts per 5 minutes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "driver@company.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Message": { "type": "string", "example": "If your email is registered, you will receive a password reset link." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/company-logo/{filename}": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get company logo",
+        "description": "Retrieve a company logo image. Returns raw image bytes.",
+        "parameters": [
+          { "name": "filename", "in": "path", "required": true, "schema": { "type": "string" }, "example": "logo.png" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logo image",
+            "content": {
+              "image/png": { "schema": { "type": "string", "format": "binary" } },
+              "image/jpeg": { "schema": { "type": "string", "format": "binary" } }
+            }
+          },
+          "404": { "description": "Logo not found" }
+        }
+      }
+    },
+    "/get-user/{userID}": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Get driver profile",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "userID", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 123 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Driver profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Data": { "$ref": "#/components/schemas/UserProfile" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          }
+        }
+      }
+    },
+    "/get-job": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List unassigned jobs",
+        "description": "Returns all unassigned jobs for the authenticated user's company.\nOnly includes jobs where `JobDate <= today` and `UserID IS NULL`.\nOrdered by `JobDate DESC`.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of available jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Data": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/driver-get-job": {
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Accept / claim a job",
+        "description": "Driver accepts an available job. A driver can only have **one active job** (Status=1) at a time.\nThe job must be unassigned (UserID=null, Status=null).",
+        "security": [{ "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "job_id"],
+                "properties": {
+                  "user_id": { "type": "integer", "example": 123 },
+                  "job_id": { "type": "integer", "example": 789 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Message": { "type": "string", "example": "Success Driver Get The Job" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid state",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "alreadyAssigned": { "summary": "Job already taken", "value": { "Success": false, "Message": "Job already assigned" } },
+                  "driverBusy": { "summary": "Driver has an active job", "value": { "Success": false, "Message": "Driver already has an active job" } }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          }
+        }
+      }
+    },
+    "/get-job-ongoing/{user_id}": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get active & rescheduled jobs",
+        "description": "Returns the driver's current active and rescheduled jobs (Status IN 1, 3).\n\nThe `CanFinish` field indicates whether the driver can mark the job as finished:\n- `true` — Status=1 (active, no reschedule)\n- `true` — Reschedule was rejected\n- `true` — Reschedule approved AND new date ≤ today\n- `false` — Reschedule pending approval\n- `false` — Reschedule approved but new date is in the future",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "user_id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 123 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ongoing jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Data": { "type": "array", "items": { "$ref": "#/components/schemas/OngoingJob" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-job-by-user/{userID}": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get finished jobs (history)",
+        "description": "List all finished jobs for a specific driver, including photo details.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "userID", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 123 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Data": { "type": "array", "items": { "$ref": "#/components/schemas/FinishedJob" } }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User not in same company",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          }
+        }
+      }
+    },
+    "/finished-job": {
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Complete a job with photos",
+        "description": "Mark a job as finished. Requires at least one base64-encoded image.\n\n**Image format:** `data:image/{type};base64,{data}`\n**Accepted types:** `image/jpeg`, `image/png`, `image/jpg`",
+        "security": [{ "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["job_id", "images"],
+                "properties": {
+                  "job_id": { "type": "integer", "example": 789 },
+                  "notes": { "type": "string", "example": "Job completed successfully" },
+                  "images": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string", "description": "Base64 data URI (data:image/png;base64,...)" },
+                    "example": ["data:image/png;base64,iVBORw0KGgo..."]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job finished",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Message": { "type": "string", "example": "This Job is finished" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid state or bad images",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "notAssigned": { "value": { "Success": false, "Message": "Job is not assigned" } },
+                  "alreadyFinished": { "value": { "Success": false, "Message": "Job is already finished" } },
+                  "pendingReschedule": { "value": { "Success": false, "Message": "Reschedule is pending admin approval" } },
+                  "invalidImage": { "value": { "Success": false, "Message": "Invalid base64 image at position 0" } }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          }
+        }
+      }
+    },
+    "/reschedule-job/{jobID}": {
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Request job reschedule",
+        "description": "Request to reschedule a job to a later date.\nThe job must be in Status 1 (active) or 3 (previously rescheduled).\nThe new date must be later than the current `JobDate`.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "jobID", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 789 }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["notes", "new_date"],
+                "properties": {
+                  "notes": { "type": "string", "example": "Cannot complete due to weather" },
+                  "new_date": { "type": "string", "format": "date", "description": "Must be greater than the current JobDate", "example": "2026-03-05" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reschedule requested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Message": { "type": "string", "example": "Success Request Reschedule Job" },
+                    "Data": {
+                      "type": "object",
+                      "properties": { "RescheduledID": { "type": "integer", "example": 456 } }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid state or date",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "invalidState": { "value": { "Success": false, "Message": "Job is not in a valid state for rescheduling" } },
+                  "badDate": { "value": { "Success": false, "Message": "Request Date must be greater than the current job date." } },
+                  "alreadyPending": { "value": { "Success": false, "Message": "A reschedule request is already pending approval." } }
+                }
+              }
+            }
+          },
+          "404": { "description": "Job not found" }
+        }
+      }
+    },
+    "/reschedule-status/{jobID}": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Check reschedule status",
+        "description": "Returns the latest reschedule request status for a job. Returns `Data: null` if no reschedule exists.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "jobID", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 789 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reschedule status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Data": { "$ref": "#/components/schemas/RescheduleStatusData" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cancel-job/{jobID}": {
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Cancel (unassign) a job",
+        "description": "Unassigns a job and returns it to the available pool.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "jobID", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 789 }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": { "type": "string", "example": "Driver unavailable" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Message": { "type": "string", "example": "Success Cancel Job" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/change-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Change password",
+        "security": [{ "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["current_password", "new_password", "new_password_confirmation"],
+                "properties": {
+                  "current_password": { "type": "string", "example": "oldpass" },
+                  "new_password": { "type": "string", "minLength": 8, "example": "newpass123" },
+                  "new_password_confirmation": { "type": "string", "example": "newpass123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "401": {
+            "description": "Current password is incorrect",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationErrorResponse" } } }
+          }
+        }
+      }
+    },
+    "/update-fcm-token": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Update FCM token",
+        "description": "Store or update the Firebase Cloud Messaging device token for push notifications.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["firebasetoken"],
+                "properties": {
+                  "firebasetoken": { "type": "string", "example": "fcm_device_token_string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout",
+        "description": "Clears the API key and FCM token. The key is invalidated server-side.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "Message": { "type": "string", "example": "Berhasil keluar" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/check-type-company/{companyID}": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Check company subscription type",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "companyID", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 456 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Company type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Success": { "type": "boolean", "example": true },
+                    "CompanySubscribe": { "type": "integer", "description": "1 = Basic, other = Pro", "example": 1 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/traxroot/token": {
+      "post": {
+        "tags": ["Traxroot"],
+        "summary": "Get Traxroot API token",
+        "description": "Authenticates with Traxroot using server-stored credentials for the user's company.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Traxroot token",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TraxrootToken" } } }
+          },
+          "404": {
+            "description": "Company has no Traxroot credentials",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          },
+          "502": {
+            "description": "Traxroot service unavailable",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+          }
+        }
+      }
+    },
+    "/traxroot/objects-status": {
+      "get": {
+        "tags": ["Traxroot"],
+        "summary": "Get vehicle locations",
+        "description": "Proxy to Traxroot API — returns vehicle/object locations and status.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "token", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Traxroot token from the token endpoint", "example": "bearer_token_string" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vehicle status data (raw Traxroot response)",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "502": { "description": "Traxroot service unavailable" }
+        }
+      }
+    },
+    "/traxroot/geozones": {
+      "get": {
+        "tags": ["Traxroot"],
+        "summary": "Get geozones",
+        "description": "Proxy to Traxroot API — returns geofence/geozone definitions.",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "token", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Traxroot token from the token endpoint", "example": "bearer_token_string" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Geozone data (raw Traxroot response)",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "502": { "description": "Traxroot service unavailable" }
+        }
+      }
+    }
+  }
+}
+    </script>
     <script>
     var configuration = {
         theme: 'kepler',
@@ -15,7 +817,6 @@
             targetKey: 'php',
             clientKey: 'guzzle',
         },
-        hiddenClients: [],
         metaData: {
             title: 'E-FMS API Docs',
         },

@@ -68,8 +68,14 @@ class Authenticate
         // Store authenticated user on request for downstream use
         $request->attributes->set('authenticated_user', $data);
 
-        $data->LastActivity = date('Y-m-d H:i:s');
-        $data->save();
+        // Throttle LastActivity writes: only update if >1 minute since last update
+        // This eliminates a DB WRITE on every single request
+        $now = time();
+        $lastActivity = $data->LastActivity ? strtotime($data->LastActivity) : 0;
+        if (($now - $lastActivity) > 60) {
+            $data->LastActivity = date('Y-m-d H:i:s', $now);
+            $data->save();
+        }
 
         return $next($request);
     }

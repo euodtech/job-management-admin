@@ -224,16 +224,25 @@ class Job extends MY_Controller
         $data = [];
         $no = $start + 1;
 
-        foreach ($query as $row) {
-            $jobID = (int) $row['JobID'];
-
-            $cancelJob = $this->db
-                ->select('HistoryCancelJobID')
+        // Batch-fetch cancel history for all jobs in this page to avoid N+1
+        $jobIds = array_column($query, 'JobID');
+        $cancelsByJob = [];
+        if (!empty($jobIds)) {
+            $ids = implode(',', array_map('intval', $jobIds));
+            $cancelRows = $this->db
+                ->select('HistoryCancelJobID, JobID')
                 ->from('HistoryCancelJob')
-                ->where('JobID', $jobID)
+                ->where("JobID IN ($ids)", null, false)
                 ->order_by('created_at', 'ASC')
                 ->get()
                 ->result_array();
+            foreach ($cancelRows as $cr) {
+                $cancelsByJob[(int) $cr['JobID']][] = ['HistoryCancelJobID' => $cr['HistoryCancelJobID']];
+            }
+        }
+
+        foreach ($query as $row) {
+            $jobID = (int) $row['JobID'];
 
             $data[] = [
                 "no" => $no++,
@@ -246,7 +255,7 @@ class Job extends MY_Controller
                 "Status" => $row['Status'],
                 "JobID" => $jobID,
                 "UserID" => $row['UserID'] ?? null,
-                "StatusCancelJob" => $cancelJob
+                "StatusCancelJob" => $cancelsByJob[$jobID] ?? []
             ];
         }
 
@@ -604,23 +613,37 @@ class Job extends MY_Controller
         $data = [];
         $no = $start + 1;
 
-        foreach ($query as $row) {
-            $jobID = (int) $row['JobID'];
+        // Batch-fetch cancel history and reschedule records to avoid N+1
+        $jobIds = array_column($query, 'JobID');
+        $cancelsByJob = [];
+        $reschedulesByJob = [];
+        if (!empty($jobIds)) {
+            $ids = implode(',', array_map('intval', $jobIds));
 
-            $cancelJob = $this->db
-                ->select('HistoryCancelJobID')
+            $cancelRows = $this->db
+                ->select('HistoryCancelJobID, JobID')
                 ->from('HistoryCancelJob')
-                ->where('JobID', $jobID)
+                ->where("JobID IN ($ids)", null, false)
                 ->order_by('created_at', 'ASC')
                 ->get()
                 ->result_array();
+            foreach ($cancelRows as $cr) {
+                $cancelsByJob[(int) $cr['JobID']][] = ['HistoryCancelJobID' => $cr['HistoryCancelJobID']];
+            }
 
-            $rescheduleJob = $this->db
-                ->select('RescheduledID')
+            $rescheduleRows = $this->db
+                ->select('RescheduledID, JobID')
                 ->from('RescheduledJob')
-                ->where('JobID', $jobID)
+                ->where("JobID IN ($ids)", null, false)
                 ->get()
                 ->result_array();
+            foreach ($rescheduleRows as $rr) {
+                $reschedulesByJob[(int) $rr['JobID']][] = ['RescheduledID' => $rr['RescheduledID']];
+            }
+        }
+
+        foreach ($query as $row) {
+            $jobID = (int) $row['JobID'];
 
             $data[] = [
                 "no" => $no++,
@@ -632,8 +655,8 @@ class Job extends MY_Controller
                 "TypeJob" => $row['TypeJob'],
                 "Status" => $row['Status'],
                 "JobID" => $jobID,
-                "StatusCancelJob" => $cancelJob,
-                "StatusReschedule" => $rescheduleJob,
+                "StatusCancelJob" => $cancelsByJob[$jobID] ?? [],
+                "StatusReschedule" => $reschedulesByJob[$jobID] ?? [],
                 "AssignWhen" => $row['AssignWhen'],
                 "FinishWhen" => $row['FinishWhen']
             ];
@@ -728,17 +751,6 @@ class Job extends MY_Controller
         $no = $start + 1;
 
         foreach ($query as $row) {
-            $jobID = (int) $row['JobID'];
-
-            // kept to avoid logic break (even if unused in response)
-            $cancelJob = $this->db
-                ->select('HistoryCancelJobID')
-                ->from('HistoryCancelJob')
-                ->where('JobID', $jobID)
-                ->order_by('created_at', 'ASC')
-                ->get()
-                ->result_array();
-
             $data[] = [
                 "no" => $no++,
                 "JobDate" => $row['JobDate'],

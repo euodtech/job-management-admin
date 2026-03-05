@@ -29,46 +29,35 @@ class JobController extends Controller {
             ->first();
     }
 
+    private static $typeJobNames = [
+        "1" => "Line Interrupt",
+        "2" => "Reconnection",
+        "3" => "Short Circuit",
+        "4" => "Disconnection",
+    ];
+
     public function get_job(Request $request)
     {
-
         $dnow = date('Y-m-d');
 
         $dataLogin = $this->getAuthenticatedUser($request);
 
+        // Single query with JOIN to avoid N+1 on CreatedBy lookup
         $dataJob = JobModel::leftJoin('Customer', 'ListJob.CustomerID', '=', 'Customer.CustomerID')
+            ->leftJoin('UserLogin AS Creator', 'ListJob.CreatedBy', '=', 'Creator.UserLoginID')
             ->where('ListJob.CompanyID', $dataLogin->ListCompanyID)
             ->where('ListJob.JobDate', "<=" ,$dnow)
             ->whereNull('ListJob.UserID')
             ->orderBy('ListJob.JobDate', 'DESC')
+            ->select('ListJob.*', 'Customer.*', 'Creator.Fullname as CreatorFullname')
             ->get();
-        
-        // echo json_encode($dataJob);
-        // die;
 
         $return = [];
 
         foreach ($dataJob as $val) {
-            // Default kosong dulu
-            $typeJobName = null;
+            $val->CreatedBy = $val->CreatorFullname;
+            $val->TypeJobName = self::$typeJobNames[$val->TypeJob] ?? null;
 
-            $createdBy = UserLogin::where("UserLoginID" , $val->CreatedBy)->first('Fullname');
-
-            $val->CreatedBy = $createdBy->Fullname;
-
-            if ($val->TypeJob == "1") {
-                $typeJobName = "Line Interrupt";
-            } elseif ($val->TypeJob == "2") {
-                $typeJobName = "Reconnection";
-            } elseif ($val->TypeJob == "3") {
-                $typeJobName = "Short Circuit";
-            }
-
-            // Tambahkan langsung ke object
-            $val->TypeJobName = $typeJobName;
-            // $val->JobDate = date('D, d M Y', strtotime($val->JobDate));
-
-            // Push ke hasil
             $return[] = $val;
         }
 
@@ -76,7 +65,6 @@ class JobController extends Controller {
             "Success" => true,
             "Data" => $return
         ]);
-
     }
 
     public function get_job_by_user(Request $request, $userID)
@@ -208,36 +196,40 @@ class JobController extends Controller {
             return response()->json(["Success" => false, "Message" => "Unauthorized"], 401);
         }
 
+        // Single query with JOIN to avoid N+1 on CreatedBy
         $dataJob = JobModel::leftJoin('Customer', 'ListJob.CustomerID', '=', 'Customer.CustomerID')
-            ->where("UserID", $user_id)
+            ->leftJoin('UserLogin AS Creator', 'ListJob.CreatedBy', '=', 'Creator.UserLoginID')
+            ->where("ListJob.UserID", $user_id)
             ->where('ListJob.CompanyID', $authUser->ListCompanyID)
-            ->whereIn('Status', [1, 3])
+            ->whereIn('ListJob.Status', [1, 3])
             ->orderBy('ListJob.created_at', 'DESC')
+            ->select('ListJob.*', 'Customer.*', 'Creator.Fullname as CreatorFullname')
             ->get();
+
+        // Batch-fetch all reschedule records for these jobs in ONE query
+        $jobIds = $dataJob->pluck('JobID')->toArray();
+        $reschedules = [];
+        if (!empty($jobIds)) {
+            $allReschedules = RescheduleJobModel::whereIn('JobID', $jobIds)
+                ->orderBy('RescheduledID', 'DESC')
+                ->get();
+            // Group by JobID — first entry per job is the latest (due to DESC order)
+            foreach ($allReschedules as $r) {
+                if (!isset($reschedules[$r->JobID])) {
+                    $reschedules[$r->JobID] = $r;
+                }
+            }
+        }
 
         $return = [];
         $today = date('Y-m-d');
 
         foreach ($dataJob as $val) {
-            $typeJobName = null;
+            $val->CreatedBy = $val->CreatorFullname;
+            $val->TypeJobName = self::$typeJobNames[$val->TypeJob] ?? null;
 
-            $createdBy = UserLogin::where("UserLoginID" , $val->CreatedBy)->first('Fullname');
-            $val->CreatedBy = $createdBy->Fullname;
-
-            if ($val->TypeJob == "1") {
-                $typeJobName = "Line Interrupt";
-            } elseif ($val->TypeJob == "2") {
-                $typeJobName = "Reconnection";
-            } elseif ($val->TypeJob == "3") {
-                $typeJobName = "Short Circuit";
-            }
-
-            $val->TypeJobName = $typeJobName;
-
-            // Attach latest reschedule info
-            $latestReschedule = RescheduleJobModel::where('JobID', $val->JobID)
-                ->orderBy('RescheduledID', 'DESC')
-                ->first();
+            // Use pre-fetched reschedule data instead of per-job query
+            $latestReschedule = $reschedules[$val->JobID] ?? null;
 
             if ($latestReschedule) {
                 $val->RescheduleStatus = (int) $latestReschedule->StatusApproved;
@@ -421,17 +413,53 @@ class JobController extends Controller {
                     ], 400);
                 }
 
-                // Use uniqid to prevent filename collision under concurrent requests
-                $fileName = 'job_'.$jobId.'_'.uniqid('', true).'_'.$index.'.'.$ext;
-                $filePath = storage_path('app/finished_jobs/'.$fileName);
+                // Compress image using GD to reduce disk usage and I/O
+                // Saves as JPEG at 70% quality — typically reduces file size by 60-80%
+                $gdImage = @imagecreatefromstring($imageData);
+                if ($gdImage !== false) {
+                    // Free raw image data early to reduce memory pressure
+                    unset($imageData);
 
-                // Ensure directory exists (suppress error if concurrent request creates it)
-                $directory = dirname($filePath);
-                if (!is_dir($directory)) {
-                    @mkdir($directory, 0755, true);
+                    // Always save as JPEG for consistent compression
+                    $ext = 'jpg';
+                    $fileName = 'job_'.$jobId.'_'.uniqid('', true).'_'.$index.'.'.$ext;
+                    $filePath = storage_path('app/finished_jobs/'.$fileName);
+
+                    $directory = dirname($filePath);
+                    if (!is_dir($directory)) {
+                        @mkdir($directory, 0755, true);
+                    }
+
+                    // Resize if larger than 1920px on any side (saves disk + bandwidth)
+                    $maxDimension = 1920;
+                    $origWidth = imagesx($gdImage);
+                    $origHeight = imagesy($gdImage);
+                    if ($origWidth > $maxDimension || $origHeight > $maxDimension) {
+                        $ratio = min($maxDimension / $origWidth, $maxDimension / $origHeight);
+                        $newWidth = (int) ($origWidth * $ratio);
+                        $newHeight = (int) ($origHeight * $ratio);
+                        $resized = imagecreatetruecolor($newWidth, $newHeight);
+                        imagecopyresampled($resized, $gdImage, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+                        imagedestroy($gdImage);
+                        $gdImage = $resized;
+                    }
+
+                    imagejpeg($gdImage, $filePath, 70);
+                    imagedestroy($gdImage);
+                } else {
+                    // Fallback: save raw if GD fails (e.g., unsupported format)
+                    $fileName = 'job_'.$jobId.'_'.uniqid('', true).'_'.$index.'.'.$ext;
+                    $filePath = storage_path('app/finished_jobs/'.$fileName);
+
+                    $directory = dirname($filePath);
+                    if (!is_dir($directory)) {
+                        @mkdir($directory, 0755, true);
+                    }
+
+                    file_put_contents($filePath, $imageData, LOCK_EX);
+                    unset($imageData);
                 }
 
-                file_put_contents($filePath, $imageData, LOCK_EX);
                 $savedFiles[] = $fileName;
 
             } catch (\Exception $e) {
