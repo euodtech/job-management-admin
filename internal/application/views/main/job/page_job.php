@@ -740,7 +740,8 @@ $(document).ready(function() {
 
         modal.find('#job_id').val('');
         modal.find('#job_name').val('');
-        const today = new Date().toISOString().slice(0, 10);
+        const now = new Date();
+        const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
         modal.find('#job_date').val(today);
 
         let type_job_label = '<?= $this->uri->segment(1) ?>';
@@ -1122,7 +1123,8 @@ $(document).ready(function() {
         $('#reschedule_reason').val('');
         clearAllFieldErrors('#modal_admin_reschedule');
 
-        var today = new Date().toISOString().slice(0, 10);
+        var now = new Date();
+        var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
         $('#reschedule_new_date').attr('min', today);
 
         showModal('#modal_admin_reschedule');
